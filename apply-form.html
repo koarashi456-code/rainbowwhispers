@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>引路人免費申請入駐 ｜ 彩之語</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#FAF4E6;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color:#5A4632;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:460px;margin:0 auto;padding:26px 16px}
+  .card{background:#FFFDF8;border:1px solid #EFE3CE;border-radius:20px;padding:30px 26px;box-shadow:0 10px 34px -20px rgba(120,90,60,.35)}
+  .head{text-align:center;margin-bottom:22px}
+  .head h1{font-family:"Noto Serif TC",serif;font-size:22px;font-weight:600;color:#6B4A33}
+  .head p{font-size:13px;color:#A9967E;margin-top:4px}
+  .field{margin-bottom:16px}
+  .lbl{font-size:13.5px;font-weight:500;color:#6B4A33;margin-bottom:6px}
+  .req{color:#C98A6A}
+  .in{width:100%;font:inherit;font-size:15px;color:#5A4632;background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:12px 15px;outline:none;transition:border-color .18s}
+  .in::placeholder{color:#BCA98C}
+  .in:focus{border-color:#C9A7DE}
+  textarea.in{min-height:90px;resize:vertical}
+  .row{display:flex;gap:12px}
+  .row .field{flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;padding:8px 14px;border-radius:999px;border:1.5px solid #EFE3CE;background:#F7EFE0;color:#8A6A44;font-size:14px;cursor:pointer;user-select:none;transition:all .15s}
+  .chip input{position:absolute;opacity:0;width:0;height:0}
+  .chip.on{background:#EAD9F2;color:#6E4F9E;border-color:#D9C4E8}
+  .consent{display:flex;align-items:flex-start;gap:9px;margin:20px 0;font-size:12.5px;color:#8A7659;line-height:1.55;cursor:pointer}
+  .consent input{margin-top:2px;width:17px;height:17px;flex:none;accent-color:#6B4A33}
+  .consent a{color:#6B4A33;text-decoration:underline}
+  .consent.warn{color:#C0506A}
+  .btn{width:100%;font:inherit;font-weight:500;font-size:16px;color:#4A3A2A;background:linear-gradient(95deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border:none;border-radius:999px;padding:15px 0;cursor:pointer;transition:filter .18s}
+  .btn:hover{filter:brightness(.97)}
+  .btn:disabled{opacity:.7;cursor:default}
+  .mini{font-size:11.5px;color:#B6A283;text-align:center;margin-top:10px}
+  .done{text-align:center;padding:20px 6px}
+  .done .ic{width:52px;height:52px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .done h2{font-family:"Noto Serif TC",serif;font-size:20px;color:#6B4A33;margin-bottom:8px}
+  .done p{font-size:14.5px;color:#8A7659}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <form id="apply" novalidate>
+      <div class="head">
+        <h1>免費申請入駐</h1>
+        <p>幾個問題，讓我們先認識你</p>
+      </div>
+
+      <div class="field">
+        <div class="lbl">名字／藝名 <span class="req">*</span></div>
+        <input class="in" name="名字／藝名" placeholder="你的名字或藝名">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="lbl">手機 <span class="req">*</span></div>
+          <input class="in" name="手機" type="tel" placeholder="09__ ___ ___">
+        </div>
+        <div class="field">
+          <div class="lbl">Email <span class="req">*</span></div>
+          <input class="in" name="email" type="email" placeholder="you@mail.com">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">主要擅長領域（可複選）<span class="req">*</span></div>
+        <div class="chips" data-group="領域">
+          <label class="chip"><input type="checkbox" name="擅長領域" value="八字">八字</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="紫微斗數">紫微斗數</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="塔羅">塔羅</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="占星">占星</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="易經">易經</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="元辰宮">元辰宮</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="風水擇日">風水擇日</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="能量調頻">能量調頻</label>
+          <label class="chip"><input type="checkbox" name="擅長領域" value="其他">其他</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">服務風格（可複選）<span class="req">*</span></div>
+        <div class="chips" data-group="風格">
+          <label class="chip"><input type="checkbox" name="服務風格" value="清晰實用">清晰實用</label>
+          <label class="chip"><input type="checkbox" name="服務風格" value="溫和陪伴">溫和陪伴</label>
+          <label class="chip"><input type="checkbox" name="服務風格" value="傳統嚴謹">傳統嚴謹</label>
+          <label class="chip"><input type="checkbox" name="服務風格" value="簡潔快速">簡潔快速</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="lbl">簡要經歷（100–300 字）<span class="req">*</span></div>
+        <textarea class="in" name="簡要經歷" placeholder="聊聊你的專業背景、擅長什麼、想陪伴哪一種人…"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <div class="lbl">收費標準 <span class="req">*</span></div>
+          <input class="in" name="收費標準" placeholder="例：30 分 500／60 分 1200">
+        </div>
+        <div class="field">
+          <div class="lbl">可服務時段</div>
+          <input class="in" name="可服務時段" placeholder="大致範圍即可">
+        </div>
+      </div>
+
+      <label class="consent" id="consent-label">
+        <input type="checkbox" id="agree" name="已同意規則">
+        <span>我已閱讀並同意〈<a href="#" target="_blank">入駐規則</a>｜<a href="#" target="_blank">免責聲明</a>｜<a href="#" target="_blank">個資保護規範</a>〉<span class="req">*</span></span>
+      </label>
+
+      <button class="btn" type="submit" id="send">送出申請</button>
+      <div class="mini">送出後，我們會在 1–24 小時內與你聯繫</div>
+    </form>
+
+    <div class="done" id="done" style="display:none">
+      <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3E9E86" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h2>收到你的申請了！</h2>
+      <p>謝謝你願意加入彩之語。<br>我們會在 1–24 小時內與你聯繫。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== 設定區：只改這裡 ====== */
+var CONFIG = {
+  email: 'koarashi456@gmail.com'   // 申請會寄到這個信箱
+};
+/* ====== 以下不用動 ====== */
+(function(){
+  var form=document.getElementById('apply');
+  var doneBox=document.getElementById('done');
+  var btn=document.getElementById('send');
+
+  // 小膠囊選中效果
+  form.addEventListener('change',function(e){
+    if(e.target.matches('.chip input')){ e.target.closest('.chip').classList.toggle('on', e.target.checked); }
+    var ag=document.getElementById('agree'); if(e.target===ag){ document.getElementById('consent-label').classList.remove('warn'); }
+  });
+
+  function postHeight(){ try{ parent.postMessage({type:'formHeight',height:document.documentElement.scrollHeight},'*'); }catch(_){} }
+  window.addEventListener('load',postHeight); window.addEventListener('resize',postHeight);
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    // 驗證
+    var invalid=false;
+    form.querySelectorAll('input[name],textarea[name]').forEach(function(el){
+      if(el.type==='checkbox') return;
+      if(!el.value.trim()){ el.style.borderColor='#C0506A'; invalid=true; } else { el.style.borderColor='#EFE3CE'; }
+    });
+    var 領域=form.querySelectorAll('input[name="擅長領域"]:checked').length;
+    var 風格=form.querySelectorAll('input[name="服務風格"]:checked').length;
+    if(!領域||!風格) invalid=true;
+    var agree=document.getElementById('agree');
+    if(!agree.checked){ document.getElementById('consent-label').classList.add('warn'); invalid=true; }
+    if(invalid){ return; }
+
+    btn.disabled=true; btn.textContent='送出中…';
+    var fd=new FormData(form);
+    fd.append('_subject','彩之語・引路人入駐申請');
+    fd.append('_captcha','false');
+    fetch('https://formsubmit.co/ajax/'+CONFIG.email,{
+      method:'POST', headers:{'Accept':'application/json'}, body:fd
+    }).then(function(r){ return r.json(); }).then(function(){
+      form.style.display='none'; doneBox.style.display='block'; postHeight();
+    }).catch(function(){
+      btn.disabled=false; btn.textContent='送出申請';
+      alert('送出失敗，請稍後再試，或直接用官方 LINE 傳給我們。');
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>測測你最適合的陪伴方式｜彩之語身心靈配對小測驗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --brand:#6B4A33; --brand-deep:#5A4632; --accent:#B5713F;
+    --bg:#FAF4E6; --card:#FFFDF8; --ink:#5A4632; --ink-soft:#8A7659;
+    --line:#ECDFC6; --tint:#F4EAD4; --teal:#3E9E86;
+    --radius:16px; --radius-sm:12px;
+  }
+  body{background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 18px 40px}
+  .serif{font-family:"Noto Serif TC",serif}
+  .intro{text-align:center;margin:6px 0 22px}
+  .intro h1{font-size:26px;font-weight:600;color:var(--brand-deep);margin-bottom:8px}
+  .intro p{color:var(--ink-soft);font-size:15px}
+  .bar{height:5px;border-radius:999px;background:var(--tint);overflow:hidden;margin-bottom:14px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border-radius:999px;transition:width .4s ease}
+  .step-no{color:var(--ink-soft);font-size:13px;letter-spacing:.04em;margin-bottom:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;box-shadow:0 8px 30px -18px rgba(120,90,60,.28)}
+  .q{font-size:19px;font-weight:500;line-height:1.55;margin-bottom:6px}
+  .opt{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:15px 18px;margin-top:12px;cursor:pointer;transition:all .18s ease}
+  .opt:hover{border-color:var(--brand);background:var(--tint)}
+  .opt.sel{border-color:var(--brand);background:var(--brand);color:#fff}
+  .topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;margin-top:18px}
+  .topic{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:18px 10px;font-weight:500}
+  .topic svg{width:28px;height:28px;color:var(--brand)}
+  .topic.sel svg{color:#fff}
+  .res-kicker{color:var(--ink-soft);font-size:13px;letter-spacing:.08em}
+  .res-name{font-size:30px;font-weight:600;color:var(--brand-deep);margin:6px 0 2px}
+  .res-combo{color:var(--accent);font-weight:500;font-size:14px;letter-spacing:.04em;margin-bottom:14px}
+  .res-body{font-size:15.5px;margin-bottom:16px}
+  .pill{display:inline-block;font-size:13px;padding:5px 13px;border-radius:999px;margin:0 7px 7px 0;background:var(--tint);color:var(--brand-deep)}
+  .pill1{background:#D8ECDF;color:#3F7A5E}.pill2{background:#FBE0CC;color:#A5643A}.pill3{background:#E7DBF4;color:#6E4F9E}
+  .note{background:var(--bg);border-radius:var(--radius-sm);padding:14px 16px;margin-top:16px}
+  .note .lbl{color:var(--ink-soft);font-size:13px;margin-bottom:4px}
+  .note p{font-size:14.5px;line-height:1.65}
+  .lead{margin-top:14px}
+  .lead h3{font-size:17px;font-weight:500;margin-bottom:4px}
+  .lead .sub{color:var(--ink-soft);font-size:14px;margin-bottom:14px}
+  .lead-row{display:flex;gap:10px}
+  .consent{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:13px;color:var(--ink-soft);line-height:1.55;cursor:pointer}
+  .consent input{margin-top:3px;width:16px;height:16px;flex:none;accent-color:var(--brand)}
+  .consent a{color:var(--brand-deep);text-decoration:underline}
+  .consent.warn{color:#C0506A}
+  .policy{display:none;margin-top:10px;padding:13px 15px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);font-size:12.5px;line-height:1.75}
+  .policy.open{display:block}
+  .policy h4{font-size:13px;font-weight:500;margin-bottom:6px;color:var(--brand-deep)}
+  .policy b{font-weight:500;color:var(--ink)}
+  .lead input{flex:1;font:inherit;padding:13px 15px;border:1.5px solid var(--line);border-radius:var(--radius-sm);outline:none;transition:border-color .18s}
+  .lead input:focus{border-color:var(--brand)}
+  .btn-primary{font:inherit;font-weight:500;color:#4A3A2A;background:linear-gradient(95deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border:none;border-radius:var(--radius-sm);padding:0 22px;cursor:pointer;white-space:nowrap;transition:filter .18s}
+  .btn-primary:hover{filter:brightness(.96)}
+  .btn-block{display:block;width:100%;text-align:center;padding:14px 0;text-decoration:none}
+  .btn-member{font:inherit;font-weight:500;color:#fff;background:var(--brand);border:none;border-radius:var(--radius-sm);transition:filter .18s}
+  .btn-member:hover{filter:brightness(1.1)}
+  .lead-mini{font-size:12px;color:var(--ink-soft);margin-top:10px;line-height:1.6}
+  .lead-mini a{color:var(--brand-deep);text-decoration:underline;cursor:pointer}
+  .ok{color:var(--teal);font-size:15px;font-weight:500;display:flex;align-items:center;gap:7px}
+  .ok svg{width:20px;height:20px}
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+  .btn-ghost{font:inherit;color:var(--ink-soft);background:none;border:1px solid var(--line);border-radius:999px;padding:9px 18px;cursor:pointer;transition:all .18s}
+  .btn-ghost:hover{color:var(--brand-deep);border-color:var(--brand)}
+  .btn-line{font:inherit;font-weight:500;color:#fff;background:#06C755;border:none;border-radius:999px;padding:9px 20px;cursor:pointer;transition:filter .18s}
+  .btn-line:hover{filter:brightness(.95)}
+  .foot{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-soft);line-height:1.75;text-align:center}
+  .fade{animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media(max-width:380px){.wrap{padding:20px 14px 32px}.card{padding:22px 18px}.res-name{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap"><div id="app"></div>
+<p class="foot">溫馨提醒：本平台僅提供老師媒合服務，不對命理或玄學內容的準確性與結果負責。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
+</div>
+<script>
+/* =================================================================
+   設定區 — 只改這裡就好
+   ================================================================= */
+var CONFIG = {
+  brand:      '#6B4A33',   // 主色＝毛筆棕（選中、圖示、邊框、焦點）
+  brandDeep:  '#5A4632',   // 深一階（標題用）
+  accent:     '#B5713F',   // 點綴（結果副標）
+
+  // 留資串接 Google 表單（先留空也能跑，只是不會真的送出）
+  // 做法：建一個 Google 表單 → 取得「formResponse」網址與各欄位的 entry.xxx 編號
+  googleFormAction: '',                          // 例：https://docs.google.com/forms/d/e/XXXX/formResponse
+  googleEntries: { contact:'entry.000', type:'entry.000', topic:'entry.000' },
+
+  lineUrl: 'https://lin.ee/t0NBjud0',   // LINE 官方帳號加好友連結
+  lineOaId: '@518xokyr',   // 你的 LINE 官方帳號 ID；「加入 LINE」會自動把客人的測驗結果一起送給你
+
+  // 會員（用 WIX 內建會員區；非會員點「註冊會員」會自動跳註冊）
+  memberUrl:    '',     // 你的 WIX 會員專區頁網址（在 WIX 開好會員區後填這裡）
+  loyaltyOn:    false,  // 之後裝了付費「忠誠度方案」App 再改成 true，按鈕就會切回「領 X 點」
+  memberPoints: 30,     // loyaltyOn 為 true 時顯示的點數（要跟 WIX 忠誠度方案設定一致）
+
+  shareUrl: 'https://koarashi456.wixsite.com/my-site-1',   // 「分享給朋友」分享的網址（朋友點了會來這裡做測驗；換自訂網域再改）
+
+  // 個資（依台灣個資法，留資前需告知＋取得同意）
+  orgName:      '彩之語 Rainbow Whisper',   // 個資告知裡的「蒐集者」（如需法律主體名稱可再改）
+  contactEmail: '官方 LINE：https://lin.ee/t0NBjud0',   // 個資告知裡的「聯絡我們」
+  privacyUrl:   ''   // 若 WIX 站已有完整隱私權頁，填網址；留空則用下方內建簡版告知
+};
+/* ============== 設定區結束，以下不用動 ============== */
+
+document.documentElement.style.setProperty('--brand', CONFIG.brand);
+document.documentElement.style.setProperty('--brand-deep', CONFIG.brandDeep);
+document.documentElement.style.setProperty('--accent', CONFIG.accent);
+
+var ICONS = {
+  love:'<path d="M19.5 12.6 12 20l-7.5-7.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 7.5 6.6Z"/>',
+  career:'<path d="M3.5 9h17v9a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2V9Z"/><path d="M9 9V6.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2V9"/>',
+  health:'<path d="M5 19c10 0 14-4 14-14C9 5 5 9 5 19Z"/><path d="m5 19 7-7"/>',
+  direction:'<circle cx="12" cy="12" r="9"/><path d="m15 9-2 5-4 1 2-5 4-1Z"/>',
+  emotion:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9.5h.01M15 9.5h.01"/>',
+  explore:'<path d="M12 4c.4 3.5 1.5 4.6 5 5-3.5.4-4.6 1.5-5 5-.4-3.5-1.5-4.6-5-5 3.5-.4 4.6-1.5 5-5Z"/><path d="M18.5 13c.2 1.4.7 1.9 2.1 2.1-1.4.2-1.9.7-2.1 2.1-.2-1.4-.7-1.9-2.1-2.1 1.4-.2 1.9-.7 2.1-2.1Z"/>'
+};
+var svg=function(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';};
+
+var TOPICS=[
+  {key:'love',label:'感情・關係'},{key:'career',label:'事業・金錢'},
+  {key:'health',label:'健康・身體'},{key:'direction',label:'人生方向'},
+  {key:'emotion',label:'情緒・自我'},{key:'explore',label:'好奇・探索自己'}
+];
+var tLabel=function(k){var f=TOPICS.find(function(x){return x.key===k;});return f?f.label:k;};
+
+var QUESTIONS=[
+  {q:'心情不好、想找人說說話時，你比較希望對方先…',opts:[
+    {t:'幫我把問題弄清楚、想想辦法',e:{a1:-1}},
+    {t:'先聽我說，讓我心情穩下來',e:{a1:1}},
+    {t:'兩種我都需要一些',e:{}}]},
+  {q:'哪種人講的話，你比較聽得進去？',opts:[
+    {t:'講話有條理、說得出道理',e:{a1:-1}},
+    {t:'很懂我的心情、講到我心裡',e:{a1:1}},
+    {t:'都可以，看狀況',e:{}}]},
+  {q:'你喜歡對方怎麼跟你說話？',opts:[
+    {t:'有話直說，不用拐彎抹角',e:{a2:-1}},
+    {t:'溫柔一點、順著我慢慢講',e:{a2:1}},
+    {t:'要看當下拿捏',e:{}}]},
+  {q:'如果對方很直接點出你的問題，你會…',opts:[
+    {t:'覺得很爽快，這樣才清楚',e:{a2:-1}},
+    {t:'希望他能講得溫柔一點',e:{a2:1}},
+    {t:'還好，我可以接受',e:{}}]},
+  {q:'聊完之後，你最想帶走的是…',opts:[
+    {t:'清楚知道接下來該怎麼做',e:{a3:-1}},
+    {t:'自己想通了，心裡比較踏實',e:{a3:1}},
+    {t:'這兩個我都想要',e:{}}]},
+  {q:'要做決定的時候，你比較希望對方…',opts:[
+    {t:'直接告訴我「你該這樣做」',e:{a3:-1}},
+    {t:'問我「你自己怎麼想」，陪我找答案',e:{a3:1}},
+    {t:'都行，看情況決定',e:{}}]}
+];
+
+var TYPES={
+  RDI:{name:'策士',combo:'理性 × 點破 × 指引',
+    body:'你不怕真相，你怕的是含糊。你要的是一個比你更冷靜、更有洞察力的視角，幫你把局面看穿，然後直接告訴你「現在最該動的那一步」。被同理太多反而讓你不耐煩——你要被當成一個能承接真相、也願意行動的大人。',
+    bad:'繞圈子、只給情緒安慰，或講一堆「相信宇宙」卻沒有下一步。',
+    guide:'思路清晰、敢講真心話、給得出具體行動方案。偏結構化、講得出道理的取向（紫微斗數、八字、占星流年）。'},
+  RDS:{name:'叩問',combo:'理性 × 點破 × 自悟',
+    body:'你心裡其實有譜，只是還沒被問到位。你不要別人替你決定，但你受得了、甚至享受被尖銳地挑戰。最好的陪伴像一面誠實的鏡子——問對問題、戳破盲點，再讓你自己說出那句你早就知道的答案。',
+    bad:'急著幫你下結論，或溫吞地不敢點你。',
+    guide:'擅長提問、犀利又尊重你主體性的引導取向。塔羅（以牌面提問）、人類圖、教練式對話。'},
+  RGI:{name:'穩步',combo:'理性 × 陪伴 × 指引',
+    body:'你想懂「為什麼」，但你不喜歡被嚇、被逼。你要的是有耐心、會把道理講到你聽懂、再牽著你一步步走的陪伴。清楚讓你安心，溫柔讓你敢往前。',
+    bad:'講太快太急，或只給溫暖卻給不出方向。',
+    guide:'說明清楚、節奏溫和、會給具體建議的顧問取向。占星、八字搭配溫和的諮詢風格。'},
+  RGS:{name:'靜思',combo:'理性 × 陪伴 × 自悟',
+    body:'你是會自己消化的人，只是需要一個安全、不催促的空間，和一個聰明又溫柔的存在陪你一起想。你不要標準答案，也不要被推著走——你要被理解地、有條理地，一起把事情看清楚，再在自己的節奏裡落地。',
+    bad:'急著給結論、催你做決定，或情緒太滿淹沒了思考。',
+    guide:'沉穩、會聆聽、用提問帶你思考的陪伴取向。人類圖、占星諮詢、靈性對話。'},
+  EDI:{name:'燈塔',combo:'感受 × 點破 × 指引',
+    body:'你很重感受，但你不要被哄。你希望陪你的人先讓你覺得「被懂了」，建立信任之後，敢對你說真話、也敢給明確方向。被接住你才聽得進去，但只有溫暖沒有方向，你會覺得空。',
+    bad:'一上來就冷冰冰地分析（你會關起來），或一味安慰卻不敢給方向。',
+    guide:'溫暖但有力量、共感力強又敢給建議。占星、塔羅搭配療癒底蘊或諮商背景。'},
+  EDS:{name:'破繭',combo:'感受 × 點破 × 自悟',
+    body:'你的成長往往來自一句被溫柔說出口的真話。你需要先感覺到有人真的站在你這邊，再由對方輕輕戳破你一直在逃避的那件事——但最後跨出去的那一步，你想自己走。',
+    bad:'替你決定、講得太硬太快，或一直同理卻從不點破。',
+    guide:'共感又有洞見、敢溫柔說真話、懂得在關鍵時刻放手。塔羅、人類圖、深度諮詢。'},
+  EGI:{name:'暖光',combo:'感受 × 陪伴 × 指引',
+    body:'脆弱的時候，你最需要先被好好接住——不被評價、不被催。等心安定了，你希望有一隻溫暖而篤定的手，輕輕牽著你、告訴你下一步往哪走。安全感是前提，方向是依靠。',
+    bad:'講話太衝太直、急著分析，或催你振作。',
+    guide:'溫柔、包容、給人安全感，同時會給溫和方向的療癒取向。靈氣療癒、塔羅、占星搭配高同理風格。'},
+  EGS:{name:'歸心',combo:'感受 × 陪伴 × 自悟',
+    body:'你要的不是答案，是一個能讓你完全卸下防備的空間。最好的陪伴，是有人安靜地、全然地在你身邊，相信你內在本來就有答案，只是陪你慢慢把它聽出來。被催、被指導都會打斷你。',
+    bad:'給一堆建議、急著解決問題，或太理性的拆解。',
+    guide:'溫柔、有靜定能量、擅長傾聽與陪伴。靈氣、能量療癒、冥想引導、人類圖回歸自我取向。'}
+};
+
+var app=document.getElementById('app');
+var S={step:0,topic:null,a1:0,a2:0,a3:0};
+var locked=false;
+
+function postHeight(){
+  try{ window.parent.postMessage({type:'quizHeight',height:document.documentElement.scrollHeight},'*'); }catch(e){}
+}
+function checkmark(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';}
+
+function chooseTopic(el,k){ if(locked)return; locked=true; el.classList.add('sel');
+  setTimeout(function(){S.topic=k;S.step=1;locked=false;render();},170); }
+function chooseAns(el,idx){ if(locked)return; locked=true; el.classList.add('sel');
+  setTimeout(function(){var e=QUESTIONS[S.step-1].opts[idx].e;
+    for(var k in e)S[k]+=e[k];S.step++;locked=false;render();},170); }
+
+function submitLead(payload,onDone){
+  var cfg=CONFIG.googleFormAction;
+  if(!cfg){ onDone(); return; }
+  var fd=new FormData();
+  fd.append(CONFIG.googleEntries.contact,payload.contact);
+  fd.append(CONFIG.googleEntries.type,payload.type);
+  fd.append(CONFIG.googleEntries.topic,payload.topic);
+  fetch(cfg,{method:'POST',mode:'no-cors',body:fd}).then(onDone,onDone);
+}
+
+function policyMarkup(){
+  return '<h4>個人資料蒐集告知</h4>'+
+    '依《個人資料保護法》，於您留下聯絡方式前向您說明：'+
+    '<br>・<b>蒐集者</b>：'+CONFIG.orgName+
+    '<br>・<b>蒐集目的</b>：為您進行身心靈引路人配對，並寄送配對結果與相關通知。'+
+    '<br>・<b>個資類別</b>：聯絡方式（Email／LINE ID），以及本測驗結果（相處頻率類型、關注議題）。'+
+    '<br>・<b>利用期間與方式</b>：於本服務營運期間，在配對與聯繫之必要範圍內利用；資料可能儲存於 LINE、Google 等雲端服務。'+
+    '<br>・<b>您的權利</b>：可隨時請求查詢、閱覽、複製、補正、停止蒐集處理利用或刪除您的個資。'+
+    '<br>・<b>不提供之影響</b>：若不提供，將無法為您進行配對與通知。'+
+    '<br>・<b>聯絡我們</b>：'+CONFIG.contactEmail;
+}
+
+function render(){
+  var html='';
+  if(S.step===0){
+    html='<div class="intro fade"><h1 class="serif">測測你最適合的陪伴方式</h1>'+
+         '<p>一分鐘，遇見最適合你的引路人</p></div>'+
+         '<div class="bar"><i style="width:8%"></i></div>'+
+         '<div class="step-no">第 1 / 7 步</div>'+
+         '<div class="card fade"><div class="q">你現在最想被好好陪伴的，是哪一塊？</div>'+
+         '<div class="topics">'+TOPICS.map(function(t){
+            return '<button class="opt topic" data-topic="'+t.key+'">'+svg(ICONS[t.key])+t.label+'</button>';
+         }).join('')+'</div></div>';
+  } else if(S.step>=1 && S.step<=6){
+    var Q=QUESTIONS[S.step-1],n=S.step+1,pct=Math.round(n/7*100);
+    html='<div class="bar"><i style="width:'+pct+'%"></i></div>'+
+         '<div class="step-no">第 '+n+' / 7 步</div>'+
+         '<div class="card fade"><div class="q">'+Q.q+'</div>'+
+         Q.opts.map(function(o,i){return '<button class="opt" data-ans="'+i+'">'+o.t+'</button>';}).join('')+
+         '</div>';
+  } else {
+    var key=(S.a1<0?'R':'E')+(S.a2<0?'D':'G')+(S.a3<0?'I':'S');
+    var T=TYPES[key];
+    var p1=S.a1>0?'情感共鳴':S.a1<0?'理性分析':'理性 × 感性';
+    var p2=S.a2>0?'溫柔陪伴':S.a2<0?'真誠直接':'剛柔並濟';
+    var p3=S.a3>0?'引導自悟':S.a3<0?'明確指引':'方向 × 啟發';
+    var policyLink = CONFIG.privacyUrl
+      ? '<a href="'+CONFIG.privacyUrl+'" target="_blank" rel="noopener">隱私權政策</a>'
+      : '<a id="policy-toggle" style="cursor:pointer">《個資使用告知》</a>';
+    var policyBox = CONFIG.privacyUrl ? '' : '<div class="policy" id="policy">'+policyMarkup()+'</div>';
+    var leadMode = CONFIG.googleFormAction ? 'form' : (CONFIG.lineUrl ? 'line' : 'demo');
+    var leadHtml;
+    if(leadMode==='line'){
+      var lineMsg='我做完彩之語測驗了！我的相處頻率是「'+T.name+'（'+T.combo+'）」，最在意的是「'+tLabel(S.topic)+'」。';
+      var lineHref,lineBtnTxt,lineMini;
+      if(CONFIG.lineOaId){
+        lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(lineMsg);
+        lineBtnTxt='加入 LINE 並送出我的結果　→';
+        lineMini='送出後我們會收到你的相處頻率，為你配對最適合的引路人。查看'+policyLink;
+      } else {
+        lineHref=CONFIG.lineUrl;
+        lineBtnTxt='加入 LINE，領取你的配對　→';
+        lineMini='點擊將前往彩之語官方 LINE。查看'+policyLink;
+      }
+      leadHtml='<div class="lead"><h3>我們正在為你尋找最合適的引路人</h3>'+
+        '<div class="sub">加入官方 LINE，配對好了第一個通知你。</div>'+
+        '<div id="lead-form">'+
+          '<a class="btn-primary btn-block" href="'+lineHref+'" target="_blank" rel="noopener">'+lineBtnTxt+'</a>'+
+          '<p class="lead-mini">'+lineMini+'</p>'+
+          policyBox+
+        '</div></div>';
+    } else {
+      var lineBtn = CONFIG.lineUrl ? '<a class="btn-primary btn-block" style="margin-top:10px" href="'+CONFIG.lineUrl+'" target="_blank" rel="noopener">或加入官方 LINE</a>' : '';
+      leadHtml='<div class="lead"><h3>我們正在為你尋找最合適的引路人</h3>'+
+        '<div class="sub">留下聯絡方式，配對好了第一個通知你。</div>'+
+        '<div id="lead-form"><div class="lead-row">'+
+          '<input id="lead-input" type="text" placeholder="你的 Email 或 LINE ID" autocomplete="off">'+
+          '<button class="btn-primary" id="lead-submit">通知我</button>'+
+        '</div>'+
+        '<label class="consent" id="consent-label"><input type="checkbox" id="lead-consent"><span>我同意提供上述聯絡方式，並已閱讀及同意'+policyLink+'。</span></label>'+
+        policyBox+lineBtn+'</div></div>';
+    }
+    html='<div class="bar"><i style="width:100%;background:linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4)"></i></div>'+
+      '<div class="card fade">'+
+        '<div class="res-kicker">你的相處頻率</div>'+
+        '<div class="res-name serif">'+T.name+'</div>'+
+        '<div class="res-combo">'+T.combo+'</div>'+
+        '<div class="res-body">'+T.body+'</div>'+
+        '<div>'+
+          '<span class="pill pill1">'+p1+'</span><span class="pill pill2">'+p2+'</span><span class="pill pill3">'+p3+'</span>'+
+        '</div>'+
+        '<div class="note"><div class="lbl">適合你的引路人</div><p>'+T.guide+'</p></div>'+
+        leadHtml+
+      '</div>'+
+      '<div class="actions">'+
+        '<button class="btn-ghost" id="restart">重新測驗</button>'+
+        '<button class="btn-line" id="share">分享給朋友</button>'+
+      '</div>';
+  }
+  app.innerHTML=html;
+  bind();
+  postHeight();
+}
+
+function bind(){
+  app.querySelectorAll('[data-topic]').forEach(function(b){b.onclick=function(){chooseTopic(b,b.getAttribute('data-topic'));};});
+  app.querySelectorAll('[data-ans]').forEach(function(b){b.onclick=function(){chooseAns(b,parseInt(b.getAttribute('data-ans'),10));};});
+  var rs=app.querySelector('#restart'); if(rs)rs.onclick=function(){S={step:0,topic:null,a1:0,a2:0,a3:0};render();};
+  var sh=app.querySelector('#share'); if(sh)sh.onclick=function(){
+    var u=CONFIG.shareUrl||location.href;
+    var k=(S.a1<0?'R':'E')+(S.a2<0?'D':'G')+(S.a3<0?'I':'S');
+    var nm=(TYPES[k]||{}).name||'';
+    var msg='我剛測完彩之語的相處頻率測驗，我是「'+nm+'」型！你也來測測看 → '+u;
+    window.open('https://line.me/R/msg/text/?'+encodeURIComponent(msg),'_blank');
+  };
+  var pt=app.querySelector('#policy-toggle');
+  if(pt)pt.onclick=function(){var p=app.querySelector('#policy'); if(p)p.classList.toggle('open'); postHeight();};
+  var ck=app.querySelector('#lead-consent');
+  if(ck)ck.onchange=function(){var lbl=app.querySelector('#consent-label'); if(lbl)lbl.classList.remove('warn');};
+  var ls=app.querySelector('#lead-submit');
+  if(ls)ls.onclick=function(){
+    var inp=app.querySelector('#lead-input'); var v=inp?inp.value.trim():'';
+    if(!v){if(inp){inp.style.borderColor='#C0506A';inp.focus();}return;}
+    var consent=app.querySelector('#lead-consent');
+    if(consent&&!consent.checked){var lbl=app.querySelector('#consent-label'); if(lbl)lbl.classList.add('warn'); return;}
+    ls.disabled=true; ls.textContent='送出中…';
+    var key=(S.a1<0?'R':'E')+(S.a2<0?'D':'G')+(S.a3<0?'I':'S');
+    submitLead({contact:v,type:TYPES[key].name,topic:tLabel(S.topic)},function(){
+      var lf=app.querySelector('#lead-form');
+      if(lf)lf.innerHTML='<div class="ok">'+checkmark()+'收到了！配對好的引路人，我們會第一個通知你。</div>';
+      postHeight();
+    });
+  };
+}
+
+window.addEventListener('load',postHeight);
+window.addEventListener('resize',postHeight);
+render();
+</script>
+</body>
+</html>
