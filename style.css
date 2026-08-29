@@ -1,0 +1,66 @@
+/* 彩之語 Rainbow Whisper — 共用樣式 */
+:root{
+  --cream:#FAF4E6; --tint:#F4EAD4; --card:#FFFDF8;
+  --ink:#5A4632; --soft:#8A7659; --brush:#6B4A33; --accent:#B5713F;
+  --line:#ECDFC6;
+  --rainbow:linear-gradient(95deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+.rw-serif{font-family:"Noto Serif TC",serif}
+
+/* 導覽列 */
+.rw-nav{position:sticky;top:0;z-index:50;background:rgba(250,244,230,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.rw-nav-in{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:11px 20px;gap:12px}
+.rw-brand{display:flex;flex-direction:column;text-decoration:none;color:var(--brush);font-family:"Noto Serif TC",serif;font-weight:700;font-size:20px;letter-spacing:.1em;line-height:1.1}
+.rw-brand small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:8px;letter-spacing:.26em;color:#A78C6E;margin-top:2px}
+.rw-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.rw-links a{text-decoration:none;color:var(--ink);font-size:14px;padding:7px 11px;border-radius:999px;transition:background .15s}
+.rw-links a:hover{background:var(--tint)}
+.rw-links a.on{color:var(--brush);font-weight:500}
+.rw-nav-line{background:#06C755;color:#fff !important}
+.rw-nav-line:hover{filter:brightness(.95);background:#06C755 !important}
+
+/* 區塊 */
+.rw-sec{padding:46px 20px}
+.rw-sec.tint{background:var(--tint)}
+.rw-sec.grad{background:linear-gradient(180deg,#F4EAD4,#F0E4CC)}
+.rw-in{max-width:640px;margin:0 auto}
+.rw-center{text-align:center}
+.rw-kicker{font-size:13px;letter-spacing:.22em;color:var(--accent);margin-bottom:10px}
+.rw-h1{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--ink);font-size:27px;line-height:1.5}
+.rw-h2{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--ink);font-size:21px}
+.rw-p{font-size:15px;color:var(--soft)}
+.rw-strong{color:var(--brush);font-weight:500}
+.rw-divider{width:54px;height:3px;border-radius:3px;margin:10px auto 24px;background:linear-gradient(90deg,#EE9E86,#9FD49A,#B0A2E4)}
+
+/* 按鈕 */
+.rw-cta{display:inline-block;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:16px;padding:14px 38px;border-radius:999px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(150,120,160,.5);transition:filter .18s;border:none;cursor:pointer}
+.rw-cta:hover{filter:brightness(.96)}
+.rw-ghost{display:inline-block;border:1.5px solid #C9A7DE;color:var(--brush);font-weight:500;font-size:15px;padding:11px 28px;border-radius:999px;text-decoration:none;background:none;cursor:pointer}
+.rw-textlink{color:var(--soft);text-decoration:underline;text-underline-offset:3px;font-size:14px}
+
+/* 卡片 */
+.rw-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.rw-pill{display:inline-block;font-size:13px;padding:5px 13px;border-radius:999px;margin:0 6px 6px 0}
+
+/* 步驟圓圈 */
+.rw-step{display:flex;gap:14px;align-items:flex-start;text-align:left;margin-bottom:18px}
+.rw-num{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;font-family:"Noto Serif TC",serif}
+
+/* 頁尾 */
+.rw-footer{border-top:1px solid var(--line);padding:30px 20px;text-align:center}
+.rw-brand2{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px;letter-spacing:.1em}
+.rw-foot-en{font-size:11px;letter-spacing:.3em;color:#B6A283;margin-top:3px}
+.rw-foot-note{font-size:12px;color:#A0907A;max-width:460px;margin:14px auto 12px;line-height:1.75}
+.rw-foot-links{font-size:12px}
+.rw-foot-links a{color:#9A8156;text-decoration:none;margin:0 5px}
+.rw-copy{font-size:11px;color:#B6A283;margin-top:14px}
+
+@media(max-width:560px){
+  .rw-h1{font-size:23px}
+  .rw-nav-in{padding:9px 13px;gap:6px}
+  .rw-links a{padding:6px 8px;font-size:13px}
+  .rw-brand{font-size:18px}
+  .rw-sec{padding:38px 18px}
+}
