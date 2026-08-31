@@ -41,6 +41,9 @@
   .cust{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:12px}
   .cust-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .type-badge{display:inline-block;font-size:13px;font-weight:500;color:#6E4F9E;background:#EAD9F2;padding:3px 11px;border-radius:999px}
+  .src-badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;margin-right:2px}
+  .src-q{background:#E7EEF4;color:#5A7A94}
+  .src-m{background:#D8ECDF;color:#3F7A5E}
   .topic{font-size:14px;color:var(--soft)}
   .meta{font-size:12px;color:#A9967E;white-space:nowrap}
   .cust-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -86,6 +89,7 @@
   <div class="wrap">
     <div class="filters">
       <input id="search" placeholder="搜尋　稱呼／聯絡／代碼／備註…">
+      <select id="f-source"><option value="">全部來源</option><option>測驗</option><option>會員</option></select>
       <select id="f-status"><option value="">全部狀態</option></select>
       <select id="f-type"><option value="">全部類型</option></select>
     </div>
@@ -138,10 +142,11 @@ async function load(){
 
 function render(){
   var q=$('#search').value.trim().toLowerCase();
-  var fs=$('#f-status').value, ft=$('#f-type').value;
+  var fs=$('#f-status').value, ft=$('#f-type').value, fsrc=$('#f-source').value;
   var rows=ALL.filter(function(c){
     if(fs && c.status!==fs) return false;
     if(ft && c.result_type!==ft) return false;
+    if(fsrc && (c.source||'測驗')!==fsrc) return false;
     if(q){ var hay=[c.ref_code,c.name,c.contact,c.notes,c.topic,c.result_type,(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
     return true;
   });
@@ -154,7 +159,7 @@ function render(){
 function card(c){
   return '<div class="cust" data-id="'+c.id+'">'+
     '<div class="cust-top">'+
-      '<div><span class="type-badge">'+esc(c.result_type||'—')+'</span> <span class="topic">'+esc(c.topic||'')+'</span></div>'+
+      '<div><span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+esc(c.source||'測驗')+'</span> <span class="type-badge">'+esc(c.result_type||'—')+'</span> <span class="topic">'+esc(c.topic||'')+'</span></div>'+
       '<div class="meta">'+fmtDate(c.created_at)+'　代碼 '+esc(c.ref_code||'—')+'</div>'+
     '</div>'+
     '<div class="cust-grid">'+
@@ -191,7 +196,7 @@ function bindCards(){
   });
 }
 
-['search','f-status','f-type'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',render); e.addEventListener('change',render); });
+['search','f-source','f-status','f-type'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',render); e.addEventListener('change',render); });
 
 init();
 </script>

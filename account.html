@@ -111,6 +111,11 @@ var mode='login';
 function $(s){return document.querySelector(s);}
 function show(id){['loading','authbox','member'].forEach(function(x){$('#'+x).style.display=(x===id?'block':'none');});}
 
+// 會員註冊時，也寫一筆進客戶管理後台（標記來源＝會員）
+function saveMember(name,email){
+  try{fetch(window.SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:name||null,contact:email,source:'會員',status:'新客'})});}catch(e){}
+}
+
 function enterMember(user){
   var nm=(user.user_metadata&&user.user_metadata.name)||'';
   $('#hi').textContent=nm?('嗨，'+nm+'！'):'嗨！';
@@ -149,6 +154,7 @@ $('#form').onsubmit=async function(e){
     var r=await db.auth.signUp({email:email,password:pw,options:{data:{name:name}}});
     btn.disabled=false; btn.textContent=orig;
     if(r.error){ msg.style.color='#C0506A'; msg.textContent=r.error.message; return; }
+    saveMember(name,email);                                    // 寫進客戶後台
     if(r.data.session){ enterMember(r.data.user); }           // 免確認：直接登入
     else { msg.style.color='#4F8E6E'; msg.textContent='註冊成功！請到 Email 收確認信、點連結後再回來登入。'; setMode('login'); }
   } else {
