@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>客戶管理｜彩之語 Rainbow Whisper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .admin-bar{position:sticky;top:0;z-index:40;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  .admin-bar-in{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:10px}
+  .admin-title{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px}
+  .admin-title small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:12px;color:var(--soft);margin-left:8px}
+  .abtn{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer}
+  .abtn:hover{background:var(--tint)}
+
+  .wrap{max-width:920px;margin:0 auto;padding:18px 18px 60px}
+
+  /* 登入 */
+  .login{max-width:340px;margin:9vh auto;padding:0 20px;text-align:center}
+  .login .logo{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;background:conic-gradient(from 200deg,#E8927C,#F0C66B,#9FD49A,#7FC8D9,#A99BE0,#E6A3C3,#E8927C);opacity:.9}
+  .login h1{font-family:"Noto Serif TC",serif;font-size:20px;color:var(--brush);margin-bottom:4px}
+  .login p{font-size:13px;color:var(--soft);margin-bottom:20px}
+  .fld{width:100%;font:inherit;font-size:15px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:12px 15px;outline:none;margin-bottom:12px}
+  .fld:focus{border-color:#C9A7DE}
+  .login-btn{width:100%;font:inherit;font-weight:500;font-size:15px;color:#4A3A2A;background:var(--rainbow);border:none;border-radius:999px;padding:13px 0;cursor:pointer}
+  .login-btn:disabled{opacity:.65}
+  .err{color:#C0506A;font-size:13px;min-height:18px;margin-top:4px}
+
+  /* 篩選 */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 8px}
+  .filters input,.filters select{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
+  .filters input{flex:1;min-width:150px}
+  .filters input:focus,.filters select:focus{border-color:#C9A7DE}
+  .count{font-size:13px;color:var(--soft);margin:6px 2px 12px}
+
+  /* 客戶卡 */
+  .cust{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:12px}
+  .cust-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .type-badge{display:inline-block;font-size:13px;font-weight:500;color:#6E4F9E;background:#EAD9F2;padding:3px 11px;border-radius:999px}
+  .topic{font-size:14px;color:var(--soft)}
+  .meta{font-size:12px;color:#A9967E;white-space:nowrap}
+  .cust-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cust label{display:flex;flex-direction:column;font-size:11.5px;color:var(--soft);gap:4px}
+  .cust .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none}
+  .cust .in:focus{border-color:#C9A7DE;background:#fff}
+  .notes-l{margin-top:10px}
+  .notes-l textarea{min-height:44px;resize:vertical}
+  .cust-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:10px}
+  .saved{font-size:12px}
+  .del{font:inherit;font-size:12px;color:#B87;background:none;border:none;cursor:pointer;text-decoration:underline}
+  .del:hover{color:#C0506A}
+  .muted{color:var(--soft);font-size:14px}
+  @media(max-width:520px){ .cust-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<!-- 登入畫面 -->
+<div id="login" class="login" style="display:none">
+  <div class="logo"></div>
+  <h1>客戶管理</h1>
+  <p>彩之語 · 請登入</p>
+  <form id="login-form">
+    <input class="fld" id="email" type="email" placeholder="Email" autocomplete="username">
+    <input class="fld" id="password" type="password" placeholder="密碼" autocomplete="current-password">
+    <button class="login-btn" id="login-btn" type="submit">登入</button>
+    <div class="err" id="login-err"></div>
+  </form>
+</div>
+
+<!-- 後台 -->
+<div id="app" style="display:none">
+  <div class="admin-bar"><div class="admin-bar-in">
+    <div class="admin-title">客戶管理<small id="total"></small></div>
+    <div style="display:flex;gap:8px">
+      <button class="abtn" id="refresh">重新整理</button>
+      <button class="abtn" id="logout">登出</button>
+    </div>
+  </div></div>
+
+  <div class="wrap">
+    <div class="filters">
+      <input id="search" placeholder="搜尋　稱呼／聯絡／代碼／備註…">
+      <select id="f-status"><option value="">全部狀態</option></select>
+      <select id="f-type"><option value="">全部類型</option></select>
+    </div>
+    <div class="count" id="count"></div>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
+var TYPES=['策士','叩問','穩步','靜思','燈塔','破繭','暖光','歸心'];
+var STATUSES=['新客','已加LINE','已諮詢','回頭客'];
+var ALL=[];
+function $(s){return document.querySelector(s);}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+// 填充篩選選單
+STATUSES.forEach(function(s){$('#f-status').insertAdjacentHTML('beforeend','<option>'+s+'</option>');});
+TYPES.forEach(function(t){$('#f-type').insertAdjacentHTML('beforeend','<option>'+t+'</option>');});
+
+function showLogin(){$('#login').style.display='block';$('#app').style.display='none';}
+function showApp(){$('#login').style.display='none';$('#app').style.display='block';}
+
+async function init(){
+  var r=await db.auth.getSession();
+  if(r.data && r.data.session){ showApp(); load(); } else { showLogin(); }
+}
+
+$('#login-form').onsubmit=async function(e){
+  e.preventDefault();
+  var email=$('#email').value.trim(), pw=$('#password').value;
+  var btn=$('#login-btn'); btn.disabled=true; btn.textContent='登入中…';
+  var r=await db.auth.signInWithPassword({email:email,password:pw});
+  btn.disabled=false; btn.textContent='登入';
+  if(r.error){ $('#login-err').textContent='登入失敗：'+r.error.message; return; }
+  $('#login-err').textContent=''; showApp(); load();
+};
+$('#logout').onclick=async function(){ await db.auth.signOut(); showLogin(); };
+$('#refresh').onclick=function(){ load(); };
+
+async function load(){
+  $('#list').innerHTML='<div class="muted" style="padding:24px;text-align:center">載入中…</div>';
+  var r=await db.from('customers').select('*').order('created_at',{ascending:false});
+  if(r.error){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(r.error.message)+'</div>'; return; }
+  ALL=r.data||[]; $('#total').textContent='共 '+ALL.length+' 位'; render();
+}
+
+function render(){
+  var q=$('#search').value.trim().toLowerCase();
+  var fs=$('#f-status').value, ft=$('#f-type').value;
+  var rows=ALL.filter(function(c){
+    if(fs && c.status!==fs) return false;
+    if(ft && c.result_type!==ft) return false;
+    if(q){ var hay=[c.ref_code,c.name,c.contact,c.notes,c.topic,c.result_type,(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
+    return true;
+  });
+  $('#count').textContent='顯示 '+rows.length+' 位';
+  if(!rows.length){ $('#list').innerHTML='<div class="muted" style="padding:30px;text-align:center">沒有符合的客戶</div>'; return; }
+  $('#list').innerHTML=rows.map(card).join('');
+  bindCards();
+}
+
+function card(c){
+  return '<div class="cust" data-id="'+c.id+'">'+
+    '<div class="cust-top">'+
+      '<div><span class="type-badge">'+esc(c.result_type||'—')+'</span> <span class="topic">'+esc(c.topic||'')+'</span></div>'+
+      '<div class="meta">'+fmtDate(c.created_at)+'　代碼 '+esc(c.ref_code||'—')+'</div>'+
+    '</div>'+
+    '<div class="cust-grid">'+
+      '<label>稱呼<input class="in" data-f="name" value="'+esc(c.name)+'" placeholder="—"></label>'+
+      '<label>聯絡（LINE／電話）<input class="in" data-f="contact" value="'+esc(c.contact)+'" placeholder="—"></label>'+
+      '<label>狀態<select class="in" data-f="status">'+STATUSES.map(function(s){return '<option'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></label>'+
+      '<label>標籤（逗號分隔）<input class="in" data-f="tags" value="'+esc((c.tags||[]).join(', '))+'" placeholder="例：高意願, 感情"></label>'+
+    '</div>'+
+    '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="記點什麼…">'+esc(c.notes)+'</textarea></label>'+
+    '<div class="cust-actions"><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
+  '</div>';
+}
+
+function bindCards(){
+  document.querySelectorAll('.cust').forEach(function(el){
+    var id=el.getAttribute('data-id');
+    el.querySelectorAll('[data-f]').forEach(function(inp){
+      inp.addEventListener('change',async function(){
+        var f=inp.getAttribute('data-f'), val=inp.value;
+        if(f==='tags'){ val=val.split(/[,，、]/).map(function(s){return s.trim();}).filter(Boolean); }
+        var patch={}; patch[f]=val;
+        var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
+        var r=await db.from('customers').update(patch).eq('id',id);
+        if(r.error){ s.textContent='存檔失敗'; s.style.color='#C0506A'; }
+        else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var c=ALL.find(function(x){return x.id===id;}); if(c)c[f]=val; setTimeout(function(){s.textContent='';},1400); }
+      });
+    });
+    el.querySelector('[data-del]').onclick=async function(){
+      if(!confirm('確定刪除這位客戶的資料？無法復原。'))return;
+      var r=await db.from('customers').delete().eq('id',id);
+      if(r.error){ alert('刪除失敗：'+r.error.message); return; }
+      ALL=ALL.filter(function(x){return x.id!==id;}); $('#total').textContent='共 '+ALL.length+' 位'; render();
+    };
+  });
+}
+
+['search','f-status','f-type'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',render); e.addEventListener('change',render); });
+
+init();
+</script>
+</body>
+</html>
