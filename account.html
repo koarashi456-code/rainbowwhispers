@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登入／會員｜彩之語 Rainbow Whisper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .acc{max-width:380px;margin:6vh auto;padding:0 22px;text-align:center}
+  .acc .logo{width:66px;height:66px;border-radius:50%;margin:0 auto 16px;background:conic-gradient(from 200deg,#E8927C,#F0C66B,#9FD49A,#7FC8D9,#A99BE0,#E6A3C3,#E8927C);opacity:.9}
+  .acc h1{font-family:"Noto Serif TC",serif;font-size:22px;color:var(--brush);margin-bottom:4px}
+  .acc .sub{font-size:13px;color:var(--soft);margin-bottom:22px}
+  .tabs{display:flex;gap:6px;background:var(--tint);border-radius:999px;padding:4px;margin-bottom:18px}
+  .tabs button{flex:1;font:inherit;font-size:14px;color:var(--soft);background:none;border:none;border-radius:999px;padding:9px 0;cursor:pointer}
+  .tabs button.on{background:#fff;color:var(--brush);font-weight:500;box-shadow:0 2px 8px -4px rgba(120,90,60,.3)}
+  .fld{width:100%;font:inherit;font-size:15px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:12px 15px;outline:none;margin-bottom:11px;text-align:left}
+  .fld:focus{border-color:#C9A7DE}
+  .go{width:100%;font:inherit;font-weight:500;font-size:15px;color:#4A3A2A;background:var(--rainbow);border:none;border-radius:999px;padding:13px 0;cursor:pointer;margin-top:2px}
+  .go:disabled{opacity:.65}
+  .msg{font-size:13px;min-height:18px;margin-top:10px}
+  .divider{display:flex;align-items:center;gap:10px;color:#C3B296;font-size:12px;margin:20px 0 14px}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .line-btn{width:100%;font:inherit;font-size:15px;font-weight:500;color:#fff;background:#06C755;border:none;border-radius:999px;padding:13px 0;cursor:pointer;opacity:.55}
+  .line-note{font-size:11.5px;color:#B6A283;margin-top:7px}
+  /* 會員專區 */
+  .member{max-width:440px;margin:7vh auto;padding:0 22px;text-align:center}
+  .member .hi{font-family:"Noto Serif TC",serif;font-size:22px;color:var(--brush);margin-bottom:6px}
+  .member .who{font-size:13px;color:var(--soft);margin-bottom:22px}
+  .mcard{background:#FFFDF8;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:14px}
+  .mcard h3{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--brush);margin-bottom:6px}
+  .mcard p{font-size:14px;color:var(--soft)}
+  .soon{display:inline-block;font-size:12px;padding:3px 12px;border-radius:999px;background:#F4EAD4;color:#8A6A44;margin-bottom:10px}
+  .lo{font:inherit;font-size:14px;color:var(--brush);background:none;border:1.5px solid var(--line);border-radius:999px;padding:10px 22px;cursor:pointer;margin-top:6px}
+</style>
+</head>
+<body>
+
+<nav class="rw-nav"><div class="rw-nav-in">
+  <a class="rw-brand" href="index.html">彩之語<small>RAINBOW WHISPER</small></a>
+  <div class="rw-links">
+    <a href="index.html">首頁</a>
+    <a href="quiz.html">測驗</a>
+    <a href="guides.html">引路人介紹</a>
+    <a href="booking.html">預約引路人</a>
+    <a href="join.html">引路人入駐</a>
+    <a href="account.html" class="on">登入</a>
+    <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
+  </div>
+</div></nav>
+
+<div id="loading" class="acc"><p class="sub" style="margin-top:20px">載入中…</p></div>
+
+<!-- 未登入：登入／註冊 -->
+<div id="authbox" class="acc" style="display:none">
+  <div class="logo"></div>
+  <h1>彩之語會員</h1>
+  <div class="sub">登入後，之後辦活動就能直接報名參加</div>
+
+  <div class="tabs">
+    <button id="tab-login" class="on" type="button">登入</button>
+    <button id="tab-reg" type="button">註冊</button>
+  </div>
+
+  <form id="form">
+    <input class="fld" id="name" placeholder="你的稱呼" style="display:none">
+    <input class="fld" id="email" type="email" placeholder="Email" autocomplete="username">
+    <input class="fld" id="password" type="password" placeholder="密碼（至少 6 碼）" autocomplete="current-password">
+    <button class="go" id="go" type="submit">登入</button>
+    <div class="msg" id="msg"></div>
+  </form>
+
+  <div class="divider">或</div>
+  <button class="line-btn" id="line-login" type="button" disabled>用 LINE 登入</button>
+  <div class="line-note">LINE 登入即將開放</div>
+</div>
+
+<!-- 已登入：會員專區 -->
+<div id="member" class="member" style="display:none">
+  <div class="hi" id="hi">嗨！</div>
+  <div class="who" id="who"></div>
+  <div class="mcard">
+    <span class="soon">即將開放</span>
+    <h3>活動報名</h3>
+    <p>之後彩之語辦活動時，會員可以在這裡直接報名參加。敬請期待。</p>
+  </div>
+  <div class="mcard">
+    <h3>還沒測過相處頻率？</h3>
+    <p style="margin-bottom:12px">花一分鐘，看看最適合你的引路人。</p>
+    <a class="rw-cta" href="quiz.html" style="font-size:14px;padding:11px 26px">開始測驗　→</a>
+  </div>
+  <button class="lo" id="logout">登出</button>
+</div>
+
+<footer class="rw-footer">
+  <div class="rw-brand2 rw-serif">彩之語</div>
+  <div class="rw-foot-en">RAINBOW WHISPER</div>
+  <p class="rw-foot-note">溫馨提醒：本平台僅提供老師媒合服務，不對命理或玄學內容的準確性與結果負責。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
+  <div class="rw-foot-links"><a href="policies.html#privacy">隱私權政策</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
+  <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
+</footer>
+
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
+var ADMIN_UID='0c7fd203-07c3-48ac-b94d-76965acfe733';
+var mode='login';
+function $(s){return document.querySelector(s);}
+function show(id){['loading','authbox','member'].forEach(function(x){$('#'+x).style.display=(x===id?'block':'none');});}
+
+function enterMember(user){
+  var nm=(user.user_metadata&&user.user_metadata.name)||'';
+  $('#hi').textContent=nm?('嗨，'+nm+'！'):'嗨！';
+  $('#who').textContent=user.email||'';
+  show('member');
+}
+
+async function route(){
+  var r=await db.auth.getSession();
+  var s=r.data&&r.data.session;
+  if(!s){ show('authbox'); return; }
+  if(s.user.id===ADMIN_UID){ window.location.replace('admin.html'); return; }
+  enterMember(s.user);
+}
+
+// 切換 登入 / 註冊
+function setMode(m){
+  mode=m;
+  $('#tab-login').classList.toggle('on',m==='login');
+  $('#tab-reg').classList.toggle('on',m==='reg');
+  $('#name').style.display=(m==='reg')?'block':'none';
+  $('#password').setAttribute('autocomplete',m==='reg'?'new-password':'current-password');
+  $('#go').textContent=(m==='reg')?'註冊':'登入';
+  $('#msg').textContent='';
+}
+$('#tab-login').onclick=function(){setMode('login');};
+$('#tab-reg').onclick=function(){setMode('reg');};
+
+$('#form').onsubmit=async function(e){
+  e.preventDefault();
+  var email=$('#email').value.trim(), pw=$('#password').value, name=$('#name').value.trim();
+  var msg=$('#msg'); msg.style.color='var(--soft)';
+  if(!email||!pw){ msg.style.color='#C0506A'; msg.textContent='請填 Email 和密碼'; return; }
+  var btn=$('#go'); btn.disabled=true; var orig=btn.textContent; btn.textContent='處理中…';
+  if(mode==='reg'){
+    var r=await db.auth.signUp({email:email,password:pw,options:{data:{name:name}}});
+    btn.disabled=false; btn.textContent=orig;
+    if(r.error){ msg.style.color='#C0506A'; msg.textContent=r.error.message; return; }
+    if(r.data.session){ enterMember(r.data.user); }           // 免確認：直接登入
+    else { msg.style.color='#4F8E6E'; msg.textContent='註冊成功！請到 Email 收確認信、點連結後再回來登入。'; setMode('login'); }
+  } else {
+    var r2=await db.auth.signInWithPassword({email:email,password:pw});
+    btn.disabled=false; btn.textContent=orig;
+    if(r2.error){ msg.style.color='#C0506A'; msg.textContent='登入失敗：'+r2.error.message; return; }
+    if(r2.data.user.id===ADMIN_UID){ window.location.replace('admin.html'); return; }
+    enterMember(r2.data.user);
+  }
+};
+
+$('#logout').onclick=async function(){ await db.auth.signOut(); show('authbox'); setMode('login'); };
+
+route();
+</script>
+</body>
+</html>
