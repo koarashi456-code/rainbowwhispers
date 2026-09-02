@@ -159,6 +159,7 @@
         <h3>新增儲值</h3>
         <div class="fgrid">
           <label>客戶 *<select class="in" id="tp-cust"></select></label>
+          <label>日期<input class="in" id="tp-date" type="date"></label>
           <label>金額 *<input class="in" id="tp-amount" type="number" min="0" placeholder="0"></label>
           <label>方式<select class="in" id="tp-method"><option>現金</option><option>刷卡</option><option>匯款</option></select></label>
           <label>備註<input class="in" id="tp-notes" placeholder="選填"></label>
@@ -193,6 +194,7 @@ var ALL=[], GUIDES=[], TX=[], TOPUPS=[], activeTab='customers';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function fmtDay(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate();}
 function money(n){return '$'+Number(n||0).toLocaleString();}
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
@@ -243,6 +245,7 @@ async function loadAll(){
   var err=res.find(function(x){return x.error;});
   if(err){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(err.error.message)+'（三張新表若尚未建立，請先跑建表 SQL）</div>'; }
   fillSelects();
+  try{ if(!$('#tp-date').value) $('#tp-date').value=new Date().toISOString().slice(0,10); }catch(e){}
   render(); renderGuides(); renderTx();
 }
 
@@ -280,8 +283,8 @@ function customerRecords(cid){
   var tps=TOPUPS.filter(function(t){return t.customer_id===cid;});
   if(!txs.length && !tps.length) return '<div class="muted" style="padding:6px 0">尚無消費／儲值紀錄</div>';
   var h='';
-  txs.forEach(function(t){ h+='<div class="rec"><span>消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'</span></div>'; });
-  tps.forEach(function(t){ h+='<div class="rec"><span>儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'</span></div>'; });
+  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.appointment_at||t.created_at)+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'</span></div>'; });
+  tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'</span></div>'; });
   return h;
 }
 function card(c){
@@ -412,7 +415,9 @@ $('#tp-add').onclick=async function(){
   if(!cid){ msg.textContent='請先選客戶'; msg.style.color='#C0506A'; return; }
   if(amt===''){ msg.textContent='請填金額'; msg.style.color='#C0506A'; return; }
   msg.textContent='新增中…'; msg.style.color='var(--soft)';
-  var r=await db.from('topups').insert({customer_id:cid, amount:Number(amt)||0, method:$('#tp-method').value, notes:$('#tp-notes').value||null});
+  var trow={customer_id:cid, amount:Number(amt)||0, method:$('#tp-method').value, notes:$('#tp-notes').value||null};
+  var td=$('#tp-date').value; if(td){ trow.created_at=td; }
+  var r=await db.from('topups').insert(trow);
   if(r.error){ msg.textContent='失敗：'+r.error.message; msg.style.color='#C0506A'; return; }
   msg.textContent='已儲值'; msg.style.color='#4F8E6E'; setTimeout(function(){msg.textContent='';},1500);
   $('#tp-amount').value=''; $('#tp-notes').value='';
