@@ -70,6 +70,16 @@
   .rec small{color:var(--soft)}
   .recdel{font:inherit;font-size:12px;color:#B87;background:none;border:none;cursor:pointer;margin-left:6px}
   .recdel:hover{color:#C0506A}
+  .rp-h{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin:18px 0 10px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:10px}
+  .stat{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .stat .k{font-size:12px;color:var(--soft)}
+  .stat .v{font-family:"Noto Serif TC",serif;font-size:19px;color:var(--brush);margin-top:3px}
+  .in-sm{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;outline:none}
+  .rptable{width:100%;border-collapse:collapse;font-size:14px}
+  .rptable th,.rptable td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+  .rptable th{font-size:12px;color:var(--soft);font-weight:500}
+  .rptable td.num,.rptable th.num{text-align:right;font-variant-numeric:tabular-nums}
 
   .formcard{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .formcard h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin-bottom:12px}
@@ -181,7 +191,16 @@
 
     <!-- 報表 -->
     <section id="tab-report" style="display:none">
-      <div class="soon"><h3>報表</h3><p>這一區在下一步建立（總交易表＋每位引路人業績）。</p></div>
+      <div class="filters" style="align-items:center">
+        <span style="font-size:13px;color:var(--soft)">日期範圍</span>
+        <input id="rp-from" type="date" class="in-sm" style="flex:none">
+        <span style="color:var(--soft)">~</span>
+        <input id="rp-to" type="date" class="in-sm" style="flex:none">
+        <button class="abtn" id="rp-clear">全部</button>
+      </div>
+      <div id="rp-summary"></div>
+      <h3 class="rp-h">每位引路人業績</h3>
+      <div id="rp-guides"></div>
     </section>
   </div>
 </div>
@@ -232,6 +251,7 @@ document.querySelectorAll('.tabbar button').forEach(function(b){
       document.getElementById('tab-'+x).style.display=(x===t?'block':'none');
       document.querySelector('.tabbar [data-tab="'+x+'"]').classList.toggle('on',x===t);
     });
+    if(t==='report') renderReport();
   };
 });
 
@@ -248,7 +268,7 @@ async function loadAll(){
   if(err){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(err.error.message)+'（三張新表若尚未建立，請先跑建表 SQL）</div>'; }
   fillSelects();
   try{ if(!$('#tp-date').value) $('#tp-date').value=new Date().toISOString().slice(0,10); }catch(e){}
-  render(); renderGuides(); renderTx();
+  render(); renderGuides(); renderTx(); renderReport();
 }
 
 /* ===== 金額彙總 ===== */
@@ -482,6 +502,41 @@ function bindTx(){
   });
 }
 ['tx-search','tx-fstatus','tx-fguide'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',renderTx); e.addEventListener('change',renderTx); });
+
+/* ===== 報表 ===== */
+function stat(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
+function inRange(dstr){
+  var from=$('#rp-from').value, to=$('#rp-to').value;
+  if(!from && !to) return true;
+  if(!dstr) return false;
+  var d=new Date(dstr);
+  if(from && d < new Date(from+'T00:00:00')) return false;
+  if(to && d > new Date(to+'T23:59:59')) return false;
+  return true;
+}
+function renderReport(){
+  var rows=TX.filter(function(t){ return inRange(t.appointment_at||t.created_at); });
+  var valid=rows.filter(function(t){ return t.status!=='已取消'&&t.status!=='已退費'; });
+  var refunds=rows.filter(function(t){ return t.status==='已退費'; });
+  var byM={現金:0,刷卡:0,匯款:0,儲值:0}, total=0;
+  valid.forEach(function(t){ var a=Number(t.amount||0); total+=a; if(byM[t.method]!==undefined) byM[t.method]+=a; });
+  var refundAmt=refunds.reduce(function(a,t){return a+Number(t.amount||0);},0);
+  var topupIn=TOPUPS.filter(function(t){return inRange(t.created_at);}).reduce(function(a,t){return a+Number(t.amount||0);},0);
+  $('#rp-summary').innerHTML=
+    '<div class="stats">'+stat('有效營收',money(total))+stat('交易筆數',valid.length+' 筆')+stat('退費',refunds.length+' 筆／'+money(refundAmt))+stat('儲值收入',money(topupIn))+'</div>'+
+    '<div class="stats">'+stat('現金',money(byM.現金))+stat('刷卡',money(byM.刷卡))+stat('匯款',money(byM.匯款))+stat('儲值折抵',money(byM.儲值))+'</div>';
+  var g={};
+  valid.forEach(function(t){ var k=t.guide_id||'__none__'; if(!g[k])g[k]={count:0,amount:0,refund:0}; g[k].count++; g[k].amount+=Number(t.amount||0); });
+  refunds.forEach(function(t){ var k=t.guide_id||'__none__'; if(!g[k])g[k]={count:0,amount:0,refund:0}; g[k].refund+=Number(t.amount||0); });
+  var keys=Object.keys(g).sort(function(a,b){return g[b].amount-g[a].amount;});
+  if(!keys.length){ $('#rp-guides').innerHTML='<div class="muted" style="padding:20px;text-align:center">此範圍沒有交易</div>'; return; }
+  var h='<div style="overflow-x:auto"><table class="rptable"><thead><tr><th>引路人</th><th class="num">有效筆數</th><th class="num">有效金額</th><th class="num">退費</th></tr></thead><tbody>';
+  keys.forEach(function(k){ var name=k==='__none__'?'（未指定）':guideName(k); h+='<tr><td>'+esc(name)+'</td><td class="num">'+g[k].count+'</td><td class="num">'+money(g[k].amount)+'</td><td class="num">'+money(g[k].refund)+'</td></tr>'; });
+  h+='</tbody></table></div>';
+  $('#rp-guides').innerHTML=h;
+}
+['rp-from','rp-to'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('change',renderReport); });
+var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('#rp-from').value=''; $('#rp-to').value=''; renderReport(); };
 
 init();
 </script>
