@@ -68,6 +68,8 @@
   .records{margin-top:8px;font-size:13px}
   .rec{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px dashed var(--line)}
   .rec small{color:var(--soft)}
+  .recdel{font:inherit;font-size:12px;color:#B87;background:none;border:none;cursor:pointer;margin-left:6px}
+  .recdel:hover{color:#C0506A}
 
   .formcard{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .formcard h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin-bottom:12px}
@@ -283,8 +285,8 @@ function customerRecords(cid){
   var tps=TOPUPS.filter(function(t){return t.customer_id===cid;});
   if(!txs.length && !tps.length) return '<div class="muted" style="padding:6px 0">尚無消費／儲值紀錄</div>';
   var h='';
-  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.appointment_at||t.created_at)+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'</span></div>'; });
-  tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'</span></div>'; });
+  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.appointment_at||t.created_at)+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
+  tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'<button class="recdel" data-deltp="'+t.id+'" title="刪除">✕</button></span></div>'; });
   return h;
 }
 function card(c){
@@ -310,6 +312,8 @@ function bindCards(){
   document.querySelectorAll('#list .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
     var rb=el.querySelector('[data-rec]'); if(rb) rb.onclick=function(){ var box=el.querySelector('[data-recbox]'); box.style.display=(box.style.display==='none'?'block':'none'); };
+    el.querySelectorAll('[data-deltp]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('確定刪除這筆儲值？餘額會重新計算。'))return; var tid=btn.getAttribute('data-deltp'); var r=await db.from('topups').delete().eq('id',tid); if(r.error){ alert('刪除失敗：'+r.error.message); return; } TOPUPS=TOPUPS.filter(function(x){return x.id!==tid;}); render(); }; });
+    el.querySelectorAll('[data-deltx]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('確定刪除這筆消費紀錄？'))return; var tid=btn.getAttribute('data-deltx'); var r=await db.from('transactions').delete().eq('id',tid); if(r.error){ alert('刪除失敗：'+r.error.message); return; } TX=TX.filter(function(x){return x.id!==tid;}); render(); renderTx(); }; });
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val=inp.value;
