@@ -153,7 +153,7 @@
         <select id="f-status"><option value="">全部狀態</option></select>
         <select id="f-type"><option value="">全部類型</option></select>
       </div>
-      <div class="sec-head"><div class="count" id="count" style="margin:0"></div><button class="abtn" id="cust-collapse">全部收合</button></div>
+      <div class="sec-head"><div class="count" id="count" style="margin:0"></div><button class="abtn" id="cust-collapse">全部展開</button></div>
       <div id="list"></div>
     </section>
 
@@ -161,7 +161,7 @@
     <section id="tab-guides" style="display:none">
       <div class="sec-head">
         <div class="count" id="gcount" style="margin:0"></div>
-        <div style="display:flex;gap:8px"><button class="abtn" id="guide-collapse">全部收合</button><button class="addbtn" id="add-guide">＋ 新增引路人</button></div>
+        <div style="display:flex;gap:8px"><button class="abtn" id="guide-collapse">全部展開</button><button class="addbtn" id="add-guide">＋ 新增引路人</button></div>
       </div>
       <div id="glist"></div>
     </section>
@@ -202,7 +202,7 @@
         <select id="tx-fstatus"><option value="">全部狀態</option><option>已預約</option><option>已完成</option><option>已取消</option><option>已退費</option></select>
         <select id="tx-fguide"><option value="">全部引路人</option></select>
       </div>
-      <div class="sec-head"><div class="count" id="txcount" style="margin:0"></div><button class="abtn" id="tx-collapse">全部收合</button></div>
+      <div class="sec-head"><div class="count" id="txcount" style="margin:0"></div><button class="abtn" id="tx-collapse">全部展開</button></div>
       <div id="txlist"></div>
     </section>
 
@@ -216,7 +216,7 @@
         <button class="abtn" id="rp-clear">全部</button>
       </div>
       <div id="rp-summary"></div>
-      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><button class="abtn" id="rp-collapse">全部收合</button></div>
+      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><button class="abtn" id="rp-collapse">全部展開</button></div>
       <div id="rp-guides"></div>
     </section>
   </div>
@@ -329,12 +329,13 @@ function customerRecords(cid){
 }
 function card(c){
   var a=custAgg(c.id);
-  return '<div class="cust" data-id="'+c.id+'">'+
+  return '<div class="cust collapsed" data-id="'+c.id+'">'+
     '<div class="cust-top chead">'+
-      '<div><span class="caret">▾</span> <span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+esc(c.source||'測驗')+'</span> <span class="type-badge">'+esc(c.result_type||'—')+'</span> <span class="topic">'+esc(c.topic||'')+'</span></div>'+
-      '<div class="meta">'+fmtDate(c.created_at)+'　代碼 '+esc(c.ref_code||'—')+'</div>'+
+      '<div><span class="caret">▾</span> <b>'+esc(c.name||'(未填姓名)')+'</b> <span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+(c.source==='會員'?'會員':'非會員')+'</span> <small style="color:var(--soft)">'+esc(c.contact||'')+'</small></div>'+
+      '<div class="meta">'+fmtDate(c.created_at)+'</div>'+
     '</div>'+
     '<div class="cbody">'+
+    '<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px">相處頻率 '+esc(c.result_type||'—')+(c.topic?'　·　議題 '+esc(c.topic):'')+'　·　代碼 '+esc(c.ref_code||'—')+'</div>'+
     '<div class="summary"><span>餘額 <b>'+money(a.balance)+'</b></span><span>累積消費 <b>'+money(a.spent)+'</b></span><span>儲值 <b>'+money(a.topup)+'</b></span><button class="rlink" data-rec>查看紀錄</button></div>'+
     '<div class="records" data-recbox style="display:none">'+customerRecords(c.id)+'</div>'+
     '<div class="cust-grid">'+
@@ -384,7 +385,7 @@ function renderGuides(){
   bindGuides();
 }
 function guideCard(g){
-  return '<div class="cust" data-id="'+g.id+'">'+
+  return '<div class="cust collapsed" data-id="'+g.id+'">'+
     '<div class="chead"><span class="caret">▾</span> <b style="color:var(--brush)">'+esc(g.name||'(未命名引路人)')+'</b>'+(g.active?'':' <small style="color:#B5566E">（已停用）</small>')+'</div>'+
     '<div class="cbody">'+
     '<div class="cust-grid">'+
@@ -430,6 +431,7 @@ $('#add-guide').onclick=async function(){
   var r=await db.from('guides').insert({name:'',active:true});
   if(r.error){ alert('新增失敗：'+r.error.message); return; }
   await loadAll(); document.querySelector('.tabbar [data-tab="guides"]').click();
+  var f=document.querySelector('#glist .cust'); if(f) f.classList.remove('collapsed');
 };
 
 /* ===== 交易紀錄 ＋ 儲值 ===== */
@@ -487,7 +489,7 @@ function renderTx(){
 }
 function txRow(t){
   var c=custById(t.customer_id);
-  return '<div class="cust" data-id="'+t.id+'">'+
+  return '<div class="cust collapsed" data-id="'+t.id+'">'+
     '<div class="cust-top chead">'+
       '<div><span class="caret">▾</span> <b>'+esc(c?custLabel(c):'(已刪客戶)')+'</b>　<span class="topic">'+esc(guideName(t.guide_id))+'</span>　'+statusBadge(t.status)+'</div>'+
       '<div class="meta">'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</div>'+
@@ -563,7 +565,7 @@ function renderReport(){
   var h='';
   keys.forEach(function(k){
     var gg=g[k], name=k==='__none__'?'（未指定引路人）':guideName(k);
-    h+='<div class="gblock"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span>'+gg.count+' 筆　有效 '+money(gg.amount)+(gg.refund?'　退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
+    h+='<div class="gblock collapsed"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span>'+gg.count+' 筆　有效 '+money(gg.amount)+(gg.refund?'　退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
     gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
@@ -576,7 +578,7 @@ function renderReport(){
 ['rp-from','rp-to'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('change',renderReport); });
 var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('#rp-from').value=''; $('#rp-to').value=''; renderReport(); };
 $('#rp-guides').addEventListener('click',function(e){ var head=e.target.closest('.gblock-head'); if(head&&head.parentNode) head.parentNode.classList.toggle('collapsed'); });
-var rpAllCollapsed=false, rpc2=document.getElementById('rp-collapse');
+var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
 if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
