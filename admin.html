@@ -94,6 +94,9 @@
   .caret{display:inline-block;font-size:11px;color:var(--soft);margin-right:3px;transition:transform .15s}
   .gblock.collapsed .caret{transform:rotate(-90deg)}
   .gblock.collapsed .gitems{display:none}
+  .chead{cursor:pointer}
+  .cust.collapsed .caret{transform:rotate(-90deg)}
+  .cust.collapsed .cbody{display:none}
 
   .formcard{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .formcard h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin-bottom:12px}
@@ -150,7 +153,7 @@
         <select id="f-status"><option value="">全部狀態</option></select>
         <select id="f-type"><option value="">全部類型</option></select>
       </div>
-      <div class="count" id="count"></div>
+      <div class="sec-head"><div class="count" id="count" style="margin:0"></div><button class="abtn" id="cust-collapse">全部收合</button></div>
       <div id="list"></div>
     </section>
 
@@ -158,7 +161,7 @@
     <section id="tab-guides" style="display:none">
       <div class="sec-head">
         <div class="count" id="gcount" style="margin:0"></div>
-        <button class="addbtn" id="add-guide">＋ 新增引路人</button>
+        <div style="display:flex;gap:8px"><button class="abtn" id="guide-collapse">全部收合</button><button class="addbtn" id="add-guide">＋ 新增引路人</button></div>
       </div>
       <div id="glist"></div>
     </section>
@@ -199,7 +202,7 @@
         <select id="tx-fstatus"><option value="">全部狀態</option><option>已預約</option><option>已完成</option><option>已取消</option><option>已退費</option></select>
         <select id="tx-fguide"><option value="">全部引路人</option></select>
       </div>
-      <div class="count" id="txcount"></div>
+      <div class="sec-head"><div class="count" id="txcount" style="margin:0"></div><button class="abtn" id="tx-collapse">全部收合</button></div>
       <div id="txlist"></div>
     </section>
 
@@ -327,10 +330,11 @@ function customerRecords(cid){
 function card(c){
   var a=custAgg(c.id);
   return '<div class="cust" data-id="'+c.id+'">'+
-    '<div class="cust-top">'+
-      '<div><span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+esc(c.source||'測驗')+'</span> <span class="type-badge">'+esc(c.result_type||'—')+'</span> <span class="topic">'+esc(c.topic||'')+'</span></div>'+
+    '<div class="cust-top chead">'+
+      '<div><span class="caret">▾</span> <span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+esc(c.source||'測驗')+'</span> <span class="type-badge">'+esc(c.result_type||'—')+'</span> <span class="topic">'+esc(c.topic||'')+'</span></div>'+
       '<div class="meta">'+fmtDate(c.created_at)+'　代碼 '+esc(c.ref_code||'—')+'</div>'+
     '</div>'+
+    '<div class="cbody">'+
     '<div class="summary"><span>餘額 <b>'+money(a.balance)+'</b></span><span>累積消費 <b>'+money(a.spent)+'</b></span><span>儲值 <b>'+money(a.topup)+'</b></span><button class="rlink" data-rec>查看紀錄</button></div>'+
     '<div class="records" data-recbox style="display:none">'+customerRecords(c.id)+'</div>'+
     '<div class="cust-grid">'+
@@ -341,6 +345,7 @@ function card(c){
     '</div>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="記點什麼…">'+esc(c.notes)+'</textarea></label>'+
     '<div class="cust-actions"><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
+    '</div>'+
   '</div>';
 }
 function bindCards(){
@@ -380,6 +385,8 @@ function renderGuides(){
 }
 function guideCard(g){
   return '<div class="cust" data-id="'+g.id+'">'+
+    '<div class="chead"><span class="caret">▾</span> <b style="color:var(--brush)">'+esc(g.name||'(未命名引路人)')+'</b>'+(g.active?'':' <small style="color:#B5566E">（已停用）</small>')+'</div>'+
+    '<div class="cbody">'+
     '<div class="cust-grid">'+
       '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
       '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
@@ -391,6 +398,7 @@ function guideCard(g){
     '<div class="cust-actions">'+
       '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>'+
       '<span class="saved" data-saved></span><button class="del" data-del>刪除</button>'+
+    '</div>'+
     '</div>'+
   '</div>';
 }
@@ -480,10 +488,11 @@ function renderTx(){
 function txRow(t){
   var c=custById(t.customer_id);
   return '<div class="cust" data-id="'+t.id+'">'+
-    '<div class="cust-top">'+
-      '<div><b>'+esc(c?custLabel(c):'(已刪客戶)')+'</b>　<span class="topic">'+esc(guideName(t.guide_id))+'</span></div>'+
+    '<div class="cust-top chead">'+
+      '<div><span class="caret">▾</span> <b>'+esc(c?custLabel(c):'(已刪客戶)')+'</b>　<span class="topic">'+esc(guideName(t.guide_id))+'</span>　'+statusBadge(t.status)+'</div>'+
       '<div class="meta">'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</div>'+
     '</div>'+
+    '<div class="cbody">'+
     '<div class="cust-grid">'+
       '<label>項目<input class="in" data-f="service" value="'+esc(t.service)+'"></label>'+
       '<label>金額<input class="in" data-f="amount" type="number" value="'+esc(t.amount)+'"></label>'+
@@ -491,7 +500,8 @@ function txRow(t){
       '<label>狀態<select class="in" data-f="status">'+['已預約','已完成','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></label>'+
     '</div>'+
     '<label class="notes-l">備註<input class="in" data-f="notes" value="'+esc(t.notes)+'"></label>'+
-    '<div class="cust-actions">'+statusBadge(t.status)+'<span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
+    '<div class="cust-actions"><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
+    '</div>'+
   '</div>';
 }
 function bindTx(){
@@ -568,6 +578,11 @@ var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('
 $('#rp-guides').addEventListener('click',function(e){ var head=e.target.closest('.gblock-head'); if(head&&head.parentNode) head.parentNode.classList.toggle('collapsed'); });
 var rpAllCollapsed=false, rpc2=document.getElementById('rp-collapse');
 if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
+
+/* ===== 卡片收合（客戶/引路人/交易） ===== */
+['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });
+function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
+bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#glist'); bindCollapseAll('tx-collapse','#txlist');
 
 init();
 </script>
