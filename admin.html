@@ -80,6 +80,16 @@
   .rptable th,.rptable td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
   .rptable th{font-size:12px;color:var(--soft);font-weight:500}
   .rptable td.num,.rptable th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .gblock{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .gblock-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+  .gblock-head b{font-size:15px;color:var(--brush)}
+  .gblock-head span{font-size:12.5px;color:var(--soft)}
+  .gitem{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+  .gitem:last-child{border-bottom:none}
+  .gd{color:var(--soft);white-space:nowrap;min-width:82px}
+  .gn{min-width:56px;color:var(--ink)}
+  .gs{flex:1;min-width:80px;color:var(--soft)}
+  .ga{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--brush);font-weight:500}
 
   .formcard{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .formcard h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin-bottom:12px}
@@ -216,6 +226,7 @@ function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function fmtDay(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate();}
+function fmtFull(s){if(!s)return '未定時間';var d=new Date(s);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
 function money(n){return '$'+Number(n||0).toLocaleString();}
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
@@ -526,13 +537,26 @@ function renderReport(){
     '<div class="stats">'+stat('有效營收',money(total))+stat('交易筆數',valid.length+' 筆')+stat('退費',refunds.length+' 筆／'+money(refundAmt))+stat('儲值收入',money(topupIn))+'</div>'+
     '<div class="stats">'+stat('現金',money(byM.現金))+stat('刷卡',money(byM.刷卡))+stat('匯款',money(byM.匯款))+stat('儲值折抵',money(byM.儲值))+'</div>';
   var g={};
-  valid.forEach(function(t){ var k=t.guide_id||'__none__'; if(!g[k])g[k]={count:0,amount:0,refund:0}; g[k].count++; g[k].amount+=Number(t.amount||0); });
-  refunds.forEach(function(t){ var k=t.guide_id||'__none__'; if(!g[k])g[k]={count:0,amount:0,refund:0}; g[k].refund+=Number(t.amount||0); });
+  rows.forEach(function(t){
+    var k=t.guide_id||'__none__';
+    if(!g[k]) g[k]={items:[],count:0,amount:0,refund:0};
+    g[k].items.push(t);
+    if(t.status==='已退費'){ g[k].refund+=Number(t.amount||0); }
+    else if(t.status!=='已取消'){ g[k].count++; g[k].amount+=Number(t.amount||0); }
+  });
   var keys=Object.keys(g).sort(function(a,b){return g[b].amount-g[a].amount;});
   if(!keys.length){ $('#rp-guides').innerHTML='<div class="muted" style="padding:20px;text-align:center">此範圍沒有交易</div>'; return; }
-  var h='<div style="overflow-x:auto"><table class="rptable"><thead><tr><th>引路人</th><th class="num">有效筆數</th><th class="num">有效金額</th><th class="num">退費</th></tr></thead><tbody>';
-  keys.forEach(function(k){ var name=k==='__none__'?'（未指定）':guideName(k); h+='<tr><td>'+esc(name)+'</td><td class="num">'+g[k].count+'</td><td class="num">'+money(g[k].amount)+'</td><td class="num">'+money(g[k].refund)+'</td></tr>'; });
-  h+='</tbody></table></div>';
+  var h='';
+  keys.forEach(function(k){
+    var gg=g[k], name=k==='__none__'?'（未指定引路人）':guideName(k);
+    h+='<div class="gblock"><div class="gblock-head"><b>'+esc(name)+'</b><span>'+gg.count+' 筆　有效 '+money(gg.amount)+(gg.refund?'　退費 '+money(gg.refund):'')+'</span></div>';
+    gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
+    gg.items.forEach(function(t){
+      var c=custById(t.customer_id);
+      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+'</span><span class="gn">'+esc(c?custLabel(c):'(客戶)')+'</span><span class="gs">'+esc(t.service||'—')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
+    });
+    h+='</div>';
+  });
   $('#rp-guides').innerHTML=h;
 }
 ['rp-from','rp-to'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('change',renderReport); });
