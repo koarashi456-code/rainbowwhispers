@@ -90,6 +90,10 @@
   .gn{min-width:56px;color:var(--ink)}
   .gs{flex:1;min-width:80px;color:var(--soft)}
   .ga{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--brush);font-weight:500}
+  .gblock-head{cursor:pointer}
+  .caret{display:inline-block;font-size:11px;color:var(--soft);margin-right:3px;transition:transform .15s}
+  .gblock.collapsed .caret{transform:rotate(-90deg)}
+  .gblock.collapsed .gitems{display:none}
 
   .formcard{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .formcard h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin-bottom:12px}
@@ -209,7 +213,7 @@
         <button class="abtn" id="rp-clear">全部</button>
       </div>
       <div id="rp-summary"></div>
-      <h3 class="rp-h">每位引路人業績</h3>
+      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><button class="abtn" id="rp-collapse">全部收合</button></div>
       <div id="rp-guides"></div>
     </section>
   </div>
@@ -549,18 +553,21 @@ function renderReport(){
   var h='';
   keys.forEach(function(k){
     var gg=g[k], name=k==='__none__'?'（未指定引路人）':guideName(k);
-    h+='<div class="gblock"><div class="gblock-head"><b>'+esc(name)+'</b><span>'+gg.count+' 筆　有效 '+money(gg.amount)+(gg.refund?'　退費 '+money(gg.refund):'')+'</span></div>';
+    h+='<div class="gblock"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span>'+gg.count+' 筆　有效 '+money(gg.amount)+(gg.refund?'　退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
     gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
       h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+'</span><span class="gn">'+esc(c?custLabel(c):'(客戶)')+'</span><span class="gs">'+esc(t.service||'—')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
     });
-    h+='</div>';
+    h+='</div></div>';
   });
   $('#rp-guides').innerHTML=h;
 }
 ['rp-from','rp-to'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('change',renderReport); });
 var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('#rp-from').value=''; $('#rp-to').value=''; renderReport(); };
+$('#rp-guides').addEventListener('click',function(e){ var head=e.target.closest('.gblock-head'); if(head&&head.parentNode) head.parentNode.classList.toggle('collapsed'); });
+var rpAllCollapsed=false, rpc2=document.getElementById('rp-collapse');
+if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 init();
 </script>
