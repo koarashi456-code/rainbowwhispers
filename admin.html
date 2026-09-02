@@ -4,22 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>客戶管理｜彩之語 Rainbow Whisper</title>
+<title>後台管理｜彩之語 Rainbow Whisper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
   .admin-bar{position:sticky;top:0;z-index:40;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-  .admin-bar-in{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:10px}
+  .admin-bar-in{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;gap:10px}
   .admin-title{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px}
-  .admin-title small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:12px;color:var(--soft);margin-left:8px}
-  .abtn{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer}
+  .abtn{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;text-decoration:none;display:inline-block}
   .abtn:hover{background:var(--tint)}
+  .tabbar{max-width:920px;margin:0 auto;display:flex;gap:4px;padding:0 18px 10px;flex-wrap:wrap}
+  .tabbar button{font:inherit;font-size:14px;color:var(--soft);background:none;border:none;padding:8px 14px;border-radius:999px;cursor:pointer}
+  .tabbar button.on{background:var(--brush);color:#fff;font-weight:500}
 
   .wrap{max-width:920px;margin:0 auto;padding:18px 18px 60px}
 
-  /* 登入 */
   .login{max-width:340px;margin:9vh auto;padding:0 20px;text-align:center}
   .login .logo{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;background:conic-gradient(from 200deg,#E8927C,#F0C66B,#9FD49A,#7FC8D9,#A99BE0,#E6A3C3,#E8927C);opacity:.9}
   .login h1{font-family:"Noto Serif TC",serif;font-size:20px;color:var(--brush);margin-bottom:4px}
@@ -30,14 +31,14 @@
   .login-btn:disabled{opacity:.65}
   .err{color:#C0506A;font-size:13px;min-height:18px;margin-top:4px}
 
-  /* 篩選 */
-  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 8px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px}
   .filters input,.filters select{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
   .filters input{flex:1;min-width:150px}
   .filters input:focus,.filters select:focus{border-color:#C9A7DE}
   .count{font-size:13px;color:var(--soft);margin:6px 2px 12px}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .addbtn{font:inherit;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:none;border-radius:999px;padding:10px 20px;cursor:pointer}
 
-  /* 客戶卡 */
   .cust{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-bottom:12px}
   .cust-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
   .type-badge{display:inline-block;font-size:13px;font-weight:500;color:#6E4F9E;background:#EAD9F2;padding:3px 11px;border-radius:999px}
@@ -51,21 +52,23 @@
   .cust .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none}
   .cust .in:focus{border-color:#C9A7DE;background:#fff}
   .notes-l{margin-top:10px}
+  .notes-l textarea,.notes-l input{width:100%}
   .notes-l textarea{min-height:44px;resize:vertical}
   .cust-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:10px}
   .saved{font-size:12px}
   .del{font:inherit;font-size:12px;color:#B87;background:none;border:none;cursor:pointer;text-decoration:underline}
   .del:hover{color:#C0506A}
   .muted{color:var(--soft);font-size:14px}
+  .soon{text-align:center;padding:50px 20px;color:var(--soft)}
+  .soon h3{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush);margin-bottom:8px}
   @media(max-width:520px){ .cust-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
 
-<!-- 登入畫面 -->
 <div id="login" class="login" style="display:none">
   <div class="logo"></div>
-  <h1>客戶管理</h1>
+  <h1>後台管理</h1>
   <p>彩之語 · 請登入</p>
   <form id="login-form">
     <input class="fld" id="email" type="email" placeholder="Email" autocomplete="username">
@@ -75,26 +78,55 @@
   </form>
 </div>
 
-<!-- 後台 -->
 <div id="app" style="display:none">
-  <div class="admin-bar"><div class="admin-bar-in">
-    <div class="admin-title">客戶管理<small id="total"></small></div>
-    <div style="display:flex;gap:8px">
-      <a class="abtn" href="index.html" style="text-decoration:none">回網站</a>
-      <button class="abtn" id="refresh">重新整理</button>
-      <button class="abtn" id="logout">登出</button>
+  <div class="admin-bar">
+    <div class="admin-bar-in">
+      <div class="admin-title">彩之語後台</div>
+      <div style="display:flex;gap:8px">
+        <a class="abtn" href="index.html">回網站</a>
+        <button class="abtn" id="refresh">重新整理</button>
+        <button class="abtn" id="logout">登出</button>
+      </div>
     </div>
-  </div></div>
+    <div class="tabbar">
+      <button data-tab="customers" class="on">客戶管理</button>
+      <button data-tab="guides">引路人管理</button>
+      <button data-tab="tx">交易紀錄</button>
+      <button data-tab="report">報表</button>
+    </div>
+  </div>
 
   <div class="wrap">
-    <div class="filters">
-      <input id="search" placeholder="搜尋　稱呼／聯絡／代碼／備註…">
-      <select id="f-source"><option value="">全部來源</option><option>測驗</option><option>會員</option></select>
-      <select id="f-status"><option value="">全部狀態</option></select>
-      <select id="f-type"><option value="">全部類型</option></select>
-    </div>
-    <div class="count" id="count"></div>
-    <div id="list"></div>
+    <!-- 客戶管理 -->
+    <section id="tab-customers">
+      <div class="filters">
+        <input id="search" placeholder="搜尋　稱呼／聯絡／代碼／備註…">
+        <select id="f-source"><option value="">全部來源</option><option>測驗</option><option>會員</option></select>
+        <select id="f-status"><option value="">全部狀態</option></select>
+        <select id="f-type"><option value="">全部類型</option></select>
+      </div>
+      <div class="count" id="count"></div>
+      <div id="list"></div>
+    </section>
+
+    <!-- 引路人管理 -->
+    <section id="tab-guides" style="display:none">
+      <div class="sec-head">
+        <div class="count" id="gcount" style="margin:0"></div>
+        <button class="addbtn" id="add-guide">＋ 新增引路人</button>
+      </div>
+      <div id="glist"></div>
+    </section>
+
+    <!-- 交易紀錄 -->
+    <section id="tab-tx" style="display:none">
+      <div class="soon"><h3>交易紀錄</h3><p>這一區在下一步建立（記錄消費、預約、付款方式、退費）。</p></div>
+    </section>
+
+    <!-- 報表 -->
+    <section id="tab-report" style="display:none">
+      <div class="soon"><h3>報表</h3><p>這一區在下一步建立（總交易表＋每位引路人業績）。</p></div>
+    </section>
   </div>
 </div>
 
@@ -104,12 +136,11 @@
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 var TYPES=['策士','叩問','穩步','靜思','燈塔','破繭','暖光','歸心'];
 var STATUSES=['新客','已加LINE','已諮詢','回頭客'];
-var ALL=[];
+var ALL=[], GUIDES=[], guidesLoaded=false, activeTab='customers';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
-// 填充篩選選單
 STATUSES.forEach(function(s){$('#f-status').insertAdjacentHTML('beforeend','<option>'+s+'</option>');});
 TYPES.forEach(function(t){$('#f-type').insertAdjacentHTML('beforeend','<option>'+t+'</option>');});
 
@@ -120,7 +151,6 @@ async function init(){
   var r=await db.auth.getSession();
   if(r.data && r.data.session){ showApp(); load(); } else { showLogin(); }
 }
-
 $('#login-form').onsubmit=async function(e){
   e.preventDefault();
   var email=$('#email').value.trim(), pw=$('#password').value;
@@ -131,15 +161,27 @@ $('#login-form').onsubmit=async function(e){
   $('#login-err').textContent=''; showApp(); load();
 };
 $('#logout').onclick=async function(){ await db.auth.signOut(); showLogin(); };
-$('#refresh').onclick=function(){ load(); };
+$('#refresh').onclick=function(){ if(activeTab==='guides') loadGuides(); else load(); };
 
+// 分頁切換
+document.querySelectorAll('.tabbar button').forEach(function(b){
+  b.onclick=function(){
+    var t=b.getAttribute('data-tab'); activeTab=t;
+    ['customers','guides','tx','report'].forEach(function(x){
+      document.getElementById('tab-'+x).style.display=(x===t?'block':'none');
+      document.querySelector('.tabbar [data-tab="'+x+'"]').classList.toggle('on',x===t);
+    });
+    if(t==='guides' && !guidesLoaded) loadGuides();
+  };
+});
+
+/* ===== 客戶管理 ===== */
 async function load(){
   $('#list').innerHTML='<div class="muted" style="padding:24px;text-align:center">載入中…</div>';
   var r=await db.from('customers').select('*').order('created_at',{ascending:false});
   if(r.error){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(r.error.message)+'</div>'; return; }
-  ALL=r.data||[]; $('#total').textContent='共 '+ALL.length+' 位'; render();
+  ALL=r.data||[]; render();
 }
-
 function render(){
   var q=$('#search').value.trim().toLowerCase();
   var fs=$('#f-status').value, ft=$('#f-type').value, fsrc=$('#f-source').value;
@@ -150,12 +192,11 @@ function render(){
     if(q){ var hay=[c.ref_code,c.name,c.contact,c.notes,c.topic,c.result_type,(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
     return true;
   });
-  $('#count').textContent='顯示 '+rows.length+' 位';
+  $('#count').textContent='共 '+ALL.length+' 位，顯示 '+rows.length+' 位';
   if(!rows.length){ $('#list').innerHTML='<div class="muted" style="padding:30px;text-align:center">沒有符合的客戶</div>'; return; }
   $('#list').innerHTML=rows.map(card).join('');
   bindCards();
 }
-
 function card(c){
   return '<div class="cust" data-id="'+c.id+'">'+
     '<div class="cust-top">'+
@@ -172,9 +213,8 @@ function card(c){
     '<div class="cust-actions"><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
   '</div>';
 }
-
 function bindCards(){
-  document.querySelectorAll('.cust').forEach(function(el){
+  document.querySelectorAll('#list .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
@@ -191,12 +231,70 @@ function bindCards(){
       if(!confirm('確定刪除這位客戶的資料？無法復原。'))return;
       var r=await db.from('customers').delete().eq('id',id);
       if(r.error){ alert('刪除失敗：'+r.error.message); return; }
-      ALL=ALL.filter(function(x){return x.id!==id;}); $('#total').textContent='共 '+ALL.length+' 位'; render();
+      ALL=ALL.filter(function(x){return x.id!==id;}); render();
     };
   });
 }
-
 ['search','f-source','f-status','f-type'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',render); e.addEventListener('change',render); });
+
+/* ===== 引路人管理 ===== */
+async function loadGuides(){
+  $('#glist').innerHTML='<div class="muted" style="padding:24px;text-align:center">載入中…</div>';
+  var r=await db.from('guides').select('*').order('created_at',{ascending:false});
+  if(r.error){ $('#glist').innerHTML='<div class="muted">讀取失敗：'+esc(r.error.message)+'</div>'; return; }
+  GUIDES=r.data||[]; guidesLoaded=true; renderGuides();
+}
+function renderGuides(){
+  $('#gcount').textContent='共 '+GUIDES.length+' 位引路人';
+  if(!GUIDES.length){ $('#glist').innerHTML='<div class="muted" style="padding:30px;text-align:center">還沒有引路人。按右上角「＋ 新增引路人」建立第一位。</div>'; return; }
+  $('#glist').innerHTML=GUIDES.map(guideCard).join('');
+  bindGuides();
+}
+function guideCard(g){
+  return '<div class="cust" data-id="'+g.id+'">'+
+    '<div class="cust-grid">'+
+      '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
+      '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
+      '<label>信箱<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com"></label>'+
+      '<label>可預約時間<input class="in" data-f="availability" value="'+esc(g.availability)+'" placeholder="例：週一~五 晚上"></label>'+
+    '</div>'+
+    '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
+    '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
+    '<div class="cust-actions">'+
+      '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>'+
+      '<span class="saved" data-saved></span><button class="del" data-del>刪除</button>'+
+    '</div>'+
+  '</div>';
+}
+function bindGuides(){
+  document.querySelectorAll('#glist .cust').forEach(function(el){
+    var id=el.getAttribute('data-id');
+    el.querySelectorAll('[data-f]').forEach(function(inp){
+      inp.addEventListener('change',async function(){
+        var f=inp.getAttribute('data-f'), val;
+        if(f==='active'){ val=inp.checked; }
+        else if(f==='services'){ val=inp.value.split(/[,，、]/).map(function(s){return s.trim();}).filter(Boolean); }
+        else { val=inp.value; }
+        var patch={}; patch[f]=val;
+        var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
+        var r=await db.from('guides').update(patch).eq('id',id);
+        if(r.error){ s.textContent='存檔失敗'; s.style.color='#C0506A'; }
+        else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var g=GUIDES.find(function(x){return x.id===id;}); if(g)g[f]=val; setTimeout(function(){s.textContent='';},1400); }
+      });
+    });
+    el.querySelector('[data-del]').onclick=async function(){
+      if(!confirm('確定刪除這位引路人？'))return;
+      var r=await db.from('guides').delete().eq('id',id);
+      if(r.error){ alert('刪除失敗：'+r.error.message); return; }
+      GUIDES=GUIDES.filter(function(x){return x.id!==id;}); renderGuides();
+    };
+  });
+}
+$('#add-guide').onclick=async function(){
+  var r=await db.from('guides').insert({name:'',active:true});
+  if(r.error){ alert('新增失敗：'+r.error.message); return; }
+  await loadGuides();
+};
 
 init();
 </script>
