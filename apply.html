@@ -124,12 +124,21 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 
+<script src="supabase-config.js"></script>
 <script>
 var CONFIG = { email: 'koarashi456@gmail.com' };   // 申請會寄到這個信箱
 (function(){
   var form=document.getElementById('apply');
   var doneBox=document.getElementById('done');
   var btn=document.getElementById('send');
+  // 送出申請時，同步寫一筆「待申請」引路人進後台（先不上架）
+  function saveGuideApp(){
+    if(!window.SUPA) return;
+    var v=function(n){var e=form.querySelector('[name="'+n+'"]');return e?e.value.trim():'';};
+    var multi=function(n){return Array.prototype.map.call(form.querySelectorAll('input[name="'+n+'"]:checked'),function(x){return x.value;});};
+    var notes='服務風格：'+multi('服務風格').join('、')+' ｜ 收費：'+v('收費標準')+' ｜ 經歷：'+v('簡要經歷');
+    try{fetch(window.SUPA.url+'/rest/v1/guides',{method:'POST',headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:v('名字／藝名')||null,phone:v('手機')||null,email:v('email')||null,services:multi('擅長領域'),availability:v('可服務時段')||null,notes:notes,pending:true,active:false})});}catch(e){}
+  }
   form.addEventListener('change',function(e){
     if(e.target.matches('.chip input')){ e.target.closest('.chip').classList.toggle('on', e.target.checked); }
     if(e.target.id==='agree'){ document.getElementById('consent-label').classList.remove('warn'); }
@@ -146,6 +155,7 @@ var CONFIG = { email: 'koarashi456@gmail.com' };   // 申請會寄到這個信�
     if(!document.getElementById('agree').checked){ document.getElementById('consent-label').classList.add('warn'); invalid=true; }
     if(invalid) return;
     btn.disabled=true; btn.textContent='送出中…';
+    saveGuideApp();
     var fd=new FormData(form);
     fd.append('_subject','彩之語・引路人入駐申請');
     fd.append('_captcha','false');

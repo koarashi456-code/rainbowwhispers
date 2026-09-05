@@ -159,6 +159,7 @@
 
     <!-- 引路人管理 -->
     <section id="tab-guides" style="display:none">
+      <div class="filters"><select id="g-filter"><option value="">全部引路人</option><option>待申請</option><option>上架中</option><option>已停用</option></select></div>
       <div class="sec-head">
         <div class="count" id="gcount" style="margin:0"></div>
         <div style="display:flex;gap:8px"><button class="abtn" id="guide-collapse">全部展開</button><button class="addbtn" id="add-guide">＋ 新增引路人</button></div>
@@ -379,15 +380,20 @@ function bindCards(){
 
 /* ===== 引路人管理 ===== */
 function guideName(id){ var g=guideById(id); return g?guideLabel(g):(id?'(已刪引路人)':'—'); }
+function guideState(g){ return g.pending?'待申請':(g.active?'上架中':'已停用'); }
+function guideBadge(g){ if(g.pending) return '<span class="src-badge" style="background:#FBE7CC;color:#A5643A">待申請</span>'; if(!g.active) return '<span class="src-badge" style="background:#EDE6DC;color:#8A7659">已停用</span>'; return '<span class="src-badge" style="background:#D8ECDF;color:#3F7A5E">上架中</span>'; }
 function renderGuides(){
-  $('#gcount').textContent='共 '+GUIDES.length+' 位引路人';
-  if(!GUIDES.length){ $('#glist').innerHTML='<div class="muted" style="padding:30px;text-align:center">還沒有引路人。按右上角「＋ 新增引路人」建立第一位。</div>'; return; }
-  $('#glist').innerHTML=GUIDES.map(guideCard).join('');
+  var f=($('#g-filter')||{}).value||'';
+  var rows=GUIDES.filter(function(g){ return !f || guideState(g)===f; });
+  var pend=GUIDES.filter(function(g){return g.pending;}).length;
+  $('#gcount').textContent='共 '+GUIDES.length+' 位'+(pend?'　·　待申請 '+pend+' 位':'');
+  if(!rows.length){ $('#glist').innerHTML='<div class="muted" style="padding:30px;text-align:center">'+(GUIDES.length?'沒有符合的引路人':'還沒有引路人。按右上角「＋ 新增引路人」建立第一位。')+'</div>'; return; }
+  $('#glist').innerHTML=rows.map(guideCard).join('');
   bindGuides();
 }
 function guideCard(g){
   return '<div class="cust collapsed" data-id="'+g.id+'">'+
-    '<div class="chead"><span class="caret">▾</span> <b style="color:var(--brush)">'+esc(g.name||'(未命名引路人)')+'</b>'+(g.active?'':' <small style="color:#B5566E">（已停用）</small>')+'</div>'+
+    '<div class="chead"><span class="caret">▾</span> <b style="color:var(--brush)">'+esc(g.name||'(未命名引路人)')+'</b> '+guideBadge(g)+'</div>'+
     '<div class="cbody">'+
     '<div class="cust-grid">'+
       '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
@@ -398,7 +404,9 @@ function guideCard(g){
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
     '<div class="cust-actions">'+
-      '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>'+
+      (g.pending
+        ? '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#4F8E6E;margin-right:auto;cursor:pointer;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
+        : '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>')+
       '<span class="saved" data-saved></span><button class="del" data-del>刪除</button>'+
     '</div>'+
     '</div>'+
@@ -426,6 +434,8 @@ function bindGuides(){
       if(r.error){ alert('刪除失敗：'+r.error.message); return; }
       GUIDES=GUIDES.filter(function(x){return x.id!==id;}); renderGuides(); fillSelects();
     };
+    var ap=el.querySelector('[data-approve]');
+    if(ap) ap.onchange=async function(){ if(!ap.checked)return; var r=await db.from('guides').update({pending:false,active:true}).eq('id',id); if(r.error){ alert('上架失敗：'+r.error.message); ap.checked=false; return; } var gg=guideById(id); if(gg){gg.pending=false;gg.active=true;} renderGuides(); fillSelects(); };
   });
 }
 $('#add-guide').onclick=async function(){
@@ -434,12 +444,13 @@ $('#add-guide').onclick=async function(){
   await loadAll(); document.querySelector('.tabbar [data-tab="guides"]').click();
   var f=document.querySelector('#glist .cust'); if(f) f.classList.remove('collapsed');
 };
+var gflt=document.getElementById('g-filter'); if(gflt) gflt.addEventListener('change',renderGuides);
 
 /* ===== 交易紀錄 ＋ 儲值 ===== */
 function fillSelects(){
   var copt='<option value="">— 選擇客戶 —</option>'+ALL.map(function(c){return '<option value="'+c.id+'">'+esc(custLabel(c))+'</option>';}).join('');
   $('#tx-cust').innerHTML=copt; $('#tp-cust').innerHTML=copt;
-  $('#tx-guide').innerHTML='<option value="">（無指定）</option>'+GUIDES.map(function(g){return '<option value="'+g.id+'">'+esc(guideLabel(g))+'</option>';}).join('');
+  $('#tx-guide').innerHTML='<option value="">（無指定）</option>'+GUIDES.filter(function(g){return !g.pending;}).map(function(g){return '<option value="'+g.id+'">'+esc(guideLabel(g))+'</option>';}).join('');
   $('#tx-fguide').innerHTML='<option value="">全部引路人</option>'+GUIDES.map(function(g){return '<option value="'+g.id+'">'+esc(guideLabel(g))+'</option>';}).join('');
 }
 function statusBadge(st){
