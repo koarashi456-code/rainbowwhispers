@@ -3,55 +3,79 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>測測你最適合的陪伴方式｜彩之語身心靈配對小測驗</title>
+<title>找到屬於你的心靈方向｜彩之語 Rainbow Whisper</title>
+<meta name="description" content="透過幾個直覺選擇，看見你目前的內在類型與最適合的探索方向。沒有標準答案，第一直覺就是你的答案。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-  .wrap{max-width:520px;margin:0 auto;padding:28px 18px 40px}
+  .wrap{max-width:460px;margin:0 auto;padding:24px 18px 46px}
   .serif{font-family:"Noto Serif TC",serif}
-  .intro{text-align:center;margin:6px 0 22px}
-  .intro h1{font-size:26px;font-weight:600;color:var(--brush);margin-bottom:8px}
-  .intro p{color:var(--soft);font-size:15px}
-  .bar{height:5px;border-radius:999px;background:var(--tint);overflow:hidden;margin-bottom:14px}
-  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border-radius:999px;transition:width .4s ease}
-  .step-no{color:var(--soft);font-size:13px;letter-spacing:.04em;margin-bottom:10px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px;box-shadow:0 8px 30px -18px rgba(120,90,60,.28)}
-  .q{font-size:19px;font-weight:500;line-height:1.55;margin-bottom:6px}
-  .opt{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:15px 18px;margin-top:12px;cursor:pointer;transition:all .18s ease}
+  /* 進度 */
+  .bar{height:5px;border-radius:999px;background:var(--tint);overflow:hidden;margin-bottom:12px}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border-radius:999px;transition:width .4s ease}
+  .step-no{color:var(--soft);font-size:13px;margin-bottom:12px}
+  /* 首頁 */
+  .intro{text-align:center;padding:28px 4px}
+  .intro .ring{width:104px;height:104px;border-radius:50%;margin:0 auto 20px;background:conic-gradient(from 200deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#E6A3C3,#EE9E86);display:flex;align-items:center;justify-content:center;box-shadow:0 0 36px rgba(200,160,210,.35)}
+  .intro .ring>div{width:76px;height:76px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center}
+  .intro h1{font-family:"Noto Serif TC",serif;font-size:26px;font-weight:600;color:var(--brush);margin-bottom:14px;line-height:1.5}
+  .intro p{font-size:15px;color:var(--soft);line-height:1.9;margin-bottom:8px}
+  .intro .go{display:inline-block;margin-top:22px;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:16px;padding:14px 40px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
+  /* 題目 */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px;box-shadow:0 8px 30px -18px rgba(120,90,60,.28)}
+  .q{font-size:18px;font-weight:500;line-height:1.6;color:var(--ink);margin-bottom:4px}
+  .opt{display:block;width:100%;text-align:left;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:11px;cursor:pointer;transition:all .16s}
   .opt:hover{border-color:var(--brush);background:var(--tint)}
   .opt.sel{border-color:var(--brush);background:var(--brush);color:#fff}
-  .topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;margin-top:18px}
-  .topic{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:18px 10px;font-weight:500}
-  .topic svg{width:28px;height:28px;color:var(--brush)}
-  .topic.sel svg{color:#fff}
-  .res-kicker{color:var(--soft);font-size:13px;letter-spacing:.08em}
-  .res-name{font-size:30px;font-weight:600;color:var(--brush);margin:6px 0 2px;font-family:"Noto Serif TC",serif}
-  .res-combo{color:var(--accent);font-weight:500;font-size:14px;letter-spacing:.04em;margin-bottom:14px}
-  .res-body{font-size:15.5px;margin-bottom:16px}
-  .pill{display:inline-block;font-size:13px;padding:5px 13px;border-radius:999px;margin:0 7px 7px 0}
-  .pill1{background:#D8ECDF;color:#3F7A5E}.pill2{background:#FBE0CC;color:#A5643A}.pill3{background:#E7DBF4;color:#6E4F9E}
-  .note{background:var(--cream);border-radius:12px;padding:14px 16px;margin-top:16px}
-  .note .lbl{color:var(--soft);font-size:13px;margin-bottom:4px}
-  .note p{font-size:14.5px;line-height:1.65}
-  .lead{margin-top:14px}
-  .lead h3{font-size:17px;font-weight:500;margin-bottom:4px}
-  .lead .sub{color:var(--soft);font-size:14px;margin-bottom:14px}
-  .consent{display:flex;align-items:flex-start;gap:8px;margin-top:12px;font-size:13px;color:var(--soft);line-height:1.55;cursor:pointer}
-  .policy{display:none;margin-top:10px;padding:13px 15px;background:var(--cream);border:1px solid var(--line);border-radius:12px;font-size:12.5px;line-height:1.75}
-  .policy.open{display:block}
-  .policy h4{font-size:13px;font-weight:500;margin-bottom:6px;color:var(--brush)}
-  .policy b{font-weight:500;color:var(--ink)}
-  .btn-primary{font:inherit;font-weight:500;color:#4A3A2A;background:linear-gradient(95deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border:none;border-radius:12px;padding:0 22px;cursor:pointer;white-space:nowrap;transition:filter .18s}
-  .btn-block{display:block;width:100%;text-align:center;padding:14px 0;text-decoration:none}
-  .lead-mini{font-size:12px;color:var(--soft);margin-top:10px;line-height:1.6}
-  .lead-mini a{color:var(--brush);text-decoration:underline;cursor:pointer}
-  .actions{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap}
-  .btn-ghost{font:inherit;color:var(--soft);background:none;border:1px solid var(--line);border-radius:999px;padding:9px 18px;cursor:pointer}
-  .btn-line{font:inherit;font-weight:500;color:#fff;background:#06C755;border:none;border-radius:999px;padding:9px 20px;cursor:pointer}
-  .fade{animation:fade .35s ease}
+  .fade{animation:fade .4s ease}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* 結果 */
+  .kicker{font-size:12px;letter-spacing:.22em;color:var(--accent);text-align:center}
+  .rhero{text-align:center;padding:8px 0 20px}
+  .rring{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 200deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#E6A3C3,#EE9E86);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(200,160,210,.35)}
+  .rring>div{width:68px;height:68px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center}
+  .rring svg{width:32px;height:32px}
+  .tname{font-family:"Noto Serif TC",serif;font-size:32px;font-weight:600;color:var(--brush);margin:8px 0 2px;letter-spacing:.06em}
+  .ten{font-size:11px;letter-spacing:.28em;color:#B09A7C;margin-bottom:14px}
+  .tdesc{font-size:14.5px;color:var(--ink);text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .rsec{padding:20px 0;border-top:1px solid var(--line)}
+  .rh2{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush);text-align:center;margin-bottom:6px}
+  .dirpill{display:block;text-align:center;font-family:"Noto Serif TC",serif;font-size:20px;color:var(--brush);margin:8px 0}
+  .rp{font-size:14px;color:var(--soft);text-align:center}
+  .dim{display:flex;align-items:center;gap:10px;margin:10px 0}
+  .dim .name{width:64px;font-size:13px;color:var(--ink);flex:none}
+  .dim .dbar{flex:1;height:9px;border-radius:999px;background:#EFE6D4;overflow:hidden}
+  .dim .dbar>i{display:block;height:100%;border-radius:999px;background:var(--rainbow);transition:width .6s ease}
+  .dim .val{width:30px;text-align:right;font-size:12.5px;color:var(--soft);flex:none;font-variant-numeric:tabular-nums}
+  .tcard{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
+  .tring{width:52px;height:52px;border-radius:50%;flex:none;background:conic-gradient(from 160deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center;opacity:.9}
+  .tring>div{width:38px;height:38px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center}
+  .tring svg{width:20px;height:20px}
+  .trank{font-size:11px;color:var(--accent);letter-spacing:.1em}
+  .ttitle{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--brush);font-weight:600;margin:1px 0 2px}
+  .tmatch{display:flex;align-items:center;gap:7px;margin:4px 0 6px}
+  .tmatch .mbar{flex:1;height:6px;border-radius:999px;background:#EFE6D4;overflow:hidden}
+  .tmatch .mbar>i{display:block;height:100%;background:linear-gradient(90deg,#9FD49A,#86C9DA)}
+  .tmatch .mpct{font-size:12.5px;color:#4F8E6E;font-weight:600;flex:none}
+  .twhy{font-size:12.5px;color:var(--soft);line-height:1.65}
+  .tsoon{display:inline-block;font-size:11px;color:#8A6A44;background:var(--tint);border-radius:999px;padding:2px 10px;margin-top:8px}
+  .states{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .st{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;opacity:.5}
+  .st.on{opacity:1;border-color:#BEDCC6;background:#F3F9F4}
+  .st.on.warn{border-color:#E7D4A6;background:#FBF6E9}
+  .dot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:4px}
+  .st .lbl{font-size:14px;font-weight:500;color:var(--brush)}
+  .st .sub{font-size:12.5px;color:var(--soft);margin-top:1px}
+  .cta{display:block;text-align:center;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:15.5px;padding:15px;border-radius:999px;text-decoration:none;margin-top:22px;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
+  .rmini{font-size:12px;color:#B6A283;text-align:center;margin-top:10px}
+  .ractions{display:flex;gap:10px;margin-top:16px}
+  .btn-ghost{flex:1;font:inherit;font-size:14px;color:var(--brush);background:none;border:1.5px solid var(--line);border-radius:999px;padding:11px 0;cursor:pointer}
+  .btn-line{flex:1;font:inherit;font-size:14px;font-weight:500;color:#fff;background:#06C755;border:none;border-radius:999px;padding:11px 0;cursor:pointer}
+  .policy-link{color:var(--brush);text-decoration:underline;cursor:pointer}
+  .policy{display:none;font-size:12px;color:var(--soft);background:var(--tint);border-radius:10px;padding:12px 14px;margin-top:10px;line-height:1.7;text-align:left}
+  .policy h4{font-size:12.5px;color:var(--brush);margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -82,155 +106,239 @@
 <script src="supabase-config.js"></script>
 <script>
 var CONFIG = {
-  lineUrl: 'https://lin.ee/t0NBjud0',
   lineOaId: '@518xokyr',
+  lineUrl: 'https://lin.ee/t0NBjud0',
   shareUrl: 'https://koarashi456-code.github.io/rainbowwhispers/',
   orgName: '彩之語 Rainbow Whisper',
-  contactEmail: '官方 LINE：https://lin.ee/t0NBjud0',
-  privacyUrl: 'policies.html#privacy'
+  contactLine: '官方 LINE：https://lin.ee/t0NBjud0'
 };
 
-var ICONS = {
-  love:'<path d="M19.5 12.6 12 20l-7.5-7.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 7.5 6.6Z"/>',
-  career:'<path d="M3.5 9h17v9a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2V9Z"/><path d="M9 9V6.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2V9"/>',
-  health:'<path d="M5 19c10 0 14-4 14-14C9 5 5 9 5 19Z"/><path d="m5 19 7-7"/>',
-  direction:'<circle cx="12" cy="12" r="9"/><path d="m15 9-2 5-4 1 2-5 4-1Z"/>',
-  emotion:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9.5h.01M15 9.5h.01"/>',
-  explore:'<path d="M12 4c.4 3.5 1.5 4.6 5 5-3.5.4-4.6 1.5-5 5-.4-3.5-1.5-4.6-5-5 3.5-.4 4.6-1.5 5-5Z"/><path d="M18.5 13c.2 1.4.7 1.9 2.1 2.1-1.4.2-1.9.7-2.1 2.1-.2-1.4-.7-1.9-2.1-2.1 1.4-.2 1.9-.7 2.1-2.1Z"/>'
-};
-var svg=function(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';};
+/* ===== 五維度 ===== */
+var DIMS=[{k:'s',label:'自我理解'},{k:'f',label:'未來方向'},{k:'r',label:'關係理解'},{k:'e',label:'情緒療癒'},{k:'a',label:'行動轉化'}];
 
-var TOPICS=[
-  {key:'love',label:'感情・關係'},{key:'career',label:'事業・金錢'},
-  {key:'health',label:'健康・身體'},{key:'direction',label:'人生方向'},
-  {key:'emotion',label:'情緒・自我'},{key:'explore',label:'好奇・探索自己'}
-];
-var tLabel=function(k){var f=TOPICS.find(function(x){return x.key===k;});return f?f.label:k;};
-
-var QUESTIONS=[
-  {q:'心情不好、想找人說說話時，你比較希望對方先…',opts:[
-    {t:'幫我把問題弄清楚、想想辦法',e:{a1:-1}},
-    {t:'先聽我說，讓我心情穩下來',e:{a1:1}},
-    {t:'兩種我都需要一些',e:{}}]},
-  {q:'哪種人講的話，你比較聽得進去？',opts:[
-    {t:'講話有條理、說得出道理',e:{a1:-1}},
-    {t:'很懂我的心情、講到我心裡',e:{a1:1}},
-    {t:'都可以，看狀況',e:{}}]},
-  {q:'你喜歡對方怎麼跟你說話？',opts:[
-    {t:'有話直說，不用拐彎抹角',e:{a2:-1}},
-    {t:'溫柔一點、順著我慢慢講',e:{a2:1}},
-    {t:'要看當下拿捏',e:{}}]},
-  {q:'如果對方很直接點出你的問題，你會…',opts:[
-    {t:'覺得很爽快，這樣才清楚',e:{a2:-1}},
-    {t:'希望他能講得溫柔一點',e:{a2:1}},
-    {t:'還好，我可以接受',e:{}}]},
-  {q:'聊完之後，你最想帶走的是…',opts:[
-    {t:'清楚知道接下來該怎麼做',e:{a3:-1}},
-    {t:'自己想通了，心裡比較踏實',e:{a3:1}},
-    {t:'這兩個我都想要',e:{}}]},
-  {q:'要做決定的時候，你比較希望對方…',opts:[
-    {t:'直接告訴我「你該這樣做」',e:{a3:-1}},
-    {t:'問我「你自己怎麼想」，陪我找答案',e:{a3:1}},
-    {t:'都行，看情況決定',e:{}}]}
-];
-
+/* ===== 六種內在類型（主維度 → 類型） ===== */
 var TYPES={
-  RDI:{name:'策士',combo:'理性 × 點破 × 指引',body:'你不怕真相，你怕的是含糊。你要的是一個比你更冷靜、更有洞察力的視角，幫你把局面看穿，然後直接告訴你「現在最該動的那一步」。被同理太多反而讓你不耐煩——你要被當成一個能承接真相、也願意行動的大人。',guide:'思路清晰、敢講真心話、給得出具體行動方案。偏結構化、講得出道理的取向（紫微斗數、八字、占星流年）。'},
-  RDS:{name:'叩問',combo:'理性 × 點破 × 自悟',body:'你心裡其實有譜，只是還沒被問到位。你不要別人替你決定，但你受得了、甚至享受被尖銳地挑戰。最好的陪伴像一面誠實的鏡子——問對問題、戳破盲點，再讓你自己說出那句你早就知道的答案。',guide:'擅長提問、犀利又尊重你主體性的引導取向。塔羅（以牌面提問）、人類圖、教練式對話。'},
-  RGI:{name:'穩步',combo:'理性 × 陪伴 × 指引',body:'你想懂「為什麼」，但你不喜歡被嚇、被逼。你要的是有耐心、會把道理講到你聽懂、再牽著你一步步走的陪伴。清楚讓你安心，溫柔讓你敢往前。',guide:'說明清楚、節奏溫和、會給具體建議的顧問取向。占星、八字搭配溫和的諮詢風格。'},
-  RGS:{name:'靜思',combo:'理性 × 陪伴 × 自悟',body:'你是會自己消化的人，只是需要一個安全、不催促的空間，和一個聰明又溫柔的存在陪你一起想。你不要標準答案，也不要被推著走——你要被理解地、有條理地，一起把事情看清楚，再在自己的節奏裡落地。',guide:'沉穩、會聆聽、用提問帶你思考的陪伴取向。人類圖、占星諮詢、靈性對話。'},
-  EDI:{name:'燈塔',combo:'感受 × 點破 × 指引',body:'你很重感受，但你不要被哄。你希望陪你的人先讓你覺得「被懂了」，建立信任之後，敢對你說真話、也敢給明確方向。被接住你才聽得進去，但只有溫暖沒有方向，你會覺得空。',guide:'溫暖但有力量、共感力強又敢給建議。占星、塔羅搭配療癒底蘊或諮商背景。'},
-  EDS:{name:'破繭',combo:'感受 × 點破 × 自悟',body:'你的成長往往來自一句被溫柔說出口的真話。你需要先感覺到有人真的站在你這邊，再由對方輕輕戳破你一直在逃避的那件事——但最後跨出去的那一步，你想自己走。',guide:'共感又有洞見、敢溫柔說真話、懂得在關鍵時刻放手。塔羅、人類圖、深度諮詢。'},
-  EGI:{name:'暖光',combo:'感受 × 陪伴 × 指引',body:'脆弱的時候，你最需要先被好好接住——不被評價、不被催。等心安定了，你希望有一隻溫暖而篤定的手，輕輕牽著你、告訴你下一步往哪走。安全感是前提，方向是依靠。',guide:'溫柔、包容、給人安全感，同時會給溫和方向的療癒取向。靈氣療癒、塔羅、占星搭配高同理風格。'},
-  EGS:{name:'歸心',combo:'感受 × 陪伴 × 自悟',body:'你要的不是答案，是一個能讓你完全卸下防備的空間。最好的陪伴，是有人安靜地、全然地在你身邊，相信你內在本來就有答案，只是陪你慢慢把它聽出來。被催、被指導都會打斷你。',guide:'溫柔、有靜定能量、擅長傾聽與陪伴。靈氣、能量療癒、冥想引導、人類圖回歸自我取向。'}
+  f:{name:'啟程者',en:'THE WAYFINDER',dir:'人生方向 × 選擇',dirSub:'你站在一個轉折點上，現在的你最需要的，是看清「下一步該往哪走」。',
+     desc:'你正站在一個轉折點上。心裡隱約知道有些事要變了，只是還看不清下一步該往哪走。你不缺行動力，缺的是一個方向感——一旦看清路，你就會走得很穩。'},
+  s:{name:'尋光者',en:'THE LIGHT SEEKER',dir:'自我探索 × 人生方向',dirSub:'比起預測未來，現在的你更需要先理解：「我為什麼會走到現在這一步？」',
+     desc:'你對自己的內在很敏感。你不是沒有答案，而是腦中的想法太多，反而很難聽見自己真正的聲音。比起被告知該怎麼做，你更適合透過探索與對話，慢慢看見自己的方向。'},
+  r:{name:'繫心者',en:'THE CONNECTOR',dir:'關係理解 × 自我',dirSub:'你想懂的不只是對方，還有「在關係裡的自己」。',
+     desc:'你很在意人與人之間的連結。最近讓你放不下的，可能是某一段關係、某個人，或是你在關係裡的樣子。理解了關係，你也會更理解自己。'},
+  e:{name:'療心者',en:'THE MENDER',dir:'情緒整理 × 能量平衡',dirSub:'你需要的不是一個答案，而是先被好好接住。',
+     desc:'你的感受很豐富，也因此常常被情緒填得很滿。你需要的不是急著找答案，而是先讓自己安定下來。當心鬆開了，很多事會自然變得清楚。'},
+  a:{name:'破繭者',en:'THE BREAKTHROUGH',dir:'行動 × 改變',dirSub:'你其實已經知道答案，卡住的是那份跨出去的勇氣。',
+     desc:'你其實已經知道答案了，卡住的是那份「跨出去」的勇氣。你不需要更多分析，你需要的是一個推力、一個陪你轉身的人。'},
+  wander:{name:'漫遊者',en:'THE WANDERER',dir:'自由探索',dirSub:'沒有非解決不可的問題，帶著好奇慢慢探索，就是很好的開始。',
+     desc:'你現在的需求還很開放——沒有特別卡住，也沒有非解決不可的問題，比較像是帶著好奇心，想更認識自己一點。這是很好的起點，不用急，慢慢探索就好。'}
 };
 
-var app=document.getElementById('app');
-var S={step:0,topic:null,a1:0,a2:0,a3:0};
-var locked=false;
-var curLead=null, leadSaved=false;
-function genRef(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<5;i++)s+=c.charAt(Math.floor(Math.random()*c.length));return s;}
-function saveLead(){
-  if(leadSaved||!curLead||!window.SUPA)return; leadSaved=true;
-  try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:curLead.ref,topic:curLead.topic,result_type:curLead.type,status:'新客'})});}catch(e){}
-}
-function checkmark(){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';}
+/* ===== 老師原型（五維分數 + icon + 說明） ===== */
+function ic(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+var ARCH=[
+  {name:'卡牌 · 塔羅探索', v:{s:70,f:85,r:80,e:55,a:65}, icon:ic('<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M12 8l1.1 2.2 2.4.3-1.75 1.6.45 2.3L12 13.7 9.8 14.7l.45-2.3L8.5 10.8l2.4-.3L12 8Z"/>'),
+   why:'塔羅擅長用象徵與提問，陪你把腦中太多的想法慢慢理清楚。'},
+  {name:'命理 · 星盤占星', v:{s:88,f:72,r:65,e:50,a:45}, icon:ic('<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'),
+   why:'星盤能給你一張全局的地圖，看見自己長期反覆出現的人生模式。'},
+  {name:'命理 · 八字紫微', v:{s:60,f:85,r:50,e:32,a:52}, icon:ic('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>'),
+   why:'從命盤看你的人生結構與方向，適合想釐清長期規劃、事業選擇的你。'},
+  {name:'能量 · 身心療癒', v:{s:74,f:30,r:55,e:92,a:55}, icon:ic('<path d="M12 21c-4-3-7-6-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 4-3 7-7 10Z"/><path d="M8.5 12h2l1-2 2 4 1-2h1.5"/>'),
+   why:'先把情緒與能量安頓下來，讓一直繃著的心慢慢鬆開。'},
+  {name:'內在 · 催眠探索', v:{s:90,f:45,r:50,e:72,a:66}, icon:ic('<path d="M12 12c0-3 4-3 4 0s-8 3-8-2 12-4 12 3-9 8-9-1"/>'),
+   why:'帶你往內在更深的地方走，看見平常沒察覺到的自己。'},
+  {name:'療癒卡 · 彩虹卡', v:{s:72,f:45,r:68,e:82,a:52}, icon:ic('<rect x="4" y="7" width="11" height="14" rx="2"/><path d="M9 3h11v14"/><path d="M7 13c1.5-2 3.5-2 5 0"/>'),
+   why:'用溫柔的牌卡陪你對話，慢慢接住現在的心情。'}
+];
 
-function chooseTopic(el,k){ if(locked)return; locked=true; el.classList.add('sel');
-  setTimeout(function(){S.topic=k;S.step=1;locked=false;render();},170); }
+/* ===== 20 題（每個選項：t 文字、w 維度權重、c 明確度） ===== */
+var QUESTIONS=[
+ {q:'如果最近的你是一個畫面，你覺得比較像？',o:[
+   {t:'一艘不知道要開往哪裡的船',w:{f:2},c:1},{t:'一個人走在安靜的夜裡',w:{s:2},c:1},
+   {t:'正準備重新開始的火焰',w:{a:2},c:1},{t:'一座需要慢慢整理的花園',w:{e:2},c:1}]},
+ {q:'遇到人生重大選擇時，你通常會？',o:[
+   {t:'找很多資料，仔細分析',w:{s:1,f:1},c:1},{t:'問身邊的人意見',w:{r:2},c:1},
+   {t:'靠自己的直覺',w:{s:2},c:1},{t:'先放著，等答案自己出現',w:{e:1},c:0}]},
+ {q:'最近最容易讓你卡住的是？',o:[
+   {t:'不知道未來該往哪走',w:{f:2},c:2},{t:'情緒很多，但不知道怎麼整理',w:{e:2},c:2},
+   {t:'人際或感情裡的某些問題',w:{r:2},c:2},{t:'明明知道答案，卻沒有勇氣行動',w:{a:2},c:2}]},
+ {q:'如果有人能告訴你一件事，你最想知道？',o:[
+   {t:'我的未來會怎麼發展？',w:{f:2},c:1},{t:'為什麼我會變成現在的自己？',w:{s:2},c:1},
+   {t:'我跟某個人的關係到底怎麼了？',w:{r:2},c:1},{t:'我下一步到底該怎麼走？',w:{f:1,a:1},c:1}]},
+ {q:'當你心情不好時，你最需要的是？',o:[
+   {t:'有人陪我聊聊',w:{r:1,e:1},c:1},{t:'找出事情真正的原因',w:{s:2},c:1},
+   {t:'得到一個明確的答案',w:{f:2},c:1},{t:'讓自己重新恢復能量',w:{e:2},c:1}]},
+ {q:'如果眼前有一扇門，你會想推開哪一扇？',o:[
+   {t:'門後是一片星空',w:{f:2},c:0},{t:'門後是一座古老的圖書館',w:{s:2},c:0},
+   {t:'門後是一座森林',w:{e:2},c:0},{t:'門後是一條通往遠方的道路',w:{f:1,a:1},c:0}]},
+ {q:'你對「命運」的看法比較接近？',o:[
+   {t:'命運早就有一些安排',w:{f:2},c:0},{t:'命運會受到自己的選擇影響',w:{a:2},c:0},
+   {t:'我相信因果與人生課題',w:{s:2},c:0},{t:'我比較相信一切都是當下的選擇',w:{a:2},c:0}]},
+ {q:'你比較常出現哪一種狀態？',o:[
+   {t:'想很多',w:{s:2},c:1},{t:'感受很多',w:{e:2},c:1},
+   {t:'做很多',w:{a:2},c:1},{t:'猶豫很多',w:{f:1},c:1}]},
+ {q:'如果有人指出你的問題，你比較想知道？',o:[
+   {t:'「為什麼會這樣？」',w:{s:2},c:1},{t:'「我可以怎麼改變？」',w:{a:2},c:1},
+   {t:'「未來會變好嗎？」',w:{f:2},c:1},{t:'「這件事想告訴我什麼？」',w:{s:2},c:1}]},
+ {q:'你在人生低潮時，通常會？',o:[
+   {t:'自己消化',w:{s:2},c:1},{t:'找人傾訴',w:{r:1,e:1},c:1},
+   {t:'找答案',w:{f:2},c:1},{t:'直接轉移注意力',w:{a:2},c:0}]},
+ {q:'你比較想探索哪個領域？',o:[
+   {t:'人生方向',w:{f:2},c:2},{t:'感情／人際',w:{r:2},c:2},
+   {t:'工作／事業',w:{f:2},c:2},{t:'自我成長',w:{s:2},c:2}]},
+ {q:'你希望老師給你的感覺是？',o:[
+   {t:'很準、直接告訴我答案',w:{f:2},c:1},{t:'溫柔陪我理解自己',w:{e:1,s:1},c:1},
+   {t:'幫我分析人生的脈絡',w:{s:2},c:1},{t:'帶我做出實際的改變',w:{a:2},c:1}]},
+ {q:'你比較相信哪一種方式？',o:[
+   {t:'卡牌與象徵',w:{f:1,s:1},c:1},{t:'星象與出生資訊',w:{s:2},c:1},
+   {t:'命理與人生結構',w:{f:2},c:1},{t:'能量與身心感受',w:{e:2},c:1}]},
+ {q:'如果你一直重複遇到同一種問題，你會想？',o:[
+   {t:'找出背後的原因',w:{s:2},c:1},{t:'看看是不是自己的模式',w:{s:2},c:1},
+   {t:'知道未來會不會再發生',w:{f:2},c:1},{t:'想辦法打破它',w:{a:2},c:2}]},
+ {q:'你對未知的態度？',o:[
+   {t:'很好奇',w:{s:1},c:0},{t:'有點害怕',w:{e:2},c:1},
+   {t:'想先知道答案',w:{f:2},c:2},{t:'覺得未知反而很有趣',w:{f:1},c:0}]},
+ {q:'你最希望老師幫你解決？',o:[
+   {t:'「我到底該往哪裡走？」',w:{f:2},c:2},{t:'「為什麼我總是這樣？」',w:{s:2},c:2},
+   {t:'「這段關係到底代表什麼？」',w:{r:2},c:2},{t:'「我怎麼才能真正改變？」',w:{a:2},c:2}]},
+ {q:'如果只能選一種能力，你想擁有？',o:[
+   {t:'看見未來',w:{f:2},c:1},{t:'看懂自己',w:{s:2},c:1},
+   {t:'看懂別人',w:{r:2},c:1},{t:'改變自己的狀態',w:{a:1,e:1},c:1}]},
+ {q:'你比較容易被什麼吸引？',o:[
+   {t:'神秘與未知',w:{f:2},c:1},{t:'心理與自我探索',w:{s:2},c:1},
+   {t:'命理與人生規律',w:{f:2},c:1},{t:'能量、療癒與身心平衡',w:{e:2},c:1}]},
+ {q:'你現在的人生比較像？',o:[
+   {t:'正在找方向',w:{f:2},c:1},{t:'正在整理自己',w:{e:1,s:1},c:1},
+   {t:'正在面臨轉換',w:{a:1,f:1},c:1},{t:'正在重新成長',w:{a:1,s:1},c:1}]},
+ {q:'最後一題，不要想太久——如果現在的你可以收到一句話，你最想聽到？',o:[
+   {t:'「你會找到答案的。」',w:{f:2},c:1},{t:'「你其實已經知道自己要什麼。」',w:{s:2},c:2},
+   {t:'「這段經歷並不是沒有意義。」',w:{e:2},c:1},{t:'「現在，是你重新開始的時候。」',w:{a:2},c:2}]}
+];
+
+/* ===== 引擎 ===== */
+var MAXW={s:0,f:0,r:0,e:0,a:0}, MAXC=0;
+QUESTIONS.forEach(function(Q){
+  var mc=0, md={s:0,f:0,r:0,e:0,a:0};
+  Q.o.forEach(function(o){ if((o.c||0)>mc)mc=o.c||0; for(var k in (o.w||{})) if(o.w[k]>md[k])md[k]=o.w[k]; });
+  MAXC+=mc; for(var k in md)MAXW[k]+=md[k];
+});
+function cosine(a,b){var dot=0,na=0,nb=0;['s','f','r','e','a'].forEach(function(k){dot+=a[k]*b[k];na+=a[k]*a[k];nb+=b[k]*b[k];});if(!na||!nb)return 0;return dot/(Math.sqrt(na)*Math.sqrt(nb));}
+function compute(){
+  var raw={s:0,f:0,r:0,e:0,a:0}, clarity=0;
+  S.answers.forEach(function(o){ if(!o)return; for(var k in (o.w||{}))raw[k]+=o.w[k]; clarity+=(o.c||0); });
+  var dim={}; ['s','f','r','e','a'].forEach(function(k){ dim[k]=MAXW[k]?Math.round(raw[k]/MAXW[k]*100):0; });
+  var order=['s','f','r','e','a'].slice().sort(function(a,b){return dim[b]-dim[a];});
+  var top=order[0], second=order[1];
+  var spread=dim[top]-dim[second];
+  var clarityPct=MAXC?Math.round(clarity/MAXC*100):0;
+  var typeKey=(dim[top]<44 || spread<9)?'wander':top;
+  // 老師配對：依你各維度的比重，加權老師在該維度的強度
+  var sumU=(dim.s+dim.f+dim.r+dim.e+dim.a)||1;
+  var matches=ARCH.map(function(A){ var ms=0; ['s','f','r','e','a'].forEach(function(k){ ms+=(dim[k]/sumU)*A.v[k]; }); var pct=Math.max(45,Math.min(99,Math.round(ms+8))); return {a:A,pct:pct,score:ms}; }).sort(function(x,y){return y.score-x.score;});
+  // 紅黃綠燈
+  var green=(typeKey!=='wander' && clarityPct>=55);
+  return {dim:dim,order:order,typeKey:typeKey,type:TYPES[typeKey],clarityPct:clarityPct,green:green,matches:matches.slice(0,2)};
+}
+
+/* ===== 流程 ===== */
+var app=document.getElementById('app');
+var S={step:0,answers:[]};
+var locked=false, curRef=null, curLead=null, leadSaved=false;
+function genRef(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<5;i++)s+=c.charAt(Math.floor(Math.random()*c.length));return s;}
+function esc(t){return (t==null?'':String(t)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+
 function chooseAns(el,idx){ if(locked)return; locked=true; el.classList.add('sel');
-  setTimeout(function(){var e=QUESTIONS[S.step-1].opts[idx].e;
-    for(var k in e)S[k]+=e[k];S.step++;locked=false;render();},170); }
+  setTimeout(function(){ S.answers[S.step-1]=QUESTIONS[S.step-1].o[idx]; S.step++; locked=false; render(); },170); }
 
 function policyMarkup(){
   return '<h4>個人資料蒐集告知</h4>依《個人資料保護法》，於您留下聯絡方式前向您說明：'+
     '<br>・<b>蒐集者</b>：'+CONFIG.orgName+
-    '<br>・<b>蒐集目的</b>：為您進行身心靈引路人配對，並寄送配對結果與相關通知。'+
-    '<br>・<b>個資類別</b>：聯絡方式（Email／LINE ID），以及本測驗結果（相處頻率類型、關注議題）。'+
-    '<br>・<b>利用期間與方式</b>：於本服務營運期間，在配對與聯繫之必要範圍內利用；資料可能儲存於 LINE、Google 等雲端服務。'+
-    '<br>・<b>您的權利</b>：可隨時請求查詢、閱覽、複製、補正、停止蒐集處理利用或刪除您的個資。'+
-    '<br>・<b>不提供之影響</b>：若不提供，將無法為您進行配對與通知。'+
-    '<br>・<b>聯絡我們</b>：'+CONFIG.contactEmail;
+    '<br>・<b>目的</b>：為您進行身心靈引路人配對，並寄送配對結果與相關通知。'+
+    '<br>・<b>類別</b>：聯絡方式（LINE／Email），以及本測驗結果（內在類型、探索方向）。'+
+    '<br>・<b>期間與方式</b>：於本服務營運期間，在配對與聯繫之必要範圍內利用；資料可能儲存於 LINE、Google 等雲端服務。'+
+    '<br>・<b>權利</b>：可隨時查詢、閱覽、複製、補正、停止利用或刪除您的個資。'+
+    '<br>・<b>聯絡我們</b>：'+CONFIG.contactLine;
 }
 
 function render(){
   var html='';
   if(S.step===0){
-    html='<div class="intro fade"><h1 class="serif">測測你最適合的陪伴方式</h1><p>一分鐘，遇見最適合你的引路人</p></div>'+
-         '<div class="bar"><i style="width:8%"></i></div><div class="step-no">第 1 / 7 步</div>'+
-         '<div class="card fade"><div class="q">你現在最想被好好陪伴的，是哪一塊？</div>'+
-         '<div class="topics">'+TOPICS.map(function(t){return '<button class="opt topic" data-topic="'+t.key+'">'+svg(ICONS[t.key])+t.label+'</button>';}).join('')+'</div></div>';
-  } else if(S.step>=1 && S.step<=6){
-    var Q=QUESTIONS[S.step-1],n=S.step+1,pct=Math.round(n/7*100);
-    html='<div class="bar"><i style="width:'+pct+'%"></i></div><div class="step-no">第 '+n+' / 7 步</div>'+
-         '<div class="card fade"><div class="q">'+Q.q+'</div>'+
-         Q.opts.map(function(o,i){return '<button class="opt" data-ans="'+i+'">'+o.t+'</button>';}).join('')+'</div>';
+    html='<div class="intro fade">'+
+      '<div class="ring"><div><svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 4.5 2 6 6.5 6.5C14 10 12.5 11.5 12 16c-.5-4.5-2-6-6.5-6.5C10 9 11.5 7.5 12 3Z"/><path d="M19 14c.2 1.6.8 2.2 2.4 2.4-1.6.2-2.2.8-2.4 2.4-.2-1.6-.8-2.2-2.4-2.4 1.6-.2 2.2-.8 2.4-2.4Z"/></svg></div></div>'+
+      '<h1>找到屬於你的<br>心靈方向</h1>'+
+      '<p>每個人面對人生的方式都不一樣。<br>有些人需要答案，有些人需要理解自己，<br>有些人只是想知道：「我現在到底怎麼了？」</p>'+
+      '<p style="margin-top:12px">透過幾個簡單的直覺選擇，<br>彩之語陪你找到目前最適合自己的探索方向。</p>'+
+      '<p style="margin-top:12px;font-size:13px">沒有標準答案，第一直覺就是你的答案。</p>'+
+      '<button class="go" id="start">開始探索　→</button></div>';
+  } else if(S.step>=1 && S.step<=20){
+    var Q=QUESTIONS[S.step-1], pct=Math.round(S.step/20*100);
+    html='<div class="bar"><i style="width:'+pct+'%"></i></div><div class="step-no">第 '+S.step+' / 20 步</div>'+
+      '<div class="card fade"><div class="q">'+esc(Q.q)+'</div>'+
+      Q.o.map(function(o,i){return '<button class="opt" data-ans="'+i+'">'+esc(o.t)+'</button>';}).join('')+'</div>';
   } else {
-    var key=(S.a1<0?'R':'E')+(S.a2<0?'D':'G')+(S.a3<0?'I':'S');
-    var T=TYPES[key];
-    var p1=S.a1>0?'情感共鳴':S.a1<0?'理性分析':'理性 × 感性';
-    var p2=S.a2>0?'溫柔陪伴':S.a2<0?'真誠直接':'剛柔並濟';
-    var p3=S.a3>0?'引導自悟':S.a3<0?'明確指引':'方向 × 啟發';
-    var policyLink='<a id="policy-toggle" style="cursor:pointer;color:var(--brush);text-decoration:underline">《個資使用告知》</a>';
-    var ref=genRef(); curLead={ref:ref,topic:tLabel(S.topic),type:T.name}; leadSaved=false;
-    var lineMsg='我做完彩之語測驗了！我的相處頻率是「'+T.name+'（'+T.combo+'）」，最在意的是「'+tLabel(S.topic)+'」。（代碼 '+ref+'）';
-    var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(lineMsg);
-    html='<div class="bar"><i style="width:100%;background:linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4)"></i></div>'+
-      '<div class="card fade">'+
-        '<div class="res-kicker">你的相處頻率</div>'+
-        '<div class="res-name">'+T.name+'</div>'+
-        '<div class="res-combo">'+T.combo+'</div>'+
-        '<div class="res-body">'+T.body+'</div>'+
-        '<div><span class="pill pill1">'+p1+'</span><span class="pill pill2">'+p2+'</span><span class="pill pill3">'+p3+'</span></div>'+
-        '<div class="note"><div class="lbl">適合你的引路人</div><p>'+T.guide+'</p></div>'+
-        '<div class="lead"><h3>我們正在為你尋找最合適的引路人</h3>'+
-          '<div class="sub">加入官方 LINE，配對好了第一個通知你。</div>'+
-          '<div id="lead-form">'+
-            '<a id="line-go" class="btn-primary btn-block" href="'+lineHref+'" target="_blank" rel="noopener">加入 LINE 並送出我的結果　→</a>'+
-            '<p class="lead-mini">送出後我們會收到你的相處頻率，為你配對最適合的引路人。查看'+policyLink+'</p>'+
-            '<div class="policy" id="policy">'+policyMarkup()+'</div>'+
-          '</div></div>'+
-      '</div>'+
-      '<div class="actions"><button class="btn-ghost" id="restart">重新測驗</button><button class="btn-line" id="share">分享給朋友</button></div>';
+    html=resultHTML(compute());
   }
-  app.innerHTML=html;
-  bind();
+  app.innerHTML=html; bind();
+}
+
+function resultHTML(R){
+  var t=R.type;
+  var arch=R.matches.map(function(m,i){
+    return '<div class="tcard"><div class="tring"><div>'+m.a.icon+'</div></div><div style="flex:1">'+
+      '<div class="trank">'+(i===0?'第一推薦':'第二推薦')+'</div>'+
+      '<div class="ttitle">'+esc(m.a.name)+'</div>'+
+      '<div class="tmatch"><span class="mbar"><i style="width:'+m.pct+'%"></i></span><span class="mpct">'+m.pct+'%</span></div>'+
+      '<div class="twhy">依你「'+esc(t.dir.split(' × ')[0])+'」的傾向，'+esc(m.a.why)+'</div>'+
+      '<span class="tsoon">真人配對 · 即將開放</span></div></div>';
+  }).join('');
+  var dims=DIMS.map(function(d){ return '<div class="dim"><span class="name">'+d.label+'</span><span class="dbar"><i style="width:'+R.dim[d.k]+'%"></i></span><span class="val">'+R.dim[d.k]+'</span></div>'; }).join('');
+  var ctaText=R.green?'加 LINE，認識適合你的老師　→':'加 LINE，讓彩之語先陪你　→';
+  return '<div class="fade">'+
+    '<div class="bar"><i style="width:100%"></i></div>'+
+    '<div class="rhero"><div class="kicker">你的探索類型</div>'+
+      '<div class="rring"><div><svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 4.5 2 6 6.5 6.5C14 10 12.5 11.5 12 16c-.5-4.5-2-6-6.5-6.5C10 9 11.5 7.5 12 3Z"/></svg></div></div>'+
+      '<div class="tname">'+esc(t.name)+'</div><div class="ten">'+esc(t.en)+'</div>'+
+      '<div class="tdesc">'+esc(t.desc)+'</div></div>'+
+    '<div class="rsec" style="text-align:center"><div class="rh2">目前最適合你的方向</div>'+
+      '<div class="dirpill">'+esc(t.dir)+'</div><div class="rp">'+esc(t.dirSub)+'</div></div>'+
+    '<div class="rsec"><div class="rh2" style="margin-bottom:14px">你的內在傾向</div>'+dims+
+      '<div class="rp" style="text-align:left;margin-top:10px;font-size:12.5px">＊系統依你的作答，算出這 5 個方向的傾向，再幫你配對最合的老師。</div></div>'+
+    '<div class="rsec"><div class="rh2" style="margin-bottom:2px">彩之語為你推薦</div>'+
+      '<div class="rp" style="font-size:12.5px;margin-bottom:4px">依你的傾向，這些方向最適合你</div>'+arch+'</div>'+
+    '<div class="rsec"><div class="rh2" style="margin-bottom:2px">你現在，適合找老師嗎？</div>'+
+      '<div class="rp" style="font-size:12.5px">我們不急著推老師，先看你現在的狀態</div>'+
+      '<div class="states">'+
+        '<div class="st'+(R.green?' on':'')+'"><span class="dot" style="background:#5AAE7A"></span><div><div class="lbl">適合立即探索</div><div class="sub">你有明確想釐清的方向，很適合直接找一位老師好好聊聊。</div></div></div>'+
+        '<div class="st'+(R.green?'':' on warn')+'"><span class="dot" style="background:#E0B44C"></span><div><div class="lbl">建議先陪你慢慢來</div><div class="sub">需求還有點模糊也沒關係——先加 LINE，我們偶爾傳點認識自己的小內容陪你，等你更清楚了再幫你配老師，不急著約。</div></div></div>'+
+      '</div></div>'+
+    '<a class="cta" id="line-go" href="#" target="_blank" rel="noopener">'+ctaText+'</a>'+
+    '<div class="rmini">送出後我們會收到你的類型與方向，為你配對最適合的引路人。查看<span class="policy-link" id="ptoggle">《個資使用告知》</span></div>'+
+    '<div class="policy" id="policy">'+policyMarkup()+'</div>'+
+    '<div class="ractions"><button class="btn-ghost" id="restart">重新測驗</button><button class="btn-line" id="share">分享給朋友</button></div>'+
+  '</div>';
+}
+
+function saveLead(){
+  if(leadSaved||!curLead||!window.SUPA)return; leadSaved=true;
+  try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:curLead.ref,topic:curLead.topic,result_type:curLead.type,status:'新客'})});}catch(e){}
 }
 
 function bind(){
-  app.querySelectorAll('[data-topic]').forEach(function(b){b.onclick=function(){chooseTopic(b,b.getAttribute('data-topic'));};});
+  var st=app.querySelector('#start'); if(st)st.onclick=function(){S.step=1;render();};
   app.querySelectorAll('[data-ans]').forEach(function(b){b.onclick=function(){chooseAns(b,parseInt(b.getAttribute('data-ans'),10));};});
-  var lg=app.querySelector('#line-go'); if(lg)lg.onclick=function(){saveLead();};
-  var rs=app.querySelector('#restart'); if(rs)rs.onclick=function(){S={step:0,topic:null,a1:0,a2:0,a3:0};render();};
+  var rs=app.querySelector('#restart'); if(rs)rs.onclick=function(){S={step:0,answers:[]};leadSaved=false;curLead=null;render();};
+  var pt=app.querySelector('#ptoggle'); if(pt)pt.onclick=function(){var p=app.querySelector('#policy');p.style.display=(p.style.display==='block'?'none':'block');};
+  var lg=app.querySelector('#line-go');
+  if(lg){
+    var R=compute(); var ref=genRef();
+    curLead={ref:ref,topic:R.type.dir,type:R.type.name}; leadSaved=false;
+    var msg='我做完彩之語測驗了！我的類型是「'+R.type.name+'」，方向是「'+R.type.dir+'」。（代碼 '+ref+'）';
+    lg.setAttribute('href','https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg));
+    lg.onclick=function(){saveLead();};
+  }
   var sh=app.querySelector('#share'); if(sh)sh.onclick=function(){
-    var u=CONFIG.shareUrl||location.href;
-    var k=(S.a1<0?'R':'E')+(S.a2<0?'D':'G')+(S.a3<0?'I':'S');
-    var nm=(TYPES[k]||{}).name||'';
-    var msg='我剛測完彩之語的相處頻率測驗，我是「'+nm+'」型！你也來測測看 → '+u;
-    window.open('https://line.me/R/msg/text/?'+encodeURIComponent(msg),'_blank');
+    var R=compute(); var u=CONFIG.shareUrl||location.href;
+    var m='我剛測完彩之語，我是「'+R.type.name+'」型！你也來找找你的心靈方向 → '+u;
+    window.open('https://line.me/R/msg/text/?'+encodeURIComponent(m),'_blank');
   };
-  var pt=app.querySelector('#policy-toggle');
-  if(pt)pt.onclick=function(){var p=app.querySelector('#policy'); if(p)p.classList.toggle('open');};
 }
 render();
 </script>
