@@ -141,6 +141,7 @@
       <button data-tab="guides">引路人管理</button>
       <button data-tab="tx">交易紀錄</button>
       <button data-tab="report">報表</button>
+      <button data-tab="trash">刪除紀錄</button>
     </div>
   </div>
 
@@ -220,6 +221,12 @@
       <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><button class="abtn" id="rp-collapse">全部展開</button></div>
       <div id="rp-guides"></div>
     </section>
+
+    <!-- 刪除紀錄 -->
+    <section id="tab-trash" style="display:none">
+      <div class="count" id="trash-count"></div>
+      <div id="trashlist"></div>
+    </section>
   </div>
 </div>
 
@@ -229,7 +236,7 @@
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 var TYPES=['啟程者','尋光者','療心者','繫心者','破繭者','漫遊者'];
 var STATUSES=['新客','已加LINE','已諮詢','回頭客'];
-var ALL=[], GUIDES=[], TX=[], TOPUPS=[], activeTab='customers';
+var ALL=[], GUIDES=[], TX=[], TOPUPS=[], DEL={customers:[],guides:[],transactions:[],topups:[]}, activeTab='customers';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
@@ -267,11 +274,12 @@ $('#refresh').onclick=function(){ loadAll(); };
 document.querySelectorAll('.tabbar button').forEach(function(b){
   b.onclick=function(){
     var t=b.getAttribute('data-tab'); activeTab=t;
-    ['customers','guides','tx','report'].forEach(function(x){
+    ['customers','guides','tx','report','trash'].forEach(function(x){
       document.getElementById('tab-'+x).style.display=(x===t?'block':'none');
       document.querySelector('.tabbar [data-tab="'+x+'"]').classList.toggle('on',x===t);
     });
     if(t==='report') renderReport();
+    if(t==='trash') renderTrash();
   };
 });
 
@@ -283,12 +291,15 @@ async function loadAll(){
     db.from('transactions').select('*').order('created_at',{ascending:false}),
     db.from('topups').select('*').order('created_at',{ascending:false})
   ]);
-  ALL=res[0].data||[]; GUIDES=res[1].data||[]; TX=res[2].data||[]; TOPUPS=res[3].data||[];
+  var nd=function(x){return !x.deleted;}, dd=function(x){return x.deleted;};
+  var C=res[0].data||[], G=res[1].data||[], T=res[2].data||[], P=res[3].data||[];
+  ALL=C.filter(nd); GUIDES=G.filter(nd); TX=T.filter(nd); TOPUPS=P.filter(nd);
+  DEL={customers:C.filter(dd),guides:G.filter(dd),transactions:T.filter(dd),topups:P.filter(dd)};
   var err=res.find(function(x){return x.error;});
   if(err){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(err.error.message)+'（三張新表若尚未建立，請先跑建表 SQL）</div>'; }
   fillSelects();
   try{ if(!$('#tp-date').value) $('#tp-date').value=new Date().toISOString().slice(0,10); }catch(e){}
-  render(); renderGuides(); renderTx(); renderReport();
+  render(); renderGuides(); renderTx(); renderReport(); renderTrash();
 }
 
 /* ===== 金額彙總 ===== */
@@ -355,8 +366,8 @@ function bindCards(){
   document.querySelectorAll('#list .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
     var rb=el.querySelector('[data-rec]'); if(rb) rb.onclick=function(){ var box=el.querySelector('[data-recbox]'); box.style.display=(box.style.display==='none'?'block':'none'); };
-    el.querySelectorAll('[data-deltp]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('確定刪除這筆儲值？餘額會重新計算。'))return; var tid=btn.getAttribute('data-deltp'); var r=await db.from('topups').delete().eq('id',tid); if(r.error){ alert('刪除失敗：'+r.error.message); return; } TOPUPS=TOPUPS.filter(function(x){return x.id!==tid;}); render(); }; });
-    el.querySelectorAll('[data-deltx]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('確定刪除這筆消費紀錄？'))return; var tid=btn.getAttribute('data-deltx'); var r=await db.from('transactions').delete().eq('id',tid); if(r.error){ alert('刪除失敗：'+r.error.message); return; } TX=TX.filter(function(x){return x.id!==tid;}); render(); renderTx(); }; });
+    el.querySelectorAll('[data-deltp]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆儲值？會移到「刪除紀錄」可還原；餘額會重算。'))return; var tid=btn.getAttribute('data-deltp'); if(await softDelete('topups',tid,TOPUPS)){ render(); renderTrash(); } }; });
+    el.querySelectorAll('[data-deltx]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆消費紀錄？會移到「刪除紀錄」，可還原。'))return; var tid=btn.getAttribute('data-deltx'); if(await softDelete('transactions',tid,TX)){ render(); renderTx(); renderTrash(); } }; });
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val=inp.value;
@@ -369,10 +380,8 @@ function bindCards(){
       });
     });
     el.querySelector('[data-del]').onclick=async function(){
-      if(!confirm('確定刪除這位客戶的資料？無法復原。'))return;
-      var r=await db.from('customers').delete().eq('id',id);
-      if(r.error){ alert('刪除失敗：'+r.error.message); return; }
-      ALL=ALL.filter(function(x){return x.id!==id;}); render();
+      if(!confirm('刪除這位客戶？會移到「刪除紀錄」，可還原。'))return;
+      if(await softDelete('customers',id,ALL)){ render(); renderTrash(); }
     };
   });
 }
@@ -429,10 +438,8 @@ function bindGuides(){
       });
     });
     el.querySelector('[data-del]').onclick=async function(){
-      if(!confirm('確定刪除這位引路人？'))return;
-      var r=await db.from('guides').delete().eq('id',id);
-      if(r.error){ alert('刪除失敗：'+r.error.message); return; }
-      GUIDES=GUIDES.filter(function(x){return x.id!==id;}); renderGuides(); fillSelects();
+      if(!confirm('刪除這位引路人？會移到「刪除紀錄」，可還原。'))return;
+      if(await softDelete('guides',id,GUIDES)){ renderGuides(); fillSelects(); renderTrash(); }
     };
     var ap=el.querySelector('[data-approve]');
     if(ap) ap.onchange=async function(){ if(!ap.checked)return; var r=await db.from('guides').update({pending:false,active:true}).eq('id',id); if(r.error){ alert('上架失敗：'+r.error.message); ap.checked=false; return; } var gg=guideById(id); if(gg){gg.pending=false;gg.active=true;} renderGuides(); fillSelects(); };
@@ -533,10 +540,8 @@ function bindTx(){
       });
     });
     el.querySelector('[data-del]').onclick=async function(){
-      if(!confirm('確定刪除這筆交易？'))return;
-      var r=await db.from('transactions').delete().eq('id',id);
-      if(r.error){ alert('刪除失敗：'+r.error.message); return; }
-      TX=TX.filter(function(x){return x.id!==id;}); renderTx(); render();
+      if(!confirm('刪除這筆交易？會移到「刪除紀錄」，可還原。'))return;
+      if(await softDelete('transactions',id,TX)){ renderTx(); render(); renderTrash(); }
     };
   });
 }
@@ -597,6 +602,45 @@ if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.query
 ['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });
 function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
 bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#glist'); bindCollapseAll('tx-collapse','#txlist');
+
+/* ===== 軟刪除 + 刪除紀錄 ===== */
+function activeArr(tbl){ return tbl==='customers'?ALL:tbl==='guides'?GUIDES:tbl==='transactions'?TX:TOPUPS; }
+async function softDelete(tbl,id,arr){
+  var r=await db.from(tbl).update({deleted:true}).eq('id',id);
+  if(r.error){ alert('刪除失敗：'+r.error.message); return false; }
+  var i=arr.findIndex(function(x){return x.id===id;});
+  if(i>=0){ var o=arr[i]; o.deleted=true; arr.splice(i,1); DEL[tbl].unshift(o); }
+  return true;
+}
+function cAny(id){ return custById(id) || DEL.customers.find(function(x){return x.id===id;}); }
+function renderTrash(){
+  var list=document.getElementById('trashlist'); if(!list) return;
+  var items=[];
+  DEL.customers.forEach(function(c){ items.push({t:'客戶',lbl:custLabel(c),sub:fmtDate(c.created_at),tbl:'customers',id:c.id}); });
+  DEL.guides.forEach(function(g){ items.push({t:'引路人',lbl:guideLabel(g),sub:(g.email||g.phone||''),tbl:'guides',id:g.id}); });
+  DEL.transactions.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'交易',lbl:(c?custLabel(c):'客戶')+'　'+(t.service||'—')+'　'+money(t.amount),sub:(t.appointment_at?fmtDate(t.appointment_at):'')+(t.method?' · '+t.method:''),tbl:'transactions',id:t.id}); });
+  DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id}); });
+  document.getElementById('trash-count').textContent='共 '+items.length+' 筆已刪除（可還原）';
+  if(!items.length){ list.innerHTML='<div class="muted" style="padding:30px;text-align:center">目前沒有被刪除的資料</div>'; return; }
+  list.innerHTML=items.map(function(it){ return '<div class="cust" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="cust-top"><div><span class="src-badge" style="background:#EDE6DC;color:#8A7659">'+it.t+'</span> <b>'+esc(it.lbl)+'</b></div><div class="meta">'+esc(it.sub)+'</div></div><div class="cust-actions"><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div>'; }).join('');
+  document.querySelectorAll('#trashlist .cust').forEach(function(row){
+    var tbl=row.getAttribute('data-tbl'), id=row.getAttribute('data-id');
+    row.querySelector('[data-restore]').onclick=async function(){
+      var r=await db.from(tbl).update({deleted:false}).eq('id',id);
+      if(r.error){ alert('還原失敗：'+r.error.message); return; }
+      var i=DEL[tbl].findIndex(function(x){return x.id===id;});
+      if(i>=0){ var o=DEL[tbl][i]; o.deleted=false; DEL[tbl].splice(i,1); activeArr(tbl).unshift(o); }
+      render(); renderGuides(); renderTx(); renderReport(); renderTrash(); fillSelects();
+    };
+    row.querySelector('[data-purge]').onclick=async function(){
+      if(!confirm('永久刪除這筆？這次真的無法還原。'))return;
+      var r=await db.from(tbl).delete().eq('id',id);
+      if(r.error){ alert('刪除失敗：'+r.error.message); return; }
+      var i=DEL[tbl].findIndex(function(x){return x.id===id;}); if(i>=0)DEL[tbl].splice(i,1);
+      renderTrash();
+    };
+  });
+}
 
 init();
 </script>
