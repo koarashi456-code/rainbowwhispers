@@ -234,6 +234,7 @@ function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){retu
 function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function fmtDay(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate();}
 function fmtFull(s){if(!s)return '未定時間';var d=new Date(s);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
+function hhmm(s){if(!s)return '';var d=new Date(s);return ' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function money(n){return '$'+Number(n||0).toLocaleString();}
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
@@ -323,7 +324,7 @@ function customerRecords(cid){
   var tps=TOPUPS.filter(function(t){return t.customer_id===cid;});
   if(!txs.length && !tps.length) return '<div class="muted" style="padding:6px 0">尚無消費／儲值紀錄</div>';
   var h='';
-  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.appointment_at||t.created_at)+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
+  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+(t.method?' · '+esc(t.method):'')+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
   tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'<button class="recdel" data-deltp="'+t.id+'" title="刪除">✕</button></span></div>'; });
   return h;
 }
@@ -569,7 +570,7 @@ function renderReport(){
     gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
-      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+'</span><span class="gn">'+esc(c?custLabel(c):'(客戶)')+'</span><span class="gs">'+esc(t.service||'—')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
+      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+'</span><span class="gn">'+esc(c?custLabel(c):'(客戶)')+'</span><span class="gs">'+esc(t.service||'—')+(t.method?' · '+esc(t.method):'')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
     });
     h+='</div></div>';
   });
