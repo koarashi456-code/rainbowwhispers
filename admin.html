@@ -616,15 +616,17 @@ function cAny(id){ return custById(id) || DEL.customers.find(function(x){return 
 function renderTrash(){
   var list=document.getElementById('trashlist'); if(!list) return;
   var items=[];
-  DEL.customers.forEach(function(c){ items.push({t:'客戶',lbl:custLabel(c),sub:fmtDate(c.created_at),tbl:'customers',id:c.id}); });
-  DEL.guides.forEach(function(g){ items.push({t:'引路人',lbl:guideLabel(g),sub:(g.email||g.phone||''),tbl:'guides',id:g.id}); });
-  DEL.transactions.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'交易',lbl:(c?custLabel(c):'客戶')+'　'+(t.service||'—')+'　'+money(t.amount),sub:(t.appointment_at?fmtDate(t.appointment_at):'')+(t.method?' · '+t.method:''),tbl:'transactions',id:t.id}); });
-  DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id}); });
+  DEL.customers.forEach(function(c){ items.push({t:'客戶',lbl:custLabel(c),sub:fmtDate(c.created_at),tbl:'customers',id:c.id,reason:c.delete_reason||''}); });
+  DEL.guides.forEach(function(g){ items.push({t:'引路人',lbl:guideLabel(g),sub:(g.email||g.phone||''),tbl:'guides',id:g.id,reason:g.delete_reason||''}); });
+  DEL.transactions.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'交易',lbl:(c?custLabel(c):'客戶')+'　'+(t.service||'—')+'　'+money(t.amount),sub:(t.appointment_at?fmtDate(t.appointment_at):'')+(t.method?' · '+t.method:''),tbl:'transactions',id:t.id,reason:t.delete_reason||''}); });
+  DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id,reason:t.delete_reason||''}); });
   document.getElementById('trash-count').textContent='共 '+items.length+' 筆已刪除（可還原）';
   if(!items.length){ list.innerHTML='<div class="muted" style="padding:30px;text-align:center">目前沒有被刪除的資料</div>'; return; }
-  list.innerHTML=items.map(function(it){ return '<div class="cust" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="cust-top"><div><span class="src-badge" style="background:#EDE6DC;color:#8A7659">'+it.t+'</span> <b>'+esc(it.lbl)+'</b></div><div class="meta">'+esc(it.sub)+'</div></div><div class="cust-actions"><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div>'; }).join('');
+  list.innerHTML=items.map(function(it){ return '<div class="cust" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="cust-top"><div><span class="src-badge" style="background:#EDE6DC;color:#8A7659">'+it.t+'</span> <b>'+esc(it.lbl)+'</b></div><div class="meta">'+esc(it.sub)+'</div></div><label class="notes-l" style="margin-top:0"><input class="in" data-reason value="'+esc(it.reason)+'" placeholder="刪除原因（選填）…"></label><div class="cust-actions"><span class="saved" data-rsaved></span><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div>'; }).join('');
   document.querySelectorAll('#trashlist .cust').forEach(function(row){
     var tbl=row.getAttribute('data-tbl'), id=row.getAttribute('data-id');
+    var ri=row.querySelector('[data-reason]');
+    if(ri) ri.addEventListener('change',async function(){ var sv=row.querySelector('[data-rsaved]'); if(sv){sv.textContent='儲存中…';sv.style.color='var(--soft)';} var rr=await db.from(tbl).update({delete_reason:ri.value}).eq('id',id); if(rr.error){ if(sv){sv.textContent='存檔失敗';sv.style.color='#C0506A';} } else { var o=DEL[tbl].find(function(x){return x.id===id;}); if(o)o.delete_reason=ri.value; if(sv){sv.textContent='已儲存';sv.style.color='#4F8E6E';setTimeout(function(){sv.textContent='';},1200);} } });
     row.querySelector('[data-restore]').onclick=async function(){
       var r=await db.from(tbl).update({deleted:false}).eq('id',id);
       if(r.error){ alert('還原失敗：'+r.error.message); return; }
