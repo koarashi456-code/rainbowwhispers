@@ -98,7 +98,7 @@
 <footer class="rw-footer">
   <div class="rw-brand2 rw-serif">彩之語</div>
   <div class="rw-foot-en">RAINBOW WHISPER</div>
-  <p class="rw-foot-note">溫馨提醒：本平台僅提供老師媒合服務，不對命理或玄學內容的準確性與結果負責。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
+  <p class="rw-foot-note">溫馨提醒：本平台僅提供引路人媒合服務，不對命理或玄學內容的準確性與結果負責。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
   <div class="rw-foot-links"><a href="policies.html#disclaimer">免責聲明</a>·<a href="policies.html#privacy">隱私權政策</a>·<a href="policies.html#refund">取消與退費</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
@@ -132,7 +132,7 @@ var TYPES={
      desc:'你現在的需求還很開放——沒有特別卡住，也沒有非解決不可的問題，比較像是帶著好奇心，想更認識自己一點。這是很好的起點，不用急，慢慢探索就好。'}
 };
 
-/* ===== 老師原型（五維分數 + icon + 說明） ===== */
+/* ===== 引路人原型（五維分數 + icon + 說明） ===== */
 function ic(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
 var ARCH=[
   {name:'卡牌 · 塔羅探索', v:{s:70,f:85,r:80,e:55,a:65}, icon:ic('<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M12 8l1.1 2.2 2.4.3-1.75 1.6.45 2.3L12 13.7 9.8 14.7l.45-2.3L8.5 10.8l2.4-.3L12 8Z"/>'),
@@ -184,7 +184,7 @@ var QUESTIONS=[
  {q:'你比較想探索哪個領域？',o:[
    {t:'人生方向',w:{f:2},c:2},{t:'感情／人際',w:{r:2},c:2},
    {t:'工作／事業',w:{f:2},c:2},{t:'自我成長',w:{s:2},c:2}]},
- {q:'你希望老師給你的感覺是？',o:[
+ {q:'你希望引路人給你的感覺是？',o:[
    {t:'很準、直接告訴我答案',w:{f:2},c:1},{t:'溫柔陪我理解自己',w:{e:1,s:1},c:1},
    {t:'幫我分析人生的脈絡',w:{s:2},c:1},{t:'帶我做出實際的改變',w:{a:2},c:1}]},
  {q:'你比較相信哪一種方式？',o:[
@@ -196,7 +196,7 @@ var QUESTIONS=[
  {q:'你對未知的態度？',o:[
    {t:'很好奇',w:{s:1},c:0},{t:'有點害怕',w:{e:2},c:1},
    {t:'想先知道答案',w:{f:2},c:2},{t:'覺得未知反而很有趣',w:{f:1},c:0}]},
- {q:'你最希望老師幫你解決？',o:[
+ {q:'你最希望引路人幫你解決？',o:[
    {t:'「我到底該往哪裡走？」',w:{f:2},c:2},{t:'「為什麼我總是這樣？」',w:{s:2},c:2},
    {t:'「這段關係到底代表什麼？」',w:{r:2},c:2},{t:'「我怎麼才能真正改變？」',w:{a:2},c:2}]},
  {q:'如果只能選一種能力，你想擁有？',o:[
@@ -230,7 +230,7 @@ function compute(){
   var spread=dim[top]-dim[second];
   var clarityPct=MAXC?Math.round(clarity/MAXC*100):0;
   var typeKey=(dim[top]<44 || spread<9)?'wander':top;
-  // 老師配對：依你各維度的比重，加權老師在該維度的強度
+  // 引路人配對：依你各維度的比重，加權引路人在該維度的強度
   var sumU=(dim.s+dim.f+dim.r+dim.e+dim.a)||1;
   var matches=ARCH.map(function(A){ var ms=0; ['s','f','r','e','a'].forEach(function(k){ ms+=(dim[k]/sumU)*A.v[k]; }); var pct=Math.max(45,Math.min(99,Math.round(ms+8))); return {a:A,pct:pct,score:ms}; }).sort(function(x,y){return y.score-x.score;});
   // 紅黃綠燈
@@ -290,7 +290,7 @@ function resultHTML(R){
       '<span class="tsoon">真人配對 · 即將開放</span></div></div>';
   }).join('');
   var dims=DIMS.map(function(d){ return '<div class="dim"><span class="name">'+d.label+'</span><span class="dbar"><i style="width:'+R.dim[d.k]+'%"></i></span><span class="val">'+R.dim[d.k]+'</span></div>'; }).join('');
-  var ctaText=R.green?'加 LINE，認識適合你的老師　→':'加 LINE，讓彩之語先陪你　→';
+  var ctaText=R.green?'加 LINE，認識適合你的引路人　→':'加 LINE，讓彩之語先陪你　→';
   return '<div class="fade">'+
     '<div class="bar"><i style="width:100%"></i></div>'+
     '<div class="rhero"><div class="kicker">你的探索類型</div>'+
@@ -300,14 +300,14 @@ function resultHTML(R){
     '<div class="rsec" style="text-align:center"><div class="rh2">目前最適合你的方向</div>'+
       '<div class="dirpill">'+esc(t.dir)+'</div><div class="rp">'+esc(t.dirSub)+'</div></div>'+
     '<div class="rsec"><div class="rh2" style="margin-bottom:14px">你的內在傾向</div>'+dims+
-      '<div class="rp" style="text-align:left;margin-top:10px;font-size:12.5px">＊系統依你的作答，算出這 5 個方向的傾向，再幫你配對最合的老師。</div></div>'+
+      '<div class="rp" style="text-align:left;margin-top:10px;font-size:12.5px">＊系統依你的作答，算出這 5 個方向的傾向，再幫你配對最合的引路人。</div></div>'+
     '<div class="rsec"><div class="rh2" style="margin-bottom:2px">彩之語為你推薦</div>'+
       '<div class="rp" style="font-size:12.5px;margin-bottom:4px">依你的傾向，這些方向最適合你</div>'+arch+'</div>'+
-    '<div class="rsec"><div class="rh2" style="margin-bottom:2px">你現在，適合找老師嗎？</div>'+
-      '<div class="rp" style="font-size:12.5px">我們不急著推老師，先看你現在的狀態</div>'+
+    '<div class="rsec"><div class="rh2" style="margin-bottom:2px">你現在，適合找引路人嗎？</div>'+
+      '<div class="rp" style="font-size:12.5px">我們不急著推引路人，先看你現在的狀態</div>'+
       '<div class="states">'+
-        '<div class="st'+(R.green?' on':'')+'"><span class="dot" style="background:#5AAE7A"></span><div><div class="lbl">適合立即探索</div><div class="sub">你有明確想釐清的方向，很適合直接找一位老師好好聊聊。</div></div></div>'+
-        '<div class="st'+(R.green?'':' on warn')+'"><span class="dot" style="background:#E0B44C"></span><div><div class="lbl">建議先陪你慢慢來</div><div class="sub">需求還有點模糊也沒關係——先加 LINE，我們偶爾傳點認識自己的小內容陪你，等你更清楚了再幫你配老師，不急著約。</div></div></div>'+
+        '<div class="st'+(R.green?' on':'')+'"><span class="dot" style="background:#5AAE7A"></span><div><div class="lbl">適合立即探索</div><div class="sub">你有明確想釐清的方向，很適合直接找一位引路人好好聊聊。</div></div></div>'+
+        '<div class="st'+(R.green?'':' on warn')+'"><span class="dot" style="background:#E0B44C"></span><div><div class="lbl">建議先陪你慢慢來</div><div class="sub">需求還有點模糊也沒關係——先加 LINE，我們偶爾傳點認識自己的小內容陪你，等你更清楚了再幫你配引路人，不急著約。</div></div></div>'+
       '</div></div>'+
     '<a class="cta" id="line-go" href="#" target="_blank" rel="noopener">'+ctaText+'</a>'+
     '<div class="rmini">送出後我們會收到你的類型與方向，為你配對最適合的引路人。查看<span class="policy-link" id="ptoggle">《個資使用告知》</span></div>'+
