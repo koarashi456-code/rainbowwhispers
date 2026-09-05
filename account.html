@@ -45,7 +45,6 @@
     <a href="quiz.html">測驗</a>
     <a href="guides.html">引路人介紹</a>
     <a href="booking.html">預約引路人</a>
-    <a href="join.html">引路人入駐</a>
     <a href="account.html" class="on">登入</a>
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
@@ -56,24 +55,36 @@
 <!-- 未登入：登入／註冊 -->
 <div id="authbox" class="acc" style="display:none">
   <div class="logo"></div>
-  <h1>彩之語會員</h1>
-  <div class="sub">登入後，之後辦活動就能直接報名參加</div>
+  <h1>彩之語</h1>
+  <div class="sub" id="acc-sub">登入後，之後辦活動就能直接報名參加</div>
 
-  <div class="tabs">
-    <button id="tab-login" class="on" type="button">登入</button>
-    <button id="tab-reg" type="button">註冊</button>
+  <div class="tabs" style="margin-bottom:16px">
+    <button id="at-user" class="on" type="button">用戶帳號</button>
+    <button id="at-guide" type="button">引路人帳號</button>
   </div>
 
-  <form id="form">
-    <input class="fld" id="name" placeholder="你的稱呼" style="display:none">
-    <input class="fld" id="email" type="email" placeholder="Email" autocomplete="username">
-    <input class="fld" id="password" type="password" placeholder="密碼（至少 6 碼）" autocomplete="current-password">
-    <button class="go" id="go" type="submit">登入</button>
-    <div class="msg" id="msg"></div>
-  </form>
+  <div id="user-auth">
+    <div class="tabs">
+      <button id="tab-login" class="on" type="button">登入</button>
+      <button id="tab-reg" type="button">註冊</button>
+    </div>
 
-  <div class="divider">或</div>
-  <button class="line-btn" id="line-login" type="button">用 LINE 登入</button>
+    <form id="form">
+      <input class="fld" id="name" placeholder="你的稱呼" style="display:none">
+      <input class="fld" id="email" type="email" placeholder="Email" autocomplete="username">
+      <input class="fld" id="password" type="password" placeholder="密碼（至少 6 碼）" autocomplete="current-password">
+      <button class="go" id="go" type="submit">登入</button>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="divider">或</div>
+    <button class="line-btn" id="line-login" type="button">用 LINE 登入</button>
+  </div>
+
+  <div id="guide-auth" style="display:none">
+    <div class="mcard" style="text-align:left"><span class="soon">即將開放</span><h3>引路人帳號</h3><p>引路人專屬登入即將開放，之後你就能在這裡看到自己的預約與收入。已經是彩之語引路人的話，請先透過官方 LINE 與我們聯繫。</p></div>
+    <a class="line-btn" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">用官方 LINE 聯繫</a>
+  </div>
 </div>
 
 <!-- 已登入：會員專區 -->
@@ -157,6 +168,17 @@ function setMode(m){
 }
 $('#tab-login').onclick=function(){setMode('login');};
 $('#tab-reg').onclick=function(){setMode('reg');};
+
+// 切換 用戶帳號 / 引路人帳號
+function setAtype(t){
+  $('#at-user').classList.toggle('on',t==='user');
+  $('#at-guide').classList.toggle('on',t==='guide');
+  $('#user-auth').style.display=(t==='user')?'block':'none';
+  $('#guide-auth').style.display=(t==='guide')?'block':'none';
+  $('#acc-sub').textContent=(t==='user')?'登入後，之後辦活動就能直接報名參加':'給彩之語的引路人';
+}
+$('#at-user').onclick=function(){setAtype('user');};
+$('#at-guide').onclick=function(){setAtype('guide');};
 
 $('#form').onsubmit=async function(e){
   e.preventDefault();
