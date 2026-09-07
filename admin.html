@@ -459,7 +459,10 @@ function guideCard(g){
       '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
       '<label>信箱<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com"></label>'+
       '<label>可預約時間<input class="in" data-f="availability" value="'+esc(g.availability)+'" placeholder="例：週一~五 晚上"></label>'+
+      '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
+      '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
+    '<label class="notes-l">實體服務地址<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="實體地址／區域（線上可留空）"></label>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
     '<div class="cust-actions">'+

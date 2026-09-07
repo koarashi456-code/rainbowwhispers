@@ -91,6 +91,13 @@
         </div>
       </div>
 
+      <div class="field"><div class="lbl">服務方式（可複選）<span class="req">*</span></div>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" name="服務方式" value="線上">線上</label>
+          <label class="chip"><input type="checkbox" name="服務方式" value="實體">實體</label>
+        </div>
+      </div>
+
       <div class="field"><div class="lbl">簡要經歷（100–300 字）<span class="req">*</span></div>
         <textarea class="in" name="簡要經歷" placeholder="聊聊你的專業背景、擅長什麼、想陪伴哪一種人…"></textarea></div>
 
@@ -98,6 +105,10 @@
         <div class="field"><div class="lbl">收費標準 <span class="req">*</span></div><input class="in" name="收費標準" placeholder="例：30 分 500／60 分 1200"></div>
         <div class="field"><div class="lbl">可服務時段</div><input class="in" name="可服務時段" placeholder="大致範圍即可"></div>
       </div>
+
+      <div class="field"><div class="lbl">實體服務地址</div><input class="in" name="實體地址" data-optional placeholder="若有實體服務，填地址或區域（線上可留空）"></div>
+
+      <div class="field"><div class="lbl">粉絲專頁 / 社群</div><input class="in" name="粉專" data-optional placeholder="FB／IG 連結或帳號（沒有可留空）"></div>
 
       <label class="fconsent" id="consent-label">
         <input type="checkbox" id="agree" name="已同意規則">
@@ -137,7 +148,7 @@ var CONFIG = { email: 'koarashi456@gmail.com' };   // 申請會寄到這個信�
     var v=function(n){var e=form.querySelector('[name="'+n+'"]');return e?e.value.trim():'';};
     var multi=function(n){return Array.prototype.map.call(form.querySelectorAll('input[name="'+n+'"]:checked'),function(x){return x.value;});};
     var notes='服務風格：'+multi('服務風格').join('、')+' ｜ 收費：'+v('收費標準')+' ｜ 經歷：'+v('簡要經歷');
-    try{fetch(window.SUPA.url+'/rest/v1/guides',{method:'POST',headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:v('名字／藝名')||null,phone:v('手機')||null,email:v('email')||null,services:multi('擅長領域'),availability:v('可服務時段')||null,notes:notes,pending:true,active:false})});}catch(e){}
+    try{fetch(window.SUPA.url+'/rest/v1/guides',{method:'POST',headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:v('名字／藝名')||null,phone:v('手機')||null,email:v('email')||null,services:multi('擅長領域'),service_mode:multi('服務方式').join('、')||null,address:v('實體地址')||null,fanpage:v('粉專')||null,availability:v('可服務時段')||null,notes:notes,pending:true,active:false})});}catch(e){}
   }
   form.addEventListener('change',function(e){
     if(e.target.matches('.chip input')){ e.target.closest('.chip').classList.toggle('on', e.target.checked); }
@@ -148,10 +159,12 @@ var CONFIG = { email: 'koarashi456@gmail.com' };   // 申請會寄到這個信�
     var invalid=false;
     form.querySelectorAll('input[name],textarea[name]').forEach(function(el){
       if(el.type==='checkbox') return;
+      if(el.hasAttribute('data-optional')) return;
       if(!el.value.trim()){ el.style.borderColor='#C0506A'; invalid=true; } else { el.style.borderColor='#EFE3CE'; }
     });
     if(!form.querySelectorAll('input[name="擅長領域"]:checked').length) invalid=true;
     if(!form.querySelectorAll('input[name="服務風格"]:checked').length) invalid=true;
+    if(!form.querySelectorAll('input[name="服務方式"]:checked').length) invalid=true;
     if(!document.getElementById('agree').checked){ document.getElementById('consent-label').classList.add('warn'); invalid=true; }
     if(invalid) return;
     btn.disabled=true; btn.textContent='送出中…';
