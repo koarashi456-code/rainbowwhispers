@@ -40,8 +40,10 @@
   .paybox{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px}
   .paybox .dot{width:16px;height:16px;border-radius:50%;border:5px solid #B5713F;flex:none}
 
-  .sumline{display:flex;justify-content:space-between;font-size:14.5px;line-height:1.4;color:var(--ink);padding:3px 0}
-  .sumline.total{border-top:1px dashed var(--line);margin-top:6px;padding-top:9px;font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush)}
+  .sumline{display:flex;justify-content:space-between;gap:16px;font-size:14.5px;line-height:1.5;color:var(--ink);padding:4px 0}
+  .sumline span:first-child{color:var(--soft)}
+  .sumline span:last-child{font-variant-numeric:tabular-nums;text-align:right}
+  .sumline.total{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush)}
   .sumline small{color:var(--soft);font-size:12px}
   .bank{background:#FBF6EC;border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;color:var(--ink);line-height:1.9}
   .bank b{color:var(--brush)}
@@ -52,9 +54,7 @@
   .done .ic{width:60px;height:60px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:6px auto 16px}
   .done h2{font-family:"Noto Serif TC",serif;font-size:22px;color:var(--brush);margin-bottom:8px}
   .done .ordref{display:inline-block;font-size:13px;color:var(--soft);background:var(--tint);border-radius:999px;padding:5px 14px;margin:6px 0 4px;font-variant-numeric:tabular-nums}
-  #done-summary{text-align:center}
-  #done-summary .sumline{justify-content:center;gap:12px}
-  #done-summary .sumline span:first-child{color:var(--soft)}
+  #pay-summary,#done-summary{max-width:252px;margin-left:auto;margin-right:auto;text-align:left}
   .ghost-link{display:inline-block;margin-top:8px;color:var(--brush);text-decoration:underline;text-underline-offset:3px;font-size:14px}
   .err{color:#C0506A;font-size:13px;margin-top:8px;min-height:18px}
 </style>
@@ -134,7 +134,7 @@
         <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3E9E86" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
         <h2>預約已送出！</h2>
         <div class="ordref" id="done-ref"></div>
-        <div id="done-summary" style="text-align:left;margin:14px 0 6px"></div>
+        <div id="done-summary" style="margin:14px auto 6px"></div>
         <p class="muted" style="font-size:14px;line-height:1.7">我們會盡快與你確認時間，並提供完整地址與正式匯款帳號。<br>（此為測試流程，尚未真的收款）</p>
         <a class="ghost-link" href="guides.html">← 回引路人介紹</a>
       </div>
