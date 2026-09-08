@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="style.css">
 <style>
   .price-hero{padding:44px 20px 8px}
-  .tiers{max-width:1000px;margin:26px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
-  .tier{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 22px 24px;display:flex;flex-direction:column;position:relative}
+  .tiers{max-width:740px;margin:26px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:18px;align-items:stretch}
+  .tier{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 24px 24px;display:flex;flex-direction:column;position:relative}
   .tier.feat{border:2px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box, var(--rainbow) border-box;box-shadow:0 22px 46px -24px rgba(150,120,160,.55)}
   .ribbon{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--rainbow);color:#4A3A2A;font-size:12.5px;font-weight:600;letter-spacing:.02em;padding:5px 18px;border-radius:999px;white-space:nowrap;box-shadow:0 8px 18px -8px rgba(150,120,160,.6)}
   .tier-name{font-family:"Noto Serif TC",serif;font-size:19px;color:var(--brush);font-weight:600}
@@ -20,34 +20,28 @@
   .tier-price .cur{font-size:16px;color:var(--soft);font-weight:500}
   .tier-price .num{font-family:"Noto Serif TC",serif;font-size:40px;color:var(--ink);line-height:1}
   .tier-price .unit{font-size:14px;color:var(--soft)}
+  .pricenote{font-size:12.5px;color:#4F8E6E;font-weight:500;margin-top:1px;min-height:17px}
   .tier-hr{height:1px;background:var(--line);margin:16px 0 4px}
+
+  .billtoggle{display:inline-flex;background:#F3EAD9;border-radius:999px;padding:3px;margin:16px 0 4px;gap:3px}
+  .bt{font:inherit;font-size:13px;color:var(--soft);background:none;border:none;padding:7px 15px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+  .bt.on{background:#fff;color:var(--brush);font-weight:500;box-shadow:0 2px 8px -3px rgba(120,90,60,.3)}
+  .bt .save{font-size:10.5px;background:var(--rainbow);color:#4A3A2A;padding:1px 7px;border-radius:999px;font-weight:700;letter-spacing:.02em}
+
   .feat{list-style:none;margin:12px 0 22px;display:flex;flex-direction:column;gap:11px}
   .feat li{position:relative;padding-left:27px;font-size:14px;color:var(--ink);line-height:1.5}
   .feat li::before{content:"";position:absolute;left:0;top:1px;width:18px;height:18px;background:center/contain no-repeat url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='11' fill='%23F1E6D2'/><path d='M7 12.4l3.2 3.2L17 9' stroke='%23B5713F' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/></svg>")}
-  .feat li.dim{color:var(--soft)}
   .feat li.hi{font-weight:500;color:var(--brush)}
   .feat li.hi::before{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='11' fill='%23EAD9F2'/><path d='M7 12.4l3.2 3.2L17 9' stroke='%236E4F9E' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/></svg>")}
   .btnrow{margin-top:auto}
   .btnrow .rw-cta,.btnrow .rw-ghost{display:block;width:100%;text-align:center;padding-left:0;padding-right:0;box-sizing:border-box}
-  .undertext{font-size:11.5px;color:#B6A283;text-align:center;margin-top:9px}
 
-  .calc{max-width:1000px;margin:26px auto 0;padding:0 20px}
-  .calc-in{background:var(--tint);border-radius:18px;padding:20px 24px}
-  .calc-h{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--brush);margin-bottom:8px}
-  .calc-p{font-size:13.5px;color:var(--soft);line-height:1.75}
-  .calc-eq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
-  .eqbox{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:9px 15px;font-size:14px;color:var(--ink);text-align:center}
-  .eqbox b{display:block;font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush);margin-top:1px}
-  .eqbox small{font-size:11.5px;color:var(--soft)}
-  .eqop{font-size:18px;color:var(--accent);font-weight:500}
-  .eqbox.total{background:linear-gradient(#FFFDF8,#FFFDF8) padding-box, var(--rainbow) border-box;border:1.5px solid transparent}
-
-  .reassure{max-width:600px;margin:24px auto 4px;text-align:center;font-size:14.5px;color:var(--soft);line-height:1.7;padding:0 20px}
+  .reassure{max-width:600px;margin:30px auto 4px;text-align:center;font-size:14.5px;color:var(--soft);line-height:1.7;padding:0 20px}
   .reassure b{color:var(--brush);font-weight:500}
+  .feenote{max-width:600px;margin:14px auto 0;text-align:center;font-size:12.5px;color:#B6A283;padding:0 20px;line-height:1.7}
 
-  @media(max-width:820px){
+  @media(max-width:720px){
     .tiers{grid-template-columns:1fr;max-width:420px;gap:24px;margin-top:30px}
-    .eqbox{flex:1;min-width:96px}
   }
 </style>
 </head>
@@ -75,11 +69,12 @@
 
 <div class="tiers">
 
-  <!-- ① 免費會員 -->
+  <!-- 免費會員 -->
   <div class="tier">
     <div class="tier-name">免費會員</div>
     <div class="tier-tag">你的探索起點</div>
     <div class="tier-price"><span class="cur">NT$</span><span class="num">0</span><span class="unit">／永久免費</span></div>
+    <div class="pricenote"></div>
     <div class="tier-hr"></div>
     <ul class="feat">
       <li>心靈導航測驗</li>
@@ -92,27 +87,17 @@
     <div class="btnrow"><a class="rw-cta" href="account.html">免費註冊</a></div>
   </div>
 
-  <!-- ② 單次媒合 -->
-  <div class="tier">
-    <div class="tier-name">單次媒合</div>
-    <div class="tier-tag">需要時再付，不用先加入</div>
-    <div class="tier-price"><span class="cur">NT$</span><span class="num">39</span><span class="unit">／每次預約</span></div>
-    <div class="tier-hr"></div>
-    <ul class="feat">
-      <li>由彩之語為你配對合適引路人</li>
-      <li>協助安排預約與確認時間</li>
-      <li>不合可換，陪你重配一次</li>
-      <li class="dim">引路人服務費另計（由引路人自訂）</li>
-    </ul>
-    <div class="btnrow"><a class="rw-ghost" href="booking.html">看預約方式</a></div>
-  </div>
-
-  <!-- ③ 探索會員 -->
+  <!-- 探索會員 -->
   <div class="tier feat">
     <div class="ribbon">最超值 · 推薦</div>
     <div class="tier-name">探索會員</div>
     <div class="tier-tag">給想持續探索的你</div>
-    <div class="tier-price"><span class="cur">NT$</span><span class="num">59</span><span class="unit">／每月</span></div>
+    <div class="billtoggle" id="billtoggle">
+      <button class="bt on" data-bill="m" type="button">月繳</button>
+      <button class="bt" data-bill="y" type="button">年繳 <span class="save">省 $118</span></button>
+    </div>
+    <div class="tier-price"><span class="cur">NT$</span><span class="num" id="price-num">59</span><span class="unit" id="price-unit">／每月</span></div>
+    <div class="pricenote" id="price-note"></div>
     <div class="tier-hr"></div>
     <ul class="feat">
       <li class="hi">每月一次完整心靈導航分析</li>
@@ -129,22 +114,8 @@
 
 </div>
 
-<!-- 費用怎麼算 -->
-<div class="calc">
-  <div class="calc-in">
-    <div class="calc-h">預約時的費用怎麼算？</div>
-    <p class="calc-p">引路人服務費由引路人自訂（下例以 NT$800 示意）。真的要預約時，另加一筆 <span class="rw-strong">彩之語媒合服務費 NT$39</span> —— 這 39 元，是我們幫你找到合適的引路人、處理配對與預約安排的服務費。<br><span class="rw-strong">探索會員可折抵這筆媒合費。</span></p>
-    <div class="calc-eq">
-      <div class="eqbox"><small>引路人服務費</small><b>$800</b></div>
-      <span class="eqop">＋</span>
-      <div class="eqbox"><small>彩之語媒合費</small><b>$39</b></div>
-      <span class="eqop">＝</span>
-      <div class="eqbox total"><small>你這次付</small><b>$839</b></div>
-    </div>
-  </div>
-</div>
-
 <p class="reassure">所有方案都能<b>免費做測驗、瀏覽與收藏引路人</b>。<br>會員只是多給你一些陪伴與工具，不是解鎖找引路人的鑰匙。</p>
+<p class="feenote">預約引路人時另有少額媒合服務費，會在預約付款時清楚顯示；探索會員可折抵。</p>
 
 <div style="height:36px"></div>
 
@@ -156,5 +127,22 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 
+<script>
+(function(){
+  var tog=document.getElementById('billtoggle');
+  var num=document.getElementById('price-num'), unit=document.getElementById('price-unit'), note=document.getElementById('price-note');
+  tog.addEventListener('click',function(e){
+    var b=e.target.closest('.bt'); if(!b) return;
+    tog.querySelectorAll('.bt').forEach(function(x){x.classList.toggle('on',x===b);});
+    if(b.getAttribute('data-bill')==='y'){
+      num.textContent='590'; unit.textContent='／每年';
+      note.textContent='平均約 $49／月 · 省 $118（約 2 個月免費）';
+    }else{
+      num.textContent='59'; unit.textContent='／每月';
+      note.textContent='';
+    }
+  });
+})();
+</script>
 </body>
 </html>
