@@ -462,7 +462,8 @@ function guideCard(g){
       '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
-    '<label class="notes-l">實體服務地址<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="實體地址／區域（線上可留空）"></label>'+
+    '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
+    '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
     '<div class="cust-actions">'+
@@ -550,7 +551,7 @@ function renderTx(){
   var rows=TX.filter(function(t){
     if(fs && t.status!==fs) return false;
     if(fg && t.guide_id!==fg) return false;
-    if(q){ var c=custById(t.customer_id); var hay=[(c?custLabel(c):''),guideName(t.guide_id),t.service,t.notes].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
+    if(q){ var c=custById(t.customer_id); var hay=[(c?custLabel(c):''),t.guest_name,t.guest_contact,guideName(t.guide_id),t.service,t.notes].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
     return true;
   });
   var sum=rows.reduce(function(a,t){return a+(t.status==='已取消'||t.status==='已退費'?0:Number(t.amount||0));},0);
@@ -563,10 +564,11 @@ function txRow(t){
   var c=custById(t.customer_id);
   return '<div class="cust collapsed" data-id="'+t.id+'">'+
     '<div class="cust-top chead">'+
-      '<div><span class="caret">▾</span> <b>'+esc(c?custLabel(c):'(已刪客戶)')+'</b>　<span class="topic">'+esc(guideName(t.guide_id))+'</span>　'+statusBadge(t.status)+'</div>'+
+      '<div><span class="caret">▾</span> <b>'+esc(c?custLabel(c):(t.guest_name?t.guest_name+'（訪客預約）':'(已刪客戶)'))+'</b>　<span class="topic">'+esc(guideName(t.guide_id))+'</span>　'+statusBadge(t.status)+'</div>'+
       '<div class="meta">'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</div>'+
     '</div>'+
     '<div class="cbody">'+
+    (t.guest_contact?'<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px">訪客聯絡：'+esc(t.guest_contact)+'</div>':'')+
     '<div class="cust-grid">'+
       '<label>項目<input class="in" data-f="service" value="'+esc(t.service)+'"></label>'+
       '<label>金額<input class="in" data-f="amount" type="number" value="'+esc(t.amount)+'"></label>'+
@@ -639,7 +641,7 @@ function renderReport(){
     gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
-      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+'</span><span class="gn">'+esc(c?custLabel(c):'(客戶)')+'</span><span class="gs">'+esc(t.service||'—')+(t.method?' · '+esc(t.method):'')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
+      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+'</span><span class="gn">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gs">'+esc(t.service||'—')+(t.method?' · '+esc(t.method):'')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
     });
     h+='</div></div>';
   });
@@ -740,7 +742,7 @@ function buildNotifs(C,G,T){
     n.push({
       kind:'booking', cat:'booking', ts:t.created_at,
       tag:'新預約', color:'#B49BDD', tcolor:'#6E4F9E',
-      main:(c?esc(custLabel(c)):'客戶')+(t.service?'　·　'+esc(t.service):''),
+      main:(c?esc(custLabel(c)):(t.guest_name?esc(t.guest_name)+'（訪客）':'客戶'))+(t.service?'　·　'+esc(t.service):''),
       sub:(gg?esc(guideLabel(gg)):'未指定引路人')+'　·　'+(t.appointment_at?fmtFull(t.appointment_at)+hhmm(t.appointment_at):'未定時間')+'　·　'+money(t.amount),
       tab:'tx', id:t.id
     });
@@ -790,7 +792,7 @@ async function pollNotif(){
     var res=await Promise.all([
       db.from('customers').select('id,name,contact,source,result_type,ref_code,topic,created_at,deleted').order('created_at',{ascending:false}).limit(80),
       db.from('guides').select('id,name,services,pending,created_at,deleted').order('created_at',{ascending:false}).limit(80),
-      db.from('transactions').select('id,customer_id,guide_id,service,appointment_at,amount,status,created_at,deleted').order('created_at',{ascending:false}).limit(80)
+      db.from('transactions').select('id,customer_id,guide_id,service,appointment_at,amount,status,guest_name,created_at,deleted').order('created_at',{ascending:false}).limit(80)
     ]);
     var nd=function(x){return !x.deleted;};
     buildNotifs((res[0].data||[]).filter(nd),(res[1].data||[]).filter(nd),(res[2].data||[]).filter(nd));
