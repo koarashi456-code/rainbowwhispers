@@ -97,14 +97,11 @@
       <div class="fcard">
         <div class="field"><div class="lbl">服務項目 <span class="req">*</span></div><div id="service-wrap"></div></div>
         <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div><input class="in" id="f-when" type="datetime-local"></div>
-        <div class="frow">
-          <div class="field"><div class="lbl">你的稱呼 <span class="req">*</span></div><input class="in" id="f-name" placeholder="怎麼稱呼你"></div>
-          <div class="field"><div class="lbl">聯絡方式 <span class="req">*</span></div><input class="in" id="f-contact" placeholder="LINE ID／手機"></div>
-        </div>
         <div class="field"><div class="lbl">想聊的主題／備註</div><textarea class="in" id="f-note" placeholder="選填，例如：感情、工作方向…"></textarea></div>
-        <div class="field" style="margin-bottom:0"><div class="lbl">付款方式</div>
+        <div class="field"><div class="lbl">付款方式</div>
           <div class="paybox"><span class="dot"></span> 匯款（ATM／網銀轉帳）</div>
         </div>
+        <div class="field" style="margin-bottom:0"><div class="lbl">轉帳帳號末 5 碼 <span class="req">*</span></div><input class="in" id="f-last5" inputmode="numeric" maxlength="5" placeholder="方便我們核對你的匯款"></div>
         <div class="err" id="form-err"></div>
         <button class="cta-big" id="to-pay">下一步：確認訂單　→</button>
       </div>
@@ -152,9 +149,11 @@
 </footer>
 
 <script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
 var FEE=39;
-var guide=null;
+var guide=null, MEMBER=null;
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function money(n){return '$'+Number(n||0).toLocaleString();}
@@ -163,16 +162,15 @@ function fmtWhen(s){ if(!s) return '未指定'; var d=new Date(s); return d.getF
 
 function getId(){ return new URLSearchParams(location.search).get('id'); }
 
-function loadGuide(){
+async function loadGuide(){
   var id=getId();
   if(!id || !window.SUPA){ show('notfound'); return; }
-  fetch(window.SUPA.url+'/rest/v1/public_guides?id=eq.'+encodeURIComponent(id)+'&select=*',{headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key}})
-    .then(function(r){return r.json();})
-    .then(function(rows){
-      if(!rows || !rows.length){ show('notfound'); return; }
-      guide=rows[0]; renderGuide(); show('content');
-    })
-    .catch(function(){ show('notfound'); });
+  try{ var sr=await db.auth.getSession(); MEMBER=(sr.data&&sr.data.session)?sr.data.session.user:null; }catch(e){ MEMBER=null; }
+  try{
+    var res=await db.from('public_guides').select('*').eq('id',id);
+    if(res.error || !res.data || !res.data.length){ show('notfound'); return; }
+    guide=res.data[0]; renderGuide(); show('content');
+  }catch(e){ show('notfound'); }
 }
 
 function renderGuide(){
@@ -187,9 +185,13 @@ function renderGuide(){
   if(meta.length) h+='<div class="gmeta">'+meta.join('<br>')+'</div>';
   if(g.notes) h+='<div class="gnotes">'+esc(g.notes)+'</div>';
   if(g.price!=null) h+='<div class="gprice">'+money(g.price)+' <small>／次　起</small></div>';
-  h+='<button class="cta-big" id="open-book">立即預約　→</button>';
+  h+='<button class="cta-big" id="open-book">'+(MEMBER?'立即預約　→':'登入會員後預約　→')+'</button>';
+  if(!MEMBER) h+='<div class="muted" style="font-size:12.5px;margin-top:8px">預約需先登入會員（方便對帳與紀錄）</div>';
   $('#gcard').innerHTML=h;
-  $('#open-book').onclick=function(){ $('#book-form').style.display='block'; $('#book-form').scrollIntoView({behavior:'smooth',block:'start'}); };
+  $('#open-book').onclick=function(){
+    if(!MEMBER){ location.href='account.html?next='+encodeURIComponent(location.pathname+location.search); return; }
+    $('#book-form').style.display='block'; $('#book-form').scrollIntoView({behavior:'smooth',block:'start'});
+  };
 
   // 服務項目：有清單用下拉，否則文字
   var sw=$('#service-wrap');
@@ -201,9 +203,10 @@ function serviceAmount(){ return (guide && guide.price!=null) ? Number(guide.pri
 
 $('#to-pay').onclick=function(){
   var err=$('#form-err'); err.textContent='';
-  var svc=($('#f-service')||{}).value||'', when=$('#f-when').value, name=$('#f-name').value.trim(), contact=$('#f-contact').value.trim();
+  var svc=($('#f-service')||{}).value||'', when=$('#f-when').value, last5=$('#f-last5').value.trim();
   var bad=[];
-  [['#f-when',when],['#f-name',name],['#f-contact',contact]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ el.style.borderColor='#C0506A'; bad.push(1);} else el.style.borderColor='#EFE3CE'; });
+  [['#f-when',when],['#f-last5',last5]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ el.style.borderColor='#C0506A'; bad.push(1);} else el.style.borderColor='#EFE3CE'; });
+  if(last5 && !/^\d{3,5}$/.test(last5)){ $('#f-last5').style.borderColor='#C0506A'; err.textContent='帳號末 5 碼請填數字'; return; }
   if(!svc){ bad.push(1); }
   if(bad.length){ err.textContent='請把有 * 的欄位填完整'; return; }
   // 訂單摘要
@@ -223,28 +226,25 @@ $('#to-pay').onclick=function(){
 
 $('#back-form').onclick=function(){ $('#book-pay').style.display='none'; $('#book-form').style.display='block'; $('#book-form').scrollIntoView({behavior:'smooth',block:'start'}); };
 
-$('#do-submit').onclick=function(){
+$('#do-submit').onclick=async function(){
   var btn=this, err=$('#pay-err'); err.textContent='';
-  var svc=($('#f-service')||{}).value||'', when=$('#f-when').value, name=$('#f-name').value.trim(), contact=$('#f-contact').value.trim(), note=$('#f-note').value.trim();
+  if(!MEMBER){ err.textContent='請先登入會員'; return; }
+  var svc=($('#f-service')||{}).value||'', when=$('#f-when').value, note=$('#f-note').value.trim(), last5=$('#f-last5').value.trim();
   var amt=serviceAmount(), total=amt+FEE;
   btn.disabled=true; btn.textContent='送出中…';
-  var row={
-    guide_id:guide.id, service:svc, appointment_at:when||null, amount:amt,
-    method:'匯款', status:'已預約', guest_name:name, guest_contact:contact,
-    notes:'匯款總額 '+money(total)+'（含媒合費'+money(FEE)+'）'+(note?'｜'+note:'')
-  };
-  fetch(window.SUPA.url+'/rest/v1/transactions',{method:'POST',headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(row)})
-    .then(function(r){
-      if(!r.ok){ return r.text().then(function(t){ throw new Error(t||('HTTP '+r.status)); }); }
-      // 完成
-      var ref='RW'+Date.now().toString().slice(-8);
-      $('#done-ref').textContent='訂單編號 '+ref;
-      $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
-      $('#book-pay').style.display='none';
-      $('#book-done').style.display='block';
-      $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
-    })
-    .catch(function(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(e.message||'請稍後再試').slice(0,120); });
+  try{
+    var res=await db.rpc('book_appointment',{
+      p_guide_id:guide.id, p_service:svc, p_appointment_at:(when||null), p_amount:amt,
+      p_note:('匯款總額 '+money(total)+'（含媒合費'+money(FEE)+'）'+(note?'｜'+note:'')), p_pay_last5:last5
+    });
+    if(res.error) throw new Error(res.error.message);
+    var ref=res.data||('RW'+Date.now().toString().slice(-8));
+    $('#done-ref').textContent='訂單編號 '+ref;
+    $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
+    $('#book-pay').style.display='none';
+    $('#book-done').style.display='block';
+    $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(((e&&e.message)||'請稍後再試')+'').slice(0,140); }
 };
 
 loadGuide();

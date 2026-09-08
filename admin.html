@@ -386,7 +386,7 @@ function customerRecords(cid){
   var tps=TOPUPS.filter(function(t){return t.customer_id===cid;});
   if(!txs.length && !tps.length) return '<div class="muted" style="padding:6px 0">尚無消費／儲值紀錄</div>';
   var h='';
-  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+(t.method?' · '+esc(t.method):'')+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
+  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+(t.method?' · '+esc(t.method):'')+(t.order_ref?' · '+esc(t.order_ref):'')+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
   tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'<button class="recdel" data-deltp="'+t.id+'" title="刪除">✕</button></span></div>'; });
   return h;
 }
@@ -568,6 +568,7 @@ function txRow(t){
       '<div class="meta">'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</div>'+
     '</div>'+
     '<div class="cbody">'+
+    '<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px">'+(t.order_ref?'訂單編號 '+esc(t.order_ref)+'　·　':'')+'下單 '+fmtDate(t.created_at)+(t.method==='匯款'&&t.pay_last5?'　·　匯款末5碼 '+esc(t.pay_last5):'')+'</div>'+
     (t.guest_contact?'<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px">訪客聯絡：'+esc(t.guest_contact)+'</div>':'')+
     '<div class="cust-grid">'+
       '<label>項目<input class="in" data-f="service" value="'+esc(t.service)+'"></label>'+
@@ -641,7 +642,7 @@ function renderReport(){
     gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
-      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+'</span><span class="gn">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gs">'+esc(t.service||'—')+(t.method?' · '+esc(t.method):'')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
+      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+'</span><span class="gn">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gs">'+esc(t.service||'—')+(t.method?' · '+esc(t.method):'')+(t.order_ref?' · '+esc(t.order_ref):'')+' · 下單 '+fmtDay(t.created_at)+(t.method==='匯款'&&t.pay_last5?' · 末5碼 '+esc(t.pay_last5):'')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
     });
     h+='</div></div>';
   });
