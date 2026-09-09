@@ -101,8 +101,7 @@
         <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div><input class="in" id="f-when" type="datetime-local"></div>
         <div class="field"><div class="lbl">想聊的主題／備註</div><textarea class="in" id="f-note" placeholder="選填，例如：感情、工作方向…"></textarea></div>
         <div class="field" style="margin-bottom:0"><div class="lbl">付款方式 <span class="req">*</span></div>
-          <label class="paybox sel" data-pay="匯款"><span class="dot"></span> 匯款（ATM／網銀轉帳）</label>
-          <label class="paybox" data-pay="刷卡" style="margin-top:8px"><span class="dot"></span> 刷卡（信用卡）</label>
+          <div id="pay-options"></div>
         </div>
         <div class="err" id="form-err"></div>
         <button class="cta-big" id="to-pay">下一步：確認訂單　→</button>
@@ -149,7 +148,7 @@
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
 var FEE=39;
-var guide=null, MEMBER=null, PAY_METHOD='匯款';
+var guide=null, MEMBER=null, PAY_METHOD='匯款', MEMBER_BALANCE=0;
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function money(n){return '$'+Number(n||0).toLocaleString();}
@@ -162,6 +161,7 @@ async function loadGuide(){
   var id=getId();
   if(!id || !window.SUPA){ show('notfound'); return; }
   try{ var sr=await db.auth.getSession(); MEMBER=(sr.data&&sr.data.session)?sr.data.session.user:null; }catch(e){ MEMBER=null; }
+  if(MEMBER){ try{ var ar=await db.rpc('my_account'); if(!ar.error && ar.data){ MEMBER_BALANCE=Number(ar.data.balance||0); } }catch(e){} }
   try{
     var res=await db.from('public_guides').select('*').eq('id',id);
     if(res.error || !res.data || !res.data.length){ show('notfound'); return; }
@@ -193,6 +193,17 @@ function renderGuide(){
   var sw=$('#service-wrap');
   if(svcs.length){ sw.innerHTML='<select class="in" id="f-service">'+svcs.map(function(s){return '<option>'+esc(s)+'</option>';}).join('')+'</select>'; }
   else { sw.innerHTML='<input class="in" id="f-service" placeholder="想預約的服務">'; }
+
+  // 付款方式：儲值（餘額夠付服務費才出現）＋匯款＋刷卡
+  var svcAmt=(g.price!=null?Number(g.price):0);
+  var opts='';
+  if(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt){
+    opts+='<label class="paybox" data-pay="儲值"><span class="dot"></span> 用儲值付款（餘額 '+money(MEMBER_BALANCE)+'，免媒合費）</label>';
+  }
+  opts+='<label class="paybox sel" data-pay="匯款"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 匯款（ATM／網銀轉帳）</label>';
+  opts+='<label class="paybox" data-pay="刷卡" style="margin-top:8px"><span class="dot"></span> 刷卡（信用卡）</label>';
+  var po=$('#pay-options'); po.innerHTML=opts; PAY_METHOD='匯款';
+  po.querySelectorAll('.paybox').forEach(function(el){ el.onclick=function(){ PAY_METHOD=el.getAttribute('data-pay'); po.querySelectorAll('.paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); }; });
 }
 
 function serviceAmount(){ return (guide && guide.price!=null) ? Number(guide.price) : 0; }
@@ -205,20 +216,24 @@ $('#to-pay').onclick=function(){
   if(!svc){ bad.push(1); }
   if(bad.length){ err.textContent='請把有 * 的欄位填完整'; return; }
   // 訂單摘要
-  var amt=serviceAmount(), total=amt+FEE;
-  var totalLabel=(PAY_METHOD==='匯款')?'匯款總額':'應付總額';
+  var amt=serviceAmount();
+  var isStore=(PAY_METHOD==='儲值');
+  var total=isStore?amt:(amt+FEE);
+  var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
   h+='<div class="sumline"><span>服務項目</span><span>'+esc(svc)+'</span></div>';
   h+='<div class="sumline"><span>希望時間</span><span>'+fmtWhen(when)+'</span></div>';
   h+='<div class="sumline"><span>付款方式</span><span>'+esc(PAY_METHOD)+'</span></div>';
   h+='<div class="sumline"><span>引路人服務費</span><span>'+money(amt)+'</span></div>';
-  h+='<div class="sumline"><span>彩之語媒合費</span><span>'+money(FEE)+'</span></div>';
+  h+='<div class="sumline"><span>彩之語媒合費</span><span>'+(isStore?'免收':money(FEE))+'</span></div>';
   h+='<div class="sumline total"><span>'+totalLabel+'</span><span>'+money(total)+'</span></div>';
   $('#pay-summary').innerHTML=h;
   // 付款方式對應內容
   var mb='';
-  if(PAY_METHOD==='匯款'){
+  if(PAY_METHOD==='儲值'){
+    mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">以儲值餘額付款</div>送出後自動從你的儲值折抵 <b>'+money(total)+'</b>，折抵後餘額約 <b>'+money(Math.max(0,MEMBER_BALANCE-total))+'</b>。<div class="bankwarn">用儲值付款免收媒合費。</div></div>';
+  } else if(PAY_METHOD==='匯款'){
     mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">匯款資訊（測試）</div>銀行：<b>玉山銀行（808）</b><br>戶名：<b>彩之語 Rainbow Whisper</b><br>帳號：<b>0000-0000-0000-0000</b><div class="bankwarn">⚠️ 這是測試流程，請勿真的匯款。正式帳號會在我們確認預約後提供。</div></div>'+
        '<div class="field" style="margin-top:12px;margin-bottom:0"><div class="lbl">轉帳帳號末 5 碼 <span class="req">*</span></div><input class="in" id="f-last5" inputmode="numeric" maxlength="5" placeholder="匯款完成後填上，方便我們對帳"></div>';
   } else {
@@ -241,13 +256,15 @@ $('#do-submit').onclick=async function(){
     if(!last5){ if(l5el) l5el.style.borderColor='#C0506A'; err.textContent='請填轉帳帳號末 5 碼'; return; }
     if(!/^\d{3,5}$/.test(last5)){ if(l5el) l5el.style.borderColor='#C0506A'; err.textContent='帳號末 5 碼請填數字'; return; }
   }
-  var amt=serviceAmount(), total=amt+FEE;
-  var totalLabel=(PAY_METHOD==='匯款')?'匯款總額':'應付總額';
+  var amt=serviceAmount();
+  var isStore=(PAY_METHOD==='儲值');
+  var total=isStore?amt:(amt+FEE);
+  var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   btn.disabled=true; btn.textContent='送出中…';
   try{
     var res=await db.rpc('book_appointment',{
       p_guide_id:guide.id, p_service:svc, p_appointment_at:(when||null), p_amount:amt,
-      p_note:(totalLabel+' '+money(total)+'（含媒合費'+money(FEE)+'）'+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
+      p_note:(totalLabel+' '+money(total)+(isStore?'（儲值折抵）':'（含媒合費'+money(FEE)+'）')+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
@@ -258,10 +275,6 @@ $('#do-submit').onclick=async function(){
     $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(((e&&e.message)||'請稍後再試')+'').slice(0,140); }
 };
-
-document.querySelectorAll('#book-form .paybox').forEach(function(el){
-  el.onclick=function(){ PAY_METHOD=el.getAttribute('data-pay'); document.querySelectorAll('#book-form .paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); };
-});
 
 loadGuide();
 </script>

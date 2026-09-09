@@ -92,6 +92,14 @@
 <div id="member" class="member" style="display:none">
   <div class="hi" id="hi">嗨！</div>
   <div class="who" id="who"></div>
+  <div class="mcard" id="acct-card" style="display:none">
+    <h3>我的儲值餘額</h3>
+    <div style="font-family:'Noto Serif TC',serif;font-size:28px;color:var(--brush)" id="acct-balance">—</div>
+  </div>
+  <div class="mcard" id="orders-card" style="display:none">
+    <h3 style="margin-bottom:2px">我的訂單</h3>
+    <div id="orders-list"></div>
+  </div>
   <div class="mcard">
     <span class="soon">即將開放</span>
     <h3>活動報名</h3>
@@ -140,6 +148,29 @@ function enterMember(o){
   $('#hi').textContent=nm?('嗨，'+nm+'！'):'嗨！';
   $('#who').textContent=o.email || (o.line?'LINE 登入':'') || '';
   show('member');
+  loadMyAccount();
+}
+function escA(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+function fmtDT(s){ if(!s) return '待確認'; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+// 會員自助：讀自己的儲值餘額＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
+async function loadMyAccount(){
+  try{
+    var r=await db.rpc('my_account');
+    if(r.error || !r.data) return;
+    $('#acct-balance').textContent='$'+Number(r.data.balance||0).toLocaleString();
+    $('#acct-card').style.display='block';
+    var orders=r.data.orders||[], box=$('#orders-list');
+    if(!orders.length){ box.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有訂單。預約引路人後會出現在這裡。</p>'; }
+    else{
+      box.innerHTML=orders.map(function(o){
+        return '<div style="text-align:left;border-top:1px solid var(--line);padding:10px 0;font-size:13.5px">'+
+          '<div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--brush)">'+escA(o.guide_name||'引路人')+'　'+escA(o.service||'')+'</b><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span></div>'+
+          '<div style="color:var(--soft);font-size:12.5px;margin-top:3px">'+fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　$'+Number(o.amount||0).toLocaleString()+(o.order_ref?'　·　'+escA(o.order_ref):'')+'</div>'+
+        '</div>';
+      }).join('');
+    }
+    $('#orders-card').style.display='block';
+  }catch(e){}
 }
 // LINE(LIFF) 會員也寫進客戶後台（同一瀏覽器只寫一次）
 function saveLineMember(p){
