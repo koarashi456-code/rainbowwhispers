@@ -277,6 +277,8 @@ $('#do-submit').onclick=async function(){
   }catch(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(((e&&e.message)||'請稍後再試')+'').slice(0,140); }
 };
 
+function snap15(el){ if(!el||!el.value) return; var d=new Date(el.value); if(isNaN(d)) return; d.setMinutes(Math.round(d.getMinutes()/15)*15,0,0); var p=function(n){return String(n).padStart(2,'0');}; el.value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }
+(function(){ var w=$('#f-when'); if(w){ w.addEventListener('change',function(){snap15(w);}); w.addEventListener('blur',function(){snap15(w);}); } })();
 loadGuide();
 </script>
 </body>

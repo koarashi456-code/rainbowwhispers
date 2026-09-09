@@ -292,6 +292,7 @@ function fmtDay(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'
 function fmtFull(s){if(!s)return '未定時間';var d=new Date(s);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
 function hhmm(s){if(!s)return '';var d=new Date(s);return ' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function money(n){return '$'+Number(n||0).toLocaleString();}
+function snap15(el){ if(!el||!el.value) return; var d=new Date(el.value); if(isNaN(d)) return; d.setMinutes(Math.round(d.getMinutes()/15)*15,0,0); var p=function(n){return String(n).padStart(2,'0');}; el.value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
 function custById(id){return ALL.find(function(x){return x.id===id;});}
@@ -603,6 +604,7 @@ function bindTx(){
   });
 }
 ['tx-search','tx-fstatus','tx-fguide'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',renderTx); e.addEventListener('change',renderTx); });
+(function(){ var txw=document.getElementById('tx-when'); if(txw){ txw.addEventListener('change',function(){snap15(txw);}); txw.addEventListener('blur',function(){snap15(txw);}); } })();
 
 /* ===== 報表 ===== */
 function stat(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
