@@ -408,7 +408,7 @@ function card(c){
       '<label>標籤（逗號分隔）<input class="in" data-f="tags" value="'+esc((c.tags||[]).join(', '))+'" placeholder="例：高意願, 感情"></label>'+
     '</div>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="記點什麼…">'+esc(c.notes)+'</textarea></label>'+
-    '<div class="cust-actions"><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
+    '<div class="cust-actions"><label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="portal_enabled" '+(c.portal_enabled===false?'':'checked')+'> 會員後台啟用</label><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
     '</div>'+
   '</div>';
 }
@@ -420,7 +420,7 @@ function bindCards(){
     el.querySelectorAll('[data-deltx]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆消費紀錄？會移到「刪除紀錄」，可還原。'))return; var tid=btn.getAttribute('data-deltx'); if(await softDelete('transactions',tid,TX)){ render(); renderTx(); renderTrash(); } }; });
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
-        var f=inp.getAttribute('data-f'), val=inp.value;
+        var f=inp.getAttribute('data-f'), val=(inp.type==='checkbox'?inp.checked:inp.value);
         if(f==='tags'){ val=val.split(/[,，、]/).map(function(s){return s.trim();}).filter(Boolean); }
         var patch={}; patch[f]=val;
         var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
@@ -466,6 +466,7 @@ function guideCard(g){
     '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
+    '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
     '<div class="cust-actions">'+
       (g.pending
         ? '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#4F8E6E;margin-right:auto;cursor:pointer;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
@@ -481,7 +482,7 @@ function bindGuides(){
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
-        if(f==='active'){ val=inp.checked; }
+        if(inp.type==='checkbox'){ val=inp.checked; }
         else if(f==='services'){ val=inp.value.split(/[,，、]/).map(function(s){return s.trim();}).filter(Boolean); }
         else { val=inp.value; }
         var patch={}; patch[f]=val;
