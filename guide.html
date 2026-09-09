@@ -98,7 +98,12 @@
       <div class="sec-title">預約資訊</div>
       <div class="fcard">
         <div class="field"><div class="lbl">服務項目 <span class="req">*</span></div><div id="service-wrap"></div></div>
-        <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div><input class="in" id="f-when" type="datetime-local" step="900"></div>
+        <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div>
+          <div style="display:flex;gap:10px">
+            <input class="in" id="f-date" type="date" style="flex:1.4">
+            <select class="in" id="f-time" style="flex:1"></select>
+          </div>
+        </div>
         <div class="field"><div class="lbl">想聊的主題／備註</div><textarea class="in" id="f-note" placeholder="選填，例如：感情、工作方向…"></textarea></div>
         <div class="field" style="margin-bottom:0"><div class="lbl">付款方式 <span class="req">*</span></div>
           <div id="pay-options"></div>
@@ -210,12 +215,11 @@ function serviceAmount(){ return (guide && guide.price!=null) ? Number(guide.pri
 
 $('#to-pay').onclick=function(){
   var err=$('#form-err'); err.textContent='';
-  var svc=($('#f-service')||{}).value||'', when=$('#f-when').value;
+  var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'';
   var bad=[];
-  [['#f-when',when]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ el.style.borderColor='#C0506A'; bad.push(1);} else el.style.borderColor='#EFE3CE'; });
+  [['#f-date',dt],['#f-time',tm]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ el.style.borderColor='#C0506A'; bad.push(1);} else el.style.borderColor='#EFE3CE'; });
   if(!svc){ bad.push(1); }
   if(bad.length){ err.textContent='請把有 * 的欄位填完整'; return; }
-  var we=$('#f-when'); if(when && we.validity && we.validity.stepMismatch){ we.style.borderColor='#C0506A'; err.textContent='預約時間請以 15 分鐘為單位（:00 / :15 / :30 / :45）'; return; }
   // 訂單摘要
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
@@ -251,7 +255,7 @@ $('#back-form').onclick=function(){ $('#book-pay').style.display='none'; $('#boo
 $('#do-submit').onclick=async function(){
   var btn=this, err=$('#pay-err'); err.textContent='';
   if(!MEMBER){ err.textContent='請先登入會員'; return; }
-  var svc=($('#f-service')||{}).value||'', when=$('#f-when').value, note=$('#f-note').value.trim();
+  var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'', note=$('#f-note').value.trim();
   var l5el=$('#f-last5'), last5=l5el?l5el.value.trim():'';
   if(PAY_METHOD==='匯款'){
     if(!last5){ if(l5el) l5el.style.borderColor='#C0506A'; err.textContent='請填轉帳帳號末 5 碼'; return; }
@@ -277,8 +281,7 @@ $('#do-submit').onclick=async function(){
   }catch(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(((e&&e.message)||'請稍後再試')+'').slice(0,140); }
 };
 
-function snap15(el){ if(!el||!el.value) return; var d=new Date(el.value); if(isNaN(d)) return; d.setMinutes(Math.round(d.getMinutes()/15)*15,0,0); var p=function(n){return String(n).padStart(2,'0');}; el.value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }
-(function(){ var w=$('#f-when'); if(w){ w.addEventListener('change',function(){snap15(w);}); w.addEventListener('blur',function(){snap15(w);}); } })();
+(function(){ var sel=$('#f-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=15){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
 loadGuide();
 </script>
 </body>

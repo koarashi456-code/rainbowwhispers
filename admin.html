@@ -224,7 +224,7 @@
           <label>客戶 *<select class="in" id="tx-cust"></select></label>
           <label>引路人<select class="in" id="tx-guide"></select></label>
           <label>項目<input class="in" id="tx-service" placeholder="例：塔羅 60 分"></label>
-          <label>預約／服務時間<input class="in" id="tx-when" type="datetime-local" step="900"></label>
+          <label>預約／服務時間<span style="display:flex;gap:8px"><input class="in" id="tx-date" type="date" style="flex:1.3"><select class="in" id="tx-time" style="flex:1"></select></span></label>
           <label>金額 *<input class="in" id="tx-amount" type="number" min="0" placeholder="0"></label>
           <label>付款方式<select class="in" id="tx-method"><option>現金</option><option>刷卡</option><option>匯款</option><option>儲值</option></select></label>
           <label>狀態<select class="in" id="tx-status"><option>已預約</option><option>已完成</option><option>已取消</option><option>已退費</option></select></label>
@@ -292,7 +292,6 @@ function fmtDay(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'
 function fmtFull(s){if(!s)return '未定時間';var d=new Date(s);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
 function hhmm(s){if(!s)return '';var d=new Date(s);return ' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function money(n){return '$'+Number(n||0).toLocaleString();}
-function snap15(el){ if(!el||!el.value) return; var d=new Date(el.value); if(isNaN(d)) return; d.setMinutes(Math.round(d.getMinutes()/15)*15,0,0); var p=function(n){return String(n).padStart(2,'0');}; el.value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
 function custById(id){return ALL.find(function(x){return x.id===id;});}
@@ -525,12 +524,13 @@ $('#tx-add').onclick=async function(){
   var msg=$('#tx-msg');
   if(!cid){ msg.textContent='請先選客戶'; msg.style.color='#C0506A'; return; }
   if(amt===''){ msg.textContent='請填金額'; msg.style.color='#C0506A'; return; }
-  var row={customer_id:cid, guide_id:$('#tx-guide').value||null, service:$('#tx-service').value||null, appointment_at:$('#tx-when').value||null, amount:Number(amt)||0, method:$('#tx-method').value, status:$('#tx-status').value, notes:$('#tx-notes').value||null};
+  var txd=$('#tx-date').value, txt=$('#tx-time').value, txwhen=(txd&&txt)?txd+'T'+txt:null;
+  var row={customer_id:cid, guide_id:$('#tx-guide').value||null, service:$('#tx-service').value||null, appointment_at:txwhen, amount:Number(amt)||0, method:$('#tx-method').value, status:$('#tx-status').value, notes:$('#tx-notes').value||null};
   msg.textContent='新增中…'; msg.style.color='var(--soft)';
   var r=await db.from('transactions').insert(row);
   if(r.error){ msg.textContent='失敗：'+r.error.message; msg.style.color='#C0506A'; return; }
   msg.textContent='已新增'; msg.style.color='#4F8E6E'; setTimeout(function(){msg.textContent='';},1500);
-  $('#tx-service').value=''; $('#tx-when').value=''; $('#tx-amount').value=''; $('#tx-notes').value='';
+  $('#tx-service').value=''; $('#tx-date').value=''; $('#tx-time').value=''; $('#tx-amount').value=''; $('#tx-notes').value='';
   var rr=await db.from('transactions').select('*').order('created_at',{ascending:false}); TX=rr.data||[]; renderTx(); render();
 };
 $('#tp-add').onclick=async function(){
@@ -604,7 +604,7 @@ function bindTx(){
   });
 }
 ['tx-search','tx-fstatus','tx-fguide'].forEach(function(id){ var e=document.getElementById(id); e.addEventListener('input',renderTx); e.addEventListener('change',renderTx); });
-(function(){ var txw=document.getElementById('tx-when'); if(txw){ txw.addEventListener('change',function(){snap15(txw);}); txw.addEventListener('blur',function(){snap15(txw);}); } })();
+(function(){ var sel=document.getElementById('tx-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=15){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
 
 /* ===== 報表 ===== */
 function stat(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
