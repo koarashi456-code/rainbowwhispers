@@ -98,7 +98,7 @@
       <div class="sec-title">預約資訊</div>
       <div class="fcard">
         <div class="field"><div class="lbl">服務項目 <span class="req">*</span></div><div id="service-wrap"></div></div>
-        <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div><input class="in" id="f-when" type="datetime-local"></div>
+        <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div><input class="in" id="f-when" type="datetime-local" step="900"></div>
         <div class="field"><div class="lbl">想聊的主題／備註</div><textarea class="in" id="f-note" placeholder="選填，例如：感情、工作方向…"></textarea></div>
         <div class="field" style="margin-bottom:0"><div class="lbl">付款方式 <span class="req">*</span></div>
           <div id="pay-options"></div>
@@ -215,6 +215,7 @@ $('#to-pay').onclick=function(){
   [['#f-when',when]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ el.style.borderColor='#C0506A'; bad.push(1);} else el.style.borderColor='#EFE3CE'; });
   if(!svc){ bad.push(1); }
   if(bad.length){ err.textContent='請把有 * 的欄位填完整'; return; }
+  var we=$('#f-when'); if(when && we.validity && we.validity.stepMismatch){ we.style.borderColor='#C0506A'; err.textContent='預約時間請以 15 分鐘為單位（:00 / :15 / :30 / :45）'; return; }
   // 訂單摘要
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
