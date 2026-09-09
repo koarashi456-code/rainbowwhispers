@@ -121,6 +121,8 @@
   <div class="who">你的預約與會員</div>
   <div class="mcard"><h3 style="margin-bottom:2px">我的預約</h3><div id="g-bookings"></div></div>
   <div class="mcard"><h3 style="margin-bottom:2px">我的會員</h3><div id="g-members"></div></div>
+  <div class="mcard" id="g-acct-card" style="display:none"><h3>我的儲值餘額</h3><div style="font-family:'Noto Serif TC',serif;font-size:28px;color:var(--brush)" id="g-acct-balance">—</div></div>
+  <div class="mcard" id="g-orders-card" style="display:none"><h3 style="margin-bottom:2px">我以會員身分的訂單</h3><div id="g-orders-list"></div></div>
   <button class="lo" id="g-logout">登出</button>
 </div>
 
@@ -165,6 +167,12 @@ function enterMember(o){
 }
 function escA(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDT(s){ if(!s) return '待確認'; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function orderRow(o){
+  return '<div style="text-align:left;border-top:1px solid var(--line);padding:10px 0;font-size:13.5px">'+
+    '<div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--brush)">'+escA(o.guide_name||'引路人')+'　'+escA(o.service||'')+'</b><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span></div>'+
+    '<div style="color:var(--soft);font-size:12.5px;margin-top:3px">'+fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　$'+Number(o.amount||0).toLocaleString()+(o.order_ref?'　·　'+escA(o.order_ref):'')+'</div>'+
+  '</div>';
+}
 // 會員自助：讀自己的儲值餘額＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
 async function loadMyAccount(){
   try{
@@ -175,19 +183,12 @@ async function loadMyAccount(){
     $('#acct-card').style.display='block';
     var orders=r.data.orders||[], box=$('#orders-list');
     if(!orders.length){ box.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有訂單。預約引路人後會出現在這裡。</p>'; }
-    else{
-      box.innerHTML=orders.map(function(o){
-        return '<div style="text-align:left;border-top:1px solid var(--line);padding:10px 0;font-size:13.5px">'+
-          '<div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--brush)">'+escA(o.guide_name||'引路人')+'　'+escA(o.service||'')+'</b><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span></div>'+
-          '<div style="color:var(--soft);font-size:12.5px;margin-top:3px">'+fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　$'+Number(o.amount||0).toLocaleString()+(o.order_ref?'　·　'+escA(o.order_ref):'')+'</div>'+
-        '</div>';
-      }).join('');
-    }
+    else{ box.innerHTML=orders.map(orderRow).join(''); }
     $('#orders-card').style.display='block';
   }catch(e){}
 }
-// 引路人後台：看自己的預約 + 會員
-function enterGuide(d){
+// 引路人後台：看自己的預約 + 會員（＋自己的會員資料）
+async function enterGuide(d){
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
   var bk=d.bookings||[], bx=$('#g-bookings');
   if(!bk.length){ bx.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有預約。</p>'; }
@@ -207,6 +208,16 @@ function enterGuide(d){
     }).join('');
   }
   show('guide-portal');
+  // 同一人：也顯示自己的會員資料（餘額＋自己做過的訂單）
+  try{
+    var r=await db.rpc('my_account');
+    if(!r.error && r.data && !r.data.disabled){
+      $('#g-acct-balance').textContent='$'+Number(r.data.balance||0).toLocaleString();
+      $('#g-acct-card').style.display='block';
+      var os=r.data.orders||[];
+      if(os.length){ $('#g-orders-list').innerHTML=os.map(orderRow).join(''); $('#g-orders-card').style.display='block'; }
+    }
+  }catch(e){}
 }
 // LINE(LIFF) 會員也寫進客戶後台（同一瀏覽器只寫一次）
 function saveLineMember(p){

@@ -489,7 +489,7 @@ function bindGuides(){
         var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
         var r=await db.from('guides').update(patch).eq('id',id);
         if(r.error){ s.textContent='存檔失敗'; s.style.color='#C0506A'; }
-        else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var g=guideById(id); if(g)g[f]=val; if(f==='name'){fillSelects();renderTx();} setTimeout(function(){s.textContent='';},1400); }
+        else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var g=guideById(id); if(g)g[f]=val; if((f==='name'||f==='email') && g && g.email){ try{ db.from('customers').update({name:g.name||''}).eq('contact', g.email); }catch(e){} } if(f==='name'){fillSelects();renderTx();} setTimeout(function(){s.textContent='';},1400); }
       });
     });
     el.querySelector('[data-del]').onclick=async function(){
