@@ -194,8 +194,6 @@
   <div class="who">你的預約與會員</div>
   <div class="mcard"><h3 style="margin-bottom:2px">我的預約</h3><div id="g-bookings"></div></div>
   <div class="mcard"><h3 style="margin-bottom:2px">我的會員</h3><div id="g-members"></div></div>
-  <div class="mcard" id="g-acct-card" style="display:none"><h3>我的儲值餘額</h3><div style="font-family:'Noto Serif TC',serif;font-size:28px;color:var(--brush)" id="g-acct-balance">—</div></div>
-  <div class="mcard" id="g-orders-card" style="display:none"><h3 style="margin-bottom:2px">我以會員身分的訂單</h3><div id="g-orders-list"></div></div>
   <button class="lo" id="g-logout">登出</button>
 </div>
 
@@ -288,19 +286,6 @@ async function enterGuide(d){
     }).join('');
   }
   show('guide-portal');
-  // 同一人：也顯示自己的會員資料（餘額＋自己做過的訂單）
-  try{
-    var r=await db.rpc('my_account');
-    if(!r.error && r.data && !r.data.disabled){
-      $('#g-acct-balance').textContent=money(r.data.balance);
-      $('#g-acct-card').style.display='block';
-      var os=r.data.orders||[];
-      if(os.length){ $('#g-orders-list').innerHTML=foldList(os,
-        function(o){ return '<span><b style="color:var(--brush)">'+escA(o.guide_name||'引路人')+'</b>　<span style="color:var(--soft)">'+escA(o.service||'')+'</span></span><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span>'; },
-        function(o){ return fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　'+money(o.amount)+(o.order_ref?'<br>訂單編號：'+escA(o.order_ref):''); });
-        bindFold($('#g-orders-list')); $('#g-orders-card').style.display='block'; }
-    }
-  }catch(e){}
 }
 // LINE(LIFF) 會員也寫進客戶後台（同一瀏覽器只寫一次）
 function saveLineMember(p){
