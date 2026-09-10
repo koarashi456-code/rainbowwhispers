@@ -34,6 +34,55 @@
   .mcard p{font-size:14px;color:var(--soft)}
   .soon{display:inline-block;font-size:12px;padding:3px 12px;border-radius:999px;background:#F4EAD4;color:#8A6A44;margin-bottom:10px}
   .lo{font:inherit;font-size:14px;color:var(--brush);background:none;border:1.5px solid var(--line);border-radius:999px;padding:10px 22px;cursor:pointer;margin-top:6px}
+
+  /* 會員中心（改版） */
+  #member,#guide-portal.v2{max-width:440px;margin:0 auto;text-align:left;padding-bottom:6px}
+  .mc-top{background:linear-gradient(160deg,#F6E7CF,#F3DCEA 60%,#E7E0F4);padding:18px 22px 56px;border-radius:0 0 26px 26px}
+  .mc-top-row{display:flex;align-items:center;justify-content:space-between}
+  .mc-title{font-family:"Noto Serif TC",serif;font-size:21px;color:var(--brush);font-weight:700}
+  .mc-gear{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.6);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .seg{display:flex;background:rgba(255,255,255,.55);border-radius:999px;padding:4px;margin:14px auto 0;width:220px}
+  .seg button{flex:1;font:inherit;font-size:14px;color:var(--soft);background:none;border:none;border-radius:999px;padding:8px 0;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--brush);font-weight:500;box-shadow:0 3px 10px -4px rgba(120,90,60,.35)}
+  .prof{margin:-44px 22px 0;text-align:center;position:relative;z-index:2}
+  .ava{width:88px;height:88px;border-radius:50%;margin:0 auto;padding:4px;background:var(--rainbow)}
+  .ava div{width:100%;height:100%;border-radius:50%;background:#F3ECDD;display:flex;align-items:center;justify-content:center}
+  .pname{font-family:"Noto Serif TC",serif;font-size:20px;color:var(--brush);font-weight:600;margin-top:10px}
+  .pmail{font-size:13px;color:var(--soft);margin-top:2px}
+  .pbadge{display:inline-block;font-size:12.5px;font-weight:600;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:4px 14px;margin-top:9px}
+  .stats2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 20px 0}
+  .st{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px 8px;text-align:center}
+  .st .stic{width:36px;height:36px;border-radius:11px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center}
+  .st .stk{font-size:12px;color:var(--soft)}
+  .st .stv{font-family:"Noto Serif TC",serif;font-size:16px;color:var(--brush);margin-top:3px}
+  .i-a{background:#EAD9F2} .i-b{background:#FBE7CC} .i-c{background:#D8ECDF}
+  .sec-lab{font-size:12px;color:var(--soft);margin:18px 20px 6px}
+  .info-card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:0 20px;padding:4px 18px}
+  .irow{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px;gap:10px}
+  .irow:last-child{border-bottom:none}
+  .irow .il{color:var(--soft);flex:none}
+  .irow .iv{color:var(--ink);text-align:right}
+  .irow input.iv{border:none;background:none;font:inherit;font-size:14.5px;color:var(--ink);text-align:right;outline:none;flex:1;min-width:0;padding:4px 0}
+  .irow input.iv:focus{color:var(--brush)}
+  .irow.link{cursor:pointer} .irow.link .il{color:var(--brush)}
+  .chev{color:#C9B79A;font-size:16px}
+  .msaved{font-size:12px;color:#4F8E6E;text-align:right;padding:3px 20px 0;min-height:15px}
+  .pwbox{margin:8px 20px 0}
+  .pwbox input{width:100%;box-sizing:border-box;font:inherit;font-size:14.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none;margin-bottom:8px;text-align:left}
+  .pwbox .go{margin-top:0}
+  .ordbox{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:0 20px;padding:2px 18px}
+  .mtabs{position:sticky;bottom:0;background:rgba(255,253,248,.96);border-top:1px solid var(--line);display:flex;padding:9px 0 11px;margin-top:22px;backdrop-filter:blur(6px)}
+  .mtab{flex:1;text-align:center;color:var(--soft);font-size:11px;background:none;border:none;cursor:pointer}
+  .mtab.on{color:var(--brush)}
+  .mtab .mti{display:flex;justify-content:center;margin-bottom:3px}
+  /* 收合列（引路人預約／訂單） */
+  .foldrow{border-top:1px solid var(--line)}
+  .foldrow:first-child{border-top:none}
+  .foldhead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 0;cursor:pointer;font-size:13.5px}
+  .foldhead .fcar{color:#C9B79A;font-size:12px;transition:transform .15s}
+  .foldrow.open .fcar{transform:rotate(90deg)}
+  .folddet{display:none;padding:0 0 11px;font-size:12.5px;color:var(--soft);line-height:1.7}
+  .foldrow.open .folddet{display:block}
 </style>
 </head>
 <body>
@@ -46,7 +95,7 @@
     <a href="guides.html">引路人介紹</a>
     <a href="booking.html">預約引路人</a>
     <a href="pricing.html">方案</a>
-    <a href="account.html" class="on">登入</a>
+    <a href="account.html" class="on">會員</a>
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
@@ -90,33 +139,57 @@
   </div>
 </div>
 
-<!-- 已登入：會員專區 -->
-<div id="member" class="member" style="display:none">
-  <div class="hi" id="hi">嗨！</div>
-  <div class="who" id="who"></div>
-  <div class="mcard" id="acct-card" style="display:none">
-    <h3>我的儲值餘額</h3>
-    <div style="font-family:'Noto Serif TC',serif;font-size:28px;color:var(--brush)" id="acct-balance">—</div>
+<!-- 已登入：會員中心 -->
+<div id="member" style="display:none">
+  <div class="mc-top">
+    <div class="mc-top-row">
+      <div class="mc-title">會員中心</div>
+      <button class="mc-gear" id="mc-gear" title="設定"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A6A44" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
+    </div>
+    <div class="seg"><button id="seg-m" class="on" type="button">會員</button><button id="seg-g" type="button">引路人</button></div>
   </div>
-  <div class="mcard" id="orders-card" style="display:none">
-    <h3 style="margin-bottom:2px">我的訂單</h3>
-    <div id="orders-list"></div>
+  <div class="prof">
+    <div class="ava"><div><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></div></div>
+    <div class="pname" id="mc-name">會員</div>
+    <div class="pmail" id="mc-mail"></div>
+    <div class="pbadge">會員</div>
   </div>
-  <div class="mcard">
-    <span class="soon">即將開放</span>
-    <h3>活動報名</h3>
-    <p>之後彩之語辦活動時，會員可以在這裡直接報名參加。敬請期待。</p>
+  <div class="stats2">
+    <div class="st"><div class="stic i-a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E4F9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 3v4"/></svg></div><div class="stk">儲值餘額</div><div class="stv" id="mc-balance">$0</div></div>
+    <div class="st" id="mc-order-stat" style="cursor:pointer"><div class="stic i-b"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A5643A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/><path d="M9 11h6M9 15h4"/></svg></div><div class="stk">我的訂單</div><div class="stv" id="mc-order-count">0</div></div>
   </div>
-  <div class="mcard">
-    <h3>還沒測過相處頻率？</h3>
-    <p style="margin-bottom:12px">花一分鐘，看看最適合你的引路人。</p>
-    <a class="rw-cta" href="quiz.html" style="font-size:14px;padding:11px 26px">開始測驗　→</a>
+  <div class="sec-lab">基本資料</div>
+  <div class="info-card">
+    <div class="irow"><span class="il">姓名</span><input class="iv" id="mc-f-name" placeholder="—"></div>
+    <div class="irow"><span class="il">信箱</span><span class="iv" id="mc-f-mail"></span></div>
+    <div class="irow"><span class="il">手機</span><input class="iv" id="mc-f-phone" placeholder="—" inputmode="tel"></div>
+    <div class="irow"><span class="il">地區</span><input class="iv" id="mc-f-area" placeholder="—"></div>
   </div>
-  <button class="lo" id="logout">登出</button>
+  <div class="msaved" id="mc-saved"></div>
+  <div class="sec-lab" id="mc-orders-lab">我的訂單</div>
+  <div class="ordbox" id="mc-orders"></div>
+  <div class="sec-lab">帳號</div>
+  <div class="info-card">
+    <div class="irow link" id="mc-pw"><span class="il">改密碼</span><span class="chev">›</span></div>
+    <a class="irow link" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="text-decoration:none"><span class="il">客服聯絡</span><span class="chev">›</span></a>
+    <div class="irow link" id="mc-logout"><span class="il" style="color:#C0506A">登出</span><span class="chev">›</span></div>
+  </div>
+  <div class="pwbox" id="mc-pwbox" style="display:none">
+    <input id="mc-pw1" type="password" placeholder="新密碼（至少 6 碼）" autocomplete="new-password">
+    <input id="mc-pw2" type="password" placeholder="再輸入一次" autocomplete="new-password">
+    <button class="go" id="mc-pw-go" type="button">更新密碼</button>
+    <div class="msg" id="mc-pw-msg" style="text-align:center"></div>
+  </div>
+  <div class="mtabs">
+    <button class="mtab on" id="mtab-m"><div class="mti"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></div>會員</button>
+    <button class="mtab" id="mtab-o"><div class="mti"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></div>訂單</button>
+    <button class="mtab" id="mtab-s"><div class="mti"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>設定</button>
+  </div>
 </div>
 
 <!-- 引路人後台 -->
 <div id="guide-portal" class="member" style="display:none">
+  <div class="seg" style="margin:0 auto 18px"><button id="gseg-m" type="button">會員</button><button id="gseg-g" class="on" type="button">引路人</button></div>
   <div class="hi" id="g-hi">引路人後台</div>
   <div class="who">你的預約與會員</div>
   <div class="mcard"><h3 style="margin-bottom:2px">我的預約</h3><div id="g-bookings"></div></div>
@@ -149,19 +222,23 @@ function show(id){['loading','authbox','member','guide-portal'].forEach(function
 function saveMember(name,email,uid){
   try{fetch(window.SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':window.SUPA.key,'Authorization':'Bearer '+window.SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:name||null,contact:email,source:'會員',status:'新客',member_uid:uid||null})});}catch(e){}
 }
-// 登入成功後：若帶 ?next=（例如從引路人頁點預約而來），導回該頁
+// 登入成功後：查一次身分（供切換），預設進會員中心；有 ?next 則導回
+var CURRENT_USER=null, GUIDE_DATA=null;
 async function afterLogin(user){
-  // 是已開通的引路人？→ 進引路人後台
-  try{ var gr=await db.rpc('my_guide'); if(!gr.error && gr.data && gr.data.enabled){ enterGuide(gr.data); return; } }catch(e){}
+  CURRENT_USER=user;
+  try{ var gr=await db.rpc('my_guide'); GUIDE_DATA=(!gr.error && gr.data && gr.data.enabled)?gr.data:null; }catch(e){ GUIDE_DATA=null; }
   var next=new URLSearchParams(location.search).get('next');
   if(next && !/^https?:|^\/\//i.test(next)){ try{ location.replace(next); return; }catch(e){} }
   enterMember(user);
 }
 
 function enterMember(o){
+  o=o||CURRENT_USER||{}; CURRENT_USER=o;
+  $('#seg-m').classList.add('on'); $('#seg-g').classList.remove('on');
   var nm=o.name || (o.user_metadata&&o.user_metadata.name) || '';
-  $('#hi').textContent=nm?('嗨，'+nm+'！'):'嗨！';
-  $('#who').textContent=o.email || (o.line?'LINE 登入':'') || '';
+  $('#mc-name').textContent=nm||'會員';
+  $('#mc-mail').textContent=o.email||(o.line?'LINE 登入':'')||'';
+  $('#mc-f-mail').textContent=o.email||'';
   show('member');
   loadMyAccount();
 }
@@ -173,32 +250,35 @@ function orderRow(o){
     '<div style="color:var(--soft);font-size:12.5px;margin-top:3px">'+fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　$'+Number(o.amount||0).toLocaleString()+(o.order_ref?'　·　'+escA(o.order_ref):'')+'</div>'+
   '</div>';
 }
+function money(n){ return '$'+Number(n||0).toLocaleString(); }
+function foldList(items, headFn, detFn){ return items.map(function(it){ return '<div class="foldrow"><div class="foldhead">'+headFn(it)+' <span class="fcar">›</span></div><div class="folddet">'+detFn(it)+'</div></div>'; }).join(''); }
+function bindFold(container){ container.querySelectorAll('.foldhead').forEach(function(h){ h.onclick=function(){ h.closest('.foldrow').classList.toggle('open'); }; }); }
 // 會員自助：讀自己的儲值餘額＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
 async function loadMyAccount(){
   try{
     var r=await db.rpc('my_account');
     if(r.error || !r.data) return;
-    if(r.data.disabled){ $('#acct-card').style.display='none'; $('#orders-card').style.display='block'; $('#orders-list').innerHTML='<p style="font-size:13px;color:#C0506A;text-align:left;margin-top:8px">你的會員後台目前已停用，請聯繫官方 LINE。</p>'; return; }
-    $('#acct-balance').textContent='$'+Number(r.data.balance||0).toLocaleString();
-    $('#acct-card').style.display='block';
-    var orders=r.data.orders||[], box=$('#orders-list');
-    if(!orders.length){ box.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有訂單。預約引路人後會出現在這裡。</p>'; }
-    else{ box.innerHTML=orders.map(orderRow).join(''); }
-    $('#orders-card').style.display='block';
+    if(r.data.disabled){ $('#mc-orders').innerHTML='<p style="font-size:13px;color:#C0506A;padding:10px 0">你的會員後台目前已停用，請聯繫官方 LINE。</p>'; return; }
+    $('#mc-balance').textContent=money(r.data.balance);
+    if(r.data.name) $('#mc-name').textContent=r.data.name;
+    $('#mc-f-name').value=r.data.name||''; $('#mc-f-phone').value=r.data.phone||''; $('#mc-f-area').value=r.data.area||'';
+    var orders=r.data.orders||[];
+    $('#mc-order-count').textContent=orders.length;
+    $('#mc-orders').innerHTML=orders.length?orders.map(orderRow).join(''):'<p style="font-size:13px;color:var(--soft);padding:10px 0">還沒有訂單。預約引路人後會出現在這裡。</p>';
   }catch(e){}
 }
 // 引路人後台：看自己的預約 + 會員（＋自己的會員資料）
 async function enterGuide(d){
+  d=d||GUIDE_DATA; if(!d) return;
+  $('#gseg-g').classList.add('on'); $('#gseg-m').classList.remove('on');
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
   var bk=d.bookings||[], bx=$('#g-bookings');
   if(!bk.length){ bx.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有預約。</p>'; }
   else{
-    bx.innerHTML=bk.map(function(o){
-      return '<div style="text-align:left;border-top:1px solid var(--line);padding:10px 0;font-size:13.5px">'+
-        '<div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--brush)">'+escA(o.customer_name||'客戶')+'　'+escA(o.service||'')+'</b><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span></div>'+
-        '<div style="color:var(--soft);font-size:12.5px;margin-top:3px">'+fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　$'+Number(o.amount||0).toLocaleString()+(o.customer_contact?'　·　'+escA(o.customer_contact):'')+(o.order_ref?'　·　'+escA(o.order_ref):'')+'</div>'+
-      '</div>';
-    }).join('');
+    bx.innerHTML=foldList(bk,
+      function(o){ return '<span><b style="color:var(--brush)">'+escA(o.customer_name||'客戶')+'</b>　<span style="color:var(--soft)">'+escA(o.service||'')+'　'+fmtDT(o.appointment_at)+'</span></span><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span>'; },
+      function(o){ return '付款：'+escA(o.method||'')+'　·　'+money(o.amount)+'<br>聯絡：'+escA(o.customer_contact||'—')+(o.order_ref?'<br>訂單編號：'+escA(o.order_ref):''); });
+    bindFold(bx);
   }
   var mm=d.members||[], mx=$('#g-members');
   if(!mm.length){ mx.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有會員預約。</p>'; }
@@ -212,10 +292,13 @@ async function enterGuide(d){
   try{
     var r=await db.rpc('my_account');
     if(!r.error && r.data && !r.data.disabled){
-      $('#g-acct-balance').textContent='$'+Number(r.data.balance||0).toLocaleString();
+      $('#g-acct-balance').textContent=money(r.data.balance);
       $('#g-acct-card').style.display='block';
       var os=r.data.orders||[];
-      if(os.length){ $('#g-orders-list').innerHTML=os.map(orderRow).join(''); $('#g-orders-card').style.display='block'; }
+      if(os.length){ $('#g-orders-list').innerHTML=foldList(os,
+        function(o){ return '<span><b style="color:var(--brush)">'+escA(o.guide_name||'引路人')+'</b>　<span style="color:var(--soft)">'+escA(o.service||'')+'</span></span><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span>'; },
+        function(o){ return fmtDT(o.appointment_at)+'　·　'+escA(o.method||'')+'　·　'+money(o.amount)+(o.order_ref?'<br>訂單編號：'+escA(o.order_ref):''); });
+        bindFold($('#g-orders-list')); $('#g-orders-card').style.display='block'; }
     }
   }catch(e){}
 }
@@ -289,8 +372,24 @@ $('#form').onsubmit=async function(e){
 
 $('#line-login').onclick=function(){ if(typeof liff!=='undefined'){ liff.login(); } };
 var ggl=document.getElementById('guide-goto-login'); if(ggl) ggl.onclick=function(){ setAtype('user'); };
-$('#logout').onclick=async function(){ try{await db.auth.signOut();}catch(e){} try{ if(typeof liff!=='undefined'&&liff.isLoggedIn&&liff.isLoggedIn()) liff.logout(); }catch(e){} show('authbox'); setMode('login'); };
-var glo=document.getElementById('g-logout'); if(glo) glo.onclick=$('#logout').onclick;
+async function doLogout(){ try{await db.auth.signOut();}catch(e){} try{ if(typeof liff!=='undefined'&&liff.isLoggedIn&&liff.isLoggedIn()) liff.logout(); }catch(e){} show('authbox'); setMode('login'); }
+var glo=document.getElementById('g-logout'); if(glo) glo.onclick=doLogout;
+var mlo=document.getElementById('mc-logout'); if(mlo) mlo.onclick=doLogout;
+// 會員 / 引路人 切換
+$('#seg-g').onclick=function(){ if(GUIDE_DATA){ enterGuide(GUIDE_DATA); } else { alert('此帳號尚未開通引路人後台。如你是彩之語引路人，請聯繫官方 LINE 幫你開通。'); } };
+$('#seg-m').onclick=function(){ enterMember(CURRENT_USER); };
+$('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
+// 底部分頁 + 快捷
+$('#mtab-m').onclick=function(){ window.scrollTo({top:0,behavior:'smooth'}); };
+$('#mtab-o').onclick=function(){ var e=$('#mc-orders-lab'); if(e) e.scrollIntoView({behavior:'smooth',block:'start'}); };
+$('#mtab-s').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
+$('#mc-order-stat').onclick=function(){ var e=$('#mc-orders-lab'); if(e) e.scrollIntoView({behavior:'smooth',block:'start'}); };
+$('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
+// 儲存基本資料（姓名／手機／地區）
+['mc-f-name','mc-f-phone','mc-f-area'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('change',async function(){ var sv=$('#mc-saved'); sv.textContent='儲存中…'; sv.style.color='var(--soft)'; try{ var r=await db.rpc('update_my_profile',{p_name:$('#mc-f-name').value.trim(),p_phone:$('#mc-f-phone').value.trim(),p_area:$('#mc-f-area').value.trim()}); if(r.error) throw new Error(r.error.message); $('#mc-name').textContent=$('#mc-f-name').value.trim()||'會員'; sv.textContent='已儲存'; sv.style.color='#4F8E6E'; setTimeout(function(){sv.textContent='';},1400); }catch(e){ sv.textContent='存檔失敗'; sv.style.color='#C0506A'; } }); });
+// 改密碼
+$('#mc-pw').onclick=function(){ var b=$('#mc-pwbox'); b.style.display=(b.style.display==='none'?'block':'none'); if(b.style.display==='block'){ b.scrollIntoView({behavior:'smooth',block:'center'}); $('#mc-pw1').focus(); } };
+$('#mc-pw-go').onclick=async function(){ var p1=$('#mc-pw1').value,p2=$('#mc-pw2').value,m=$('#mc-pw-msg'); m.style.color='#C0506A'; if(!p1||p1.length<6){m.textContent='密碼至少 6 碼';return;} if(p1!==p2){m.textContent='兩次密碼不一樣';return;} var b=this;b.disabled=true;b.textContent='更新中…'; try{ var r=await db.auth.updateUser({password:p1}); if(r.error) throw new Error(r.error.message); m.style.color='#4F8E6E'; m.textContent='密碼已更新'; $('#mc-pw1').value='';$('#mc-pw2').value=''; setTimeout(function(){ $('#mc-pwbox').style.display='none'; m.textContent=''; },1500); }catch(e){ m.textContent='更新失敗：'+((e&&e.message)||''); } b.disabled=false;b.textContent='更新密碼'; };
 
 route();
 </script>
