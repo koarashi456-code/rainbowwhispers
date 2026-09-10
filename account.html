@@ -71,15 +71,9 @@
   .pwbox input{width:100%;box-sizing:border-box;font:inherit;font-size:14.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none;margin-bottom:8px;text-align:left}
   .pwbox .go{margin-top:0}
   .ordbox{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:0 20px;padding:2px 18px}
-  /* 我的訂單：預設收合，點卡片才展開 */
+  /* 我的訂單卡：點進去轉到 orders.html */
   #mc-order-stat{position:relative}
-  #mc-order-stat .stcaret{position:absolute;top:9px;right:11px;font-size:11px;color:var(--soft);transition:transform .18s;transform:rotate(-90deg)}
-  #mc-order-stat.open .stcaret{transform:rotate(0)}
-  .ordwrap{display:none}
-  .ordwrap.open{display:block}
-  .ordhead{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--soft);margin:14px 20px 6px}
-  .ordfold{font:inherit;font-size:12px;color:var(--brush);background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px}
-  .ordfold .ordcaret{font-size:10px}
+  #mc-order-stat .stcaret{position:absolute;top:8px;right:12px;font-size:17px;color:#C9B79A;line-height:1}
   .mtabs{position:sticky;bottom:0;background:rgba(255,253,248,.96);border-top:1px solid var(--line);display:flex;padding:9px 0 11px;margin-top:22px;backdrop-filter:blur(6px)}
   .mtab{flex:1;text-align:center;color:var(--soft);font-size:11px;background:none;border:none;cursor:pointer}
   .mtab.on{color:var(--brush)}
@@ -166,11 +160,7 @@
   </div>
   <div class="stats2">
     <div class="st"><div class="stic i-a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E4F9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 3v4"/></svg></div><div class="stk">儲值餘額</div><div class="stv" id="mc-balance">$0</div></div>
-    <div class="st" id="mc-order-stat" style="cursor:pointer"><div class="stic i-b"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A5643A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/><path d="M9 11h6M9 15h4"/></svg></div><div class="stk">我的訂單</div><div class="stv" id="mc-order-count">0</div><span class="stcaret">▾</span></div>
-  </div>
-  <div class="ordwrap" id="mc-orders-wrap">
-    <div class="ordhead"><span>我的訂單明細</span><button type="button" class="ordfold" id="mc-orders-fold">收合<span class="ordcaret">▾</span></button></div>
-    <div class="ordbox" id="mc-orders"></div>
+    <div class="st" id="mc-order-stat" style="cursor:pointer"><div class="stic i-b"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A5643A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/><path d="M9 11h6M9 15h4"/></svg></div><div class="stk">我的訂單</div><div class="stv" id="mc-order-count">0</div><span class="stcaret">›</span></div>
   </div>
   <div class="sec-lab">基本資料</div>
   <div class="info-card">
@@ -250,7 +240,6 @@ function enterMember(o){
   $('#mc-name').textContent=nm||'會員';
   $('#mc-mail').textContent=o.email||(o.line?'LINE 登入':'')||'';
   $('#mc-f-mail').textContent=o.email||'';
-  var ow=$('#mc-orders-wrap'); if(ow) ow.classList.remove('open'); var os=$('#mc-order-stat'); if(os) os.classList.remove('open'); // 每次進會員頁：訂單明細預設收合
   show('member');
   loadMyAccount();
 }
@@ -270,13 +259,12 @@ async function loadMyAccount(){
   try{
     var r=await db.rpc('my_account');
     if(r.error || !r.data) return;
-    if(r.data.disabled){ $('#mc-orders').innerHTML='<p style="font-size:13px;color:#C0506A;padding:10px 0">你的會員後台目前已停用，請聯繫官方 LINE。</p>'; return; }
+    if(r.data.disabled){ $('#mc-order-count').textContent='—'; return; }
     $('#mc-balance').textContent=money(r.data.balance);
     if(r.data.name) $('#mc-name').textContent=r.data.name;
     $('#mc-f-name').value=r.data.name||''; $('#mc-f-phone').value=r.data.phone||''; $('#mc-f-area').value=r.data.area||'';
     var orders=r.data.orders||[];
     $('#mc-order-count').textContent=orders.length;
-    $('#mc-orders').innerHTML=orders.length?orders.map(orderRow).join(''):'<p style="font-size:13px;color:var(--soft);padding:10px 0">還沒有訂單。預約引路人後會出現在這裡。</p>';
   }catch(e){}
 }
 // 引路人後台：看自己的預約 + 會員（＋自己的會員資料）
@@ -380,11 +368,9 @@ $('#seg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
 // 底部分頁 + 快捷
 $('#mtab-m').onclick=function(){ window.scrollTo({top:0,behavior:'smooth'}); };
-$('#mtab-o').onclick=function(){ setOrders(true); };
+$('#mtab-o').onclick=function(){ location.href='orders.html'; };
 $('#mtab-s').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
-function setOrders(open){ var w=$('#mc-orders-wrap'), c=$('#mc-order-stat'); if(!w) return; w.classList.toggle('open',open); if(c) c.classList.toggle('open',open); if(open) w.scrollIntoView({behavior:'smooth',block:'center'}); }
-$('#mc-order-stat').onclick=function(){ setOrders(!$('#mc-orders-wrap').classList.contains('open')); };
-var mof=$('#mc-orders-fold'); if(mof) mof.onclick=function(){ setOrders(false); };
+$('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
 // 儲存基本資料（姓名／手機／地區）
 ['mc-f-name','mc-f-phone','mc-f-area'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('change',async function(){ var sv=$('#mc-saved'); sv.textContent='儲存中…'; sv.style.color='var(--soft)'; try{ var r=await db.rpc('update_my_profile',{p_name:$('#mc-f-name').value.trim(),p_phone:$('#mc-f-phone').value.trim(),p_area:$('#mc-f-area').value.trim()}); if(r.error) throw new Error(r.error.message); $('#mc-name').textContent=$('#mc-f-name').value.trim()||'會員'; sv.textContent='已儲存'; sv.style.color='#4F8E6E'; setTimeout(function(){sv.textContent='';},1400); }catch(e){ sv.textContent='存檔失敗'; sv.style.color='#C0506A'; } }); });
