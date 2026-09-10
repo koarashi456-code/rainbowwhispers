@@ -64,3 +64,19 @@ body{background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","PingFa
   .rw-brand{font-size:18px}
   .rw-sec{padding:38px 18px}
 }
+
+/* 漢堡選單（手機把導覽收成右邊三條線，點開才展開） */
+.rw-nav-in{position:relative}
+.rw-burger-cb{display:none}
+.rw-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:40px;height:34px;padding:0 8px;cursor:pointer;margin-left:auto}
+.rw-burger span{display:block;height:2px;width:20px;background:var(--brush);border-radius:2px;transition:transform .2s,opacity .2s}
+.rw-burger-cb:checked ~ .rw-burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.rw-burger-cb:checked ~ .rw-burger span:nth-child(2){opacity:0}
+.rw-burger-cb:checked ~ .rw-burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:640px){
+  .rw-burger{display:flex}
+  .rw-links{position:absolute;top:calc(100% + 6px);right:10px;left:10px;flex-direction:column;align-items:stretch;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 36px -16px rgba(120,90,60,.4);padding:8px;display:none;z-index:60}
+  .rw-burger-cb:checked ~ .rw-links{display:flex}
+  .rw-links a{padding:12px 14px;border-radius:10px;font-size:15px;text-align:left}
+  .rw-nav-line{text-align:center;margin-top:2px}
+}
