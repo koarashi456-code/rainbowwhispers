@@ -147,7 +147,7 @@
       <div class="mc-title">會員中心</div>
       <button class="mc-gear" id="mc-gear" title="設定"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A6A44" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
     </div>
-    <div class="seg"><button id="seg-m" class="on" type="button">會員</button><button id="seg-g" type="button">引路人</button></div>
+    <div class="seg" id="mseg" style="display:none"><button id="seg-m" class="on" type="button">會員</button><button id="seg-g" type="button">引路人</button></div>
   </div>
   <div class="prof">
     <div class="ava"><div><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></div></div>
@@ -234,6 +234,7 @@ async function afterLogin(user){
 function enterMember(o){
   o=o||CURRENT_USER||{}; CURRENT_USER=o;
   $('#seg-m').classList.add('on'); $('#seg-g').classList.remove('on');
+  var mseg=$('#mseg'); if(mseg) mseg.style.display=GUIDE_DATA?'flex':'none'; // 只有引路人才看得到「會員／引路人」切換
   var nm=o.name || (o.user_metadata&&o.user_metadata.name) || '';
   $('#mc-name').textContent=nm||'會員';
   $('#mc-mail').textContent=o.email||(o.line?'LINE 登入':'')||'';
