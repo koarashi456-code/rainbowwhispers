@@ -71,26 +71,32 @@
   .recdel{font:inherit;font-size:12px;color:#B87;background:none;border:none;cursor:pointer;margin-left:6px}
   .recdel:hover{color:#C0506A}
   .rp-h{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin:18px 0 10px}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:10px}
-  .stat{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .rp-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0 14px}
+  .rp-flabel{font-size:13px;color:var(--soft)}
+  .rp-dates{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  .rp-dates .in-sm{flex:1;min-width:0}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-bottom:10px}
+  .stat{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:12px 13px;min-width:0}
   .stat .k{font-size:12px;color:var(--soft)}
-  .stat .v{font-family:"Noto Serif TC",serif;font-size:19px;color:var(--brush);margin-top:3px}
+  .stat .v{font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush);margin-top:3px;word-break:break-word}
   .in-sm{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;outline:none}
   .rptable{width:100%;border-collapse:collapse;font-size:14px}
   .rptable th,.rptable td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
   .rptable th{font-size:12px;color:var(--soft);font-weight:500}
   .rptable td.num,.rptable th.num{text-align:right;font-variant-numeric:tabular-nums}
-  .gblock{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
-  .gblock-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+  .gblock{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:6px 14px;margin-bottom:12px}
+  .gblock-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;padding:9px 0;cursor:pointer}
+  .gblock:not(.collapsed) .gblock-head{border-bottom:1px solid var(--line);margin-bottom:2px}
   .gblock-head b{font-size:15px;color:var(--brush)}
-  .gblock-head span{font-size:12.5px;color:var(--soft)}
-  .gitem{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+  .gh-meta{font-size:12.5px;color:var(--soft);margin-left:auto}
+  .gitem{padding:10px 0;border-bottom:1px dashed var(--line)}
   .gitem:last-child{border-bottom:none}
-  .gd{color:var(--soft);white-space:nowrap;min-width:82px}
-  .gn{min-width:56px;color:var(--ink)}
-  .gs{flex:1;min-width:80px;color:var(--soft)}
-  .ga{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--brush);font-weight:500}
-  .gblock-head{cursor:pointer}
+  .gi-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .gi-name{font-size:14.5px;color:var(--ink);font-weight:500}
+  .gi-right{display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none}
+  .gi-amt{font-variant-numeric:tabular-nums;color:var(--brush);font-weight:600}
+  .gi-when{font-size:12.5px;color:var(--soft);margin-top:3px;line-height:1.5}
+  .gi-meta{font-size:11.5px;color:#A48C72;margin-top:2px;line-height:1.55;word-break:break-word}
   .caret{display:inline-block;font-size:11px;color:var(--soft);margin-right:3px;transition:transform .15s}
   .gblock.collapsed .caret{transform:rotate(-90deg)}
   .gblock.collapsed .gitems{display:none}
@@ -258,11 +264,13 @@
 
     <!-- 報表 -->
     <section id="tab-report" style="display:none">
-      <div class="filters" style="align-items:center">
-        <span style="font-size:13px;color:var(--soft)">日期範圍</span>
-        <input id="rp-from" type="date" class="in-sm" style="flex:none">
-        <span style="color:var(--soft)">~</span>
-        <input id="rp-to" type="date" class="in-sm" style="flex:none">
+      <div class="rp-filter">
+        <span class="rp-flabel">日期範圍</span>
+        <div class="rp-dates">
+          <input id="rp-from" type="date" class="in-sm">
+          <span style="color:var(--soft)">~</span>
+          <input id="rp-to" type="date" class="in-sm">
+        </div>
         <button class="abtn" id="rp-clear">全部</button>
       </div>
       <div id="rp-summary"></div>
@@ -643,11 +651,16 @@ function renderReport(){
   var h='';
   keys.forEach(function(k){
     var gg=g[k], name=k==='__none__'?'（未指定引路人）':guideName(k);
-    h+='<div class="gblock collapsed"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span>'+gg.count+' 筆　有效 '+money(gg.amount)+(gg.refund?'　退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
+    h+='<div class="gblock collapsed"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span class="gh-meta">'+gg.count+' 筆 · 有效 '+money(gg.amount)+(gg.refund?' · 退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
     gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
-      h+='<div class="gitem"><span class="gd">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+'</span><span class="gn">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gs">'+esc(t.service||'—')+(t.method?' · '+esc(t.method):'')+(t.order_ref?' · '+esc(t.order_ref):'')+' · 下單 '+fmtDay(t.created_at)+(t.method==='匯款'&&t.pay_last5?' · 末5碼 '+esc(t.pay_last5):'')+'</span><span class="ga">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</div>';
+      var meta=[]; if(t.method) meta.push(esc(t.method)); if(t.order_ref) meta.push(esc(t.order_ref)); meta.push('下單 '+fmtDay(t.created_at)); if(t.method==='匯款'&&t.pay_last5) meta.push('末5碼 '+esc(t.pay_last5));
+      h+='<div class="gitem">'
+        +'<div class="gi-top"><span class="gi-name">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gi-right"><span class="gi-amt">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</span></div>'
+        +'<div class="gi-when">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+' · '+esc(t.service||'—')+'</div>'
+        +'<div class="gi-meta">'+meta.join(' · ')+'</div>'
+        +'</div>';
     });
     h+='</div></div>';
   });
