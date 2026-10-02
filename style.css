@@ -78,5 +78,6 @@ body{background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","PingFa
   .rw-links{position:absolute;top:calc(100% + 6px);right:10px;left:10px;flex-direction:column;align-items:stretch;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 36px -16px rgba(120,90,60,.4);padding:8px;display:none;z-index:60}
   .rw-burger-cb:checked ~ .rw-links{display:flex}
   .rw-links a{padding:12px 14px;border-radius:10px;font-size:15px;text-align:left}
+  .rw-links a.rw-mem{order:-1}
   .rw-nav-line{text-align:center;margin-top:2px}
 }

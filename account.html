@@ -124,6 +124,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
+<script src="nav.js"></script>
 
 <div id="loading" class="acc"><p class="sub" style="margin-top:20px">載入中…</p></div>
 
@@ -422,7 +423,7 @@ $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
 // 儲存基本資料（姓名／手機／地區）
-['mc-f-name','mc-f-phone','mc-f-area'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('change',async function(){ var sv=$('#mc-saved'); sv.textContent='儲存中…'; sv.style.color='var(--soft)'; try{ var r=await db.rpc('update_my_profile',{p_name:$('#mc-f-name').value.trim(),p_phone:$('#mc-f-phone').value.trim(),p_area:$('#mc-f-area').value.trim()}); if(r.error) throw new Error(r.error.message); $('#mc-name').textContent=$('#mc-f-name').value.trim()||'會員'; sv.textContent='已儲存'; sv.style.color='#4F8E6E'; setTimeout(function(){sv.textContent='';},1400); }catch(e){ sv.textContent='存檔失敗'; sv.style.color='#C0506A'; } }); });
+['mc-f-name','mc-f-phone','mc-f-area'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('change',async function(){ var sv=$('#mc-saved'); sv.textContent='儲存中…'; sv.style.color='var(--soft)'; try{ var r=await db.rpc('update_my_profile',{p_name:$('#mc-f-name').value.trim(),p_phone:$('#mc-f-phone').value.trim(),p_area:$('#mc-f-area').value.trim()}); if(r.error) throw new Error(r.error.message); $('#mc-name').textContent=$('#mc-f-name').value.trim()||'會員'; try{ db.auth.updateUser({data:{name:$('#mc-f-name').value.trim()}}); }catch(e){} sv.textContent='已儲存'; sv.style.color='#4F8E6E'; setTimeout(function(){sv.textContent='';},1400); }catch(e){ sv.textContent='存檔失敗'; sv.style.color='#C0506A'; } }); });
 // 改密碼
 $('#mc-pw').onclick=function(){ var b=$('#mc-pwbox'); b.style.display=(b.style.display==='none'?'block':'none'); if(b.style.display==='block'){ b.scrollIntoView({behavior:'smooth',block:'center'}); $('#mc-pw1').focus(); } };
 $('#mc-pw-go').onclick=async function(){ var p1=$('#mc-pw1').value,p2=$('#mc-pw2').value,m=$('#mc-pw-msg'); m.style.color='#C0506A'; if(!p1||p1.length<6){m.textContent='密碼至少 6 碼';return;} if(p1!==p2){m.textContent='兩次密碼不一樣';return;} var b=this;b.disabled=true;b.textContent='更新中…'; try{ var r=await db.auth.updateUser({password:p1}); if(r.error) throw new Error(r.error.message); m.style.color='#4F8E6E'; m.textContent='密碼已更新'; $('#mc-pw1').value='';$('#mc-pw2').value=''; setTimeout(function(){ $('#mc-pwbox').style.display='none'; m.textContent=''; },1500); }catch(e){ m.textContent='更新失敗：'+((e&&e.message)||''); } b.disabled=false;b.textContent='更新密碼'; };
