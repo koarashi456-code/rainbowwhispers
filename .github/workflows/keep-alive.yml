@@ -1,0 +1,27 @@
+name: Keep Supabase Awake
+
+# 每週一、四 06:00 UTC（台灣 14:00）各連一次 Supabase，
+# 間隔 3～4 天、穩穩低於免費方案「閒置 7 天自動暫停」的門檻。
+# 用的是公開 anon key（已在 supabase-config.js 公開，非機密），不需設 Secret。
+
+on:
+  schedule:
+    - cron: "0 6 * * 1,4"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST to prevent auto-pause
+        run: |
+          URL="https://awqvsddsizqzttzzalps.supabase.co/rest/v1/public_guides?select=id&limit=1"
+          KEY="sb_publishable_N7B18U5LAhJOTsC9ToM87w_DVbz_fEG"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$URL" -H "apikey: $KEY")
+          echo "Supabase responded HTTP $code"
+          if [ "$code" = "200" ] || [ "$code" = "206" ]; then
+            echo "OK - project is awake."
+          else
+            echo "::error::Supabase keep-alive got HTTP $code (專案可能已暫停，請到 Supabase 後台 Restore)"
+            exit 1
+          fi
