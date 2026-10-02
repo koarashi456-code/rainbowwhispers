@@ -100,6 +100,7 @@
       <div class="sec-title">預約資訊</div>
       <div class="fcard">
         <div class="field"><div class="lbl">服務項目 <span class="req">*</span></div><div id="service-wrap"></div></div>
+        <div class="field"><div class="lbl">方案 <span class="req">*</span></div><select class="in" id="f-plan"></select></div>
         <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div>
           <div style="display:flex;gap:10px">
             <input class="in" id="f-date" type="date" style="flex:1.4">
@@ -209,27 +210,43 @@ function renderGuide(){
   if(svcs.length){ sw.innerHTML='<select class="in" id="f-service">'+svcs.map(function(s){return '<option>'+esc(s)+'</option>';}).join('')+'</select>'; }
   else { sw.innerHTML='<input class="in" id="f-service" placeholder="想預約的服務">'; }
 
-  // 付款方式：儲值（餘額夠付服務費才出現）＋匯款＋刷卡
-  var svcAmt=(g.price!=null?Number(g.price):0);
+  // 方案 + 付款方式
+  fillPlans();
+  var fp=$('#f-plan'); if(fp) fp.onchange=renderPayOptions;
+  renderPayOptions();
+}
+// 方案（先用預設清單；之後可改成每位引路人自訂）
+var PLANS=[
+  {label:'1 題', price:200},
+  {label:'3 題', price:400},
+  {label:'完整 30 分', price:800},
+  {label:'完整 60 分', price:1200}
+];
+function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; sel.innerHTML='<option value="">— 請選擇方案 —</option>'+PLANS.map(function(p,i){return '<option value="'+i+'">'+esc(p.label)+'｜'+money(p.price)+'</option>';}).join(''); }
+function selectedPlan(){ var sel=$('#f-plan'); if(!sel||sel.value==='') return null; return PLANS[Number(sel.value)]||null; }
+function renderPayOptions(){
+  var svcAmt=serviceAmount();
   var opts='';
   if(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt){
     opts+='<label class="paybox" data-pay="儲值"><span class="dot"></span> 用儲值付款（餘額 '+money(MEMBER_BALANCE)+'，免媒合費）</label>';
   }
   opts+='<label class="paybox sel" data-pay="匯款"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 匯款（ATM／網銀轉帳）</label>';
   opts+='<label class="paybox" data-pay="刷卡" style="margin-top:8px"><span class="dot"></span> 刷卡（信用卡）</label>';
-  var po=$('#pay-options'); po.innerHTML=opts; PAY_METHOD='匯款';
+  var po=$('#pay-options'); if(!po) return; po.innerHTML=opts; PAY_METHOD='匯款';
   po.querySelectorAll('.paybox').forEach(function(el){ el.onclick=function(){ PAY_METHOD=el.getAttribute('data-pay'); po.querySelectorAll('.paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); }; });
 }
 
-function serviceAmount(){ return (guide && guide.price!=null) ? Number(guide.price) : 0; }
+function serviceAmount(){ var p=selectedPlan(); if(p) return Number(p.price)||0; return (guide && guide.price!=null) ? Number(guide.price) : 0; }
 
 $('#to-pay').onclick=function(){
   var err=$('#form-err'); err.textContent='';
   var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'';
   var nm=(($('#f-name')||{}).value||'').trim(), ph=(($('#f-phone')||{}).value||'').trim();
+  var plan=selectedPlan();
   var bad=[];
   [['#f-date',dt],['#f-time',tm],['#f-name',nm],['#f-phone',ph]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ if(el) el.style.borderColor='#C0506A'; bad.push(1);} else if(el) el.style.borderColor='#EFE3CE'; });
-  if(!svc){ bad.push(1); }
+  var fpl=$('#f-plan'); if(fpl) fpl.style.borderColor=plan?'#EFE3CE':'#C0506A';
+  if(!svc) bad.push(1); if(!plan) bad.push(1);
   if(bad.length){ err.textContent='請把有 * 的欄位填完整'; return; }
   // 訂單摘要
   var amt=serviceAmount();
@@ -239,6 +256,7 @@ $('#to-pay').onclick=function(){
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
   h+='<div class="sumline"><span>服務項目</span><span>'+esc(svc)+'</span></div>';
+  h+='<div class="sumline"><span>方案</span><span>'+esc(plan?plan.label:'')+'</span></div>';
   h+='<div class="sumline"><span>希望時間</span><span>'+fmtWhen(when)+'</span></div>';
   h+='<div class="sumline"><span>姓名</span><span>'+esc(nm)+'</span></div>';
   h+='<div class="sumline"><span>電話</span><span>'+esc(ph)+'</span></div>';
@@ -270,6 +288,8 @@ $('#do-submit').onclick=async function(){
   var btn=this, err=$('#pay-err'); err.textContent='';
   if(!MEMBER){ err.textContent='請先登入會員'; return; }
   var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'', note=$('#f-note').value.trim();
+  var plan=selectedPlan(), svcFull=svc+(plan?('｜'+plan.label):'');
+  var email=(($('#f-email')||{}).value||'')||(MEMBER&&MEMBER.email)||'';
   var l5el=$('#f-last5'), last5=l5el?l5el.value.trim():'';
   if(PAY_METHOD==='匯款'){
     if(!last5){ if(l5el) l5el.style.borderColor='#C0506A'; err.textContent='請填轉帳帳號末 5 碼'; return; }
@@ -284,11 +304,12 @@ $('#do-submit').onclick=async function(){
   try{
     if(nm||ph){ try{ await db.rpc('update_my_profile',{p_name:nm, p_phone:ph, p_area:MEMBER_AREA||''}); MEMBER_NAME=nm; MEMBER_PHONE=ph; }catch(e){} }
     var res=await db.rpc('book_appointment',{
-      p_guide_id:guide.id, p_service:svc, p_appointment_at:(when||null), p_amount:amt,
+      p_guide_id:guide.id, p_service:svcFull, p_appointment_at:(when||null), p_amount:amt,
       p_note:(totalLabel+' '+money(total)+(isStore?'（儲值折抵）':'（含媒合費'+money(FEE)+'）')+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
+    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(plan?plan.label:'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)});
     $('#done-ref').textContent='訂單編號 '+ref;
     $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
     $('#book-pay').style.display='none';
@@ -297,6 +318,21 @@ $('#do-submit').onclick=async function(){
   }catch(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(((e&&e.message)||'請稍後再試')+'').slice(0,140); }
 };
 
+// 預約完成寄預約明細到用戶信箱（用現有 FormSubmit；同時也會寄一份通知給官方）
+function sendBookingEmail(info){
+  if(!info || !info.email) return;
+  try{
+    fetch('https://formsubmit.co/ajax/koarashi456@gmail.com',{
+      method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:'彩之語 · 新預約 '+info.ref, _template:'table',
+        name:info.name||'', email:info.email, 電話:info.phone||'', 引路人:info.guide||'',
+        服務項目:info.service||'', 方案:info.plan||'', 預約時間:info.when||'', 付款方式:info.method||'', 金額:info.total||'', 訂單編號:info.ref||'',
+        _autoresponse:'你好 '+(info.name||'')+'，\n\n你在彩之語的預約已收到，以下是預約明細：\n\n引路人：'+(info.guide||'')+'\n服務項目：'+(info.service||'')+'\n方案：'+(info.plan||'')+'\n預約時間：'+(info.when||'')+'\n付款方式：'+(info.method||'')+'\n金額：'+(info.total||'')+'\n訂單編號：'+(info.ref||'')+'\n\n我們會盡快與你確認時間與後續，並提供完整地址。\n（此為測試流程，尚未真的收款）\n\n— 彩之語 Rainbow Whisper'
+      })
+    }).catch(function(){});
+  }catch(e){}
+}
 (function(){ var sel=$('#f-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=15){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
 loadGuide();
 </script>
