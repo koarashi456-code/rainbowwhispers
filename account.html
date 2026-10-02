@@ -220,6 +220,13 @@
   <div class="hi" id="g-hi">引路人後台</div>
   <div class="who">跟總後台同步 · 只看得到預約你的客戶</div>
 
+  <div class="gsec-lab">我的開放時間</div>
+  <div class="gbox" style="padding:14px 16px">
+    <textarea id="g-avail" placeholder="例：週一~週五 晚上 19:00–22:00；週末 下午" style="width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none;min-height:60px;resize:vertical"></textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:9px"><button class="lo" id="g-avail-save" style="margin-top:0;padding:8px 18px;font-size:13px">儲存開放時間</button><span id="g-avail-msg" style="font-size:12px;color:#4F8E6E"></span></div>
+    <div style="font-size:11.5px;color:var(--soft);margin-top:7px">會顯示在你的公開頁，讓客戶知道你方便的時段。</div>
+  </div>
+
   <div class="gsec-lab">報表</div>
   <div class="gstats" id="g-report"></div>
 
@@ -322,6 +329,12 @@ async function enterGuide(d){
   $('#gseg-g').classList.add('on'); $('#gseg-m').classList.remove('on');
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
   show('guide-portal');
+  // 開放時間：讀自己的＋可編輯儲存
+  (function(){
+    var ta=$('#g-avail'), btn=$('#g-avail-save'), msg=$('#g-avail-msg');
+    if(ta){ ta.value=''; try{ db.rpc('my_guide_profile').then(function(r){ if(!r.error && r.data){ var pr=Array.isArray(r.data)?r.data[0]:r.data; if(pr && typeof pr.availability==='string') ta.value=pr.availability; } }).catch(function(){}); }catch(e){} }
+    if(btn) btn.onclick=async function(){ if(!ta) return; if(msg){ msg.textContent='儲存中…'; msg.style.color='var(--soft)'; } try{ var r=await db.rpc('update_my_guide',{p_availability:ta.value.trim()}); if(r.error) throw new Error(r.error.message); if(msg){ msg.textContent='已儲存，公開頁會更新'; msg.style.color='#4F8E6E'; setTimeout(function(){ if(msg) msg.textContent=''; },1800); } }catch(e){ if(msg){ msg.textContent='存檔失敗'; msg.style.color='#C0506A'; } } };
+  })();
   var rep=$('#g-report'), bx=$('#g-bookings'), mx=$('#g-members');
   rep.innerHTML=''; bx.innerHTML='<p class="gempty">載入中…</p>'; mx.innerHTML='';
   var data=null;
