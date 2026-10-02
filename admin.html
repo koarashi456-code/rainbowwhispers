@@ -110,6 +110,16 @@
   .fgrid label{display:flex;flex-direction:column;font-size:11.5px;color:var(--soft);gap:4px}
   .fgrid .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none}
   .fgrid .in:focus{border-color:#C9A7DE;background:#fff}
+  /* 可搜尋下拉（新增交易／儲值的客戶、引路人） */
+  .cbx{position:relative;display:block}
+  .cbx-input{width:100%;box-sizing:border-box}
+  .cbx-pop{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 30px -16px rgba(120,90,60,.45);max-height:230px;overflow-y:auto;z-index:40;display:none}
+  .cbx-pop.open{display:block}
+  .cbx-opt{padding:9px 12px;font-size:14px;color:var(--ink);cursor:pointer;border-bottom:1px solid #F3EADB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cbx-opt:last-child{border-bottom:none}
+  .cbx-opt:hover{background:var(--tint)}
+  .cbx-opt small{color:var(--soft);font-size:12px;margin-left:6px}
+  .cbx-empty{padding:10px 12px;font-size:13px;color:var(--soft)}
   .status-badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px}
   .st-book{background:#FBE7CC;color:#A5643A}
   .st-done{background:#D8ECDF;color:#3F7A5E}
@@ -255,8 +265,8 @@
       <div class="formcard">
         <h3>新增交易（消費／預約）</h3>
         <div class="fgrid">
-          <label>客戶 *<select class="in" id="tx-cust"></select></label>
-          <label>引路人<select class="in" id="tx-guide"></select></label>
+          <label>客戶 *<span class="cbx"><input class="in cbx-input" id="tx-cust-q" placeholder="打字搜尋客戶…" autocomplete="off"><input type="hidden" id="tx-cust"><div class="cbx-pop" id="tx-cust-pop"></div></span></label>
+          <label>引路人<span class="cbx"><input class="in cbx-input" id="tx-guide-q" placeholder="打字搜尋引路人（可留空）" autocomplete="off"><input type="hidden" id="tx-guide"><div class="cbx-pop" id="tx-guide-pop"></div></span></label>
           <label>項目<input class="in" id="tx-service" placeholder="例：塔羅 60 分"></label>
           <label>預約／服務時間<span style="display:flex;gap:8px"><input class="in" id="tx-date" type="date" style="flex:1.3"><select class="in" id="tx-time" style="flex:1"></select></span></label>
           <label>金額 *<input class="in" id="tx-amount" type="number" min="0" placeholder="0"></label>
@@ -271,7 +281,7 @@
       <div class="formcard">
         <h3>新增儲值</h3>
         <div class="fgrid">
-          <label>客戶 *<select class="in" id="tp-cust"></select></label>
+          <label>客戶 *<span class="cbx"><input class="in cbx-input" id="tp-cust-q" placeholder="打字搜尋客戶…" autocomplete="off"><input type="hidden" id="tp-cust"><div class="cbx-pop" id="tp-cust-pop"></div></span></label>
           <label>日期<input class="in" id="tp-date" type="date"></label>
           <label>金額 *<input class="in" id="tp-amount" type="number" min="0" placeholder="0"></label>
           <label>方式<select class="in" id="tp-method"><option>現金</option><option>刷卡</option><option>匯款</option></select></label>
@@ -567,11 +577,27 @@ $('#add-guide').onclick=async function(){
 
 /* ===== 交易紀錄 ＋ 儲值 ===== */
 function fillSelects(){
-  var copt='<option value="">— 選擇客戶 —</option>'+ALL.map(function(c){return '<option value="'+c.id+'">'+esc(custLabel(c))+'</option>';}).join('');
-  $('#tx-cust').innerHTML=copt; $('#tp-cust').innerHTML=copt;
-  $('#tx-guide').innerHTML='<option value="">（無指定）</option>'+GUIDES.filter(function(g){return !g.pending;}).map(function(g){return '<option value="'+g.id+'">'+esc(guideLabel(g))+'</option>';}).join('');
+  // 客戶／引路人改成可搜尋下拉（setupCombo 讀即時 ALL/GUIDES），這裡只填報表的引路人篩選
   $('#tx-fguide').innerHTML='<option value="">全部引路人</option>'+GUIDES.map(function(g){return '<option value="'+g.id+'">'+esc(guideLabel(g))+'</option>';}).join('');
 }
+// 可搜尋下拉：打字過濾、點選把 id 填進隱藏欄位（送出照常讀 $('#tx-cust').value 等）
+function setupCombo(qId,hidId,popId,getList,labelFn,subFn){
+  var q=document.getElementById(qId), hid=document.getElementById(hidId), pop=document.getElementById(popId);
+  if(!q||!hid||!pop) return;
+  function draw(){
+    var fl=q.value.trim().toLowerCase();
+    var items=getList().filter(function(it){ if(!fl) return true; var hay=(labelFn(it)+' '+(subFn?(subFn(it)||''):'')).toLowerCase(); return hay.indexOf(fl)>=0; }).slice(0,60);
+    pop.innerHTML=items.length ? items.map(function(it){ var s=subFn?subFn(it):''; return '<div class="cbx-opt" data-id="'+esc(String(it.id))+'">'+esc(labelFn(it))+(s?'<small>'+esc(s)+'</small>':'')+'</div>'; }).join('') : '<div class="cbx-empty">找不到符合的，換個關鍵字</div>';
+    pop.classList.add('open');
+  }
+  q.addEventListener('focus',draw);
+  q.addEventListener('input',function(){ hid.value=''; draw(); });
+  pop.addEventListener('mousedown',function(e){ var o=e.target.closest('.cbx-opt'); if(!o)return; e.preventDefault(); var id=o.getAttribute('data-id'); hid.value=id; var it=getList().find(function(x){return String(x.id)===String(id);}); q.value=it?labelFn(it):''; pop.classList.remove('open'); });
+  document.addEventListener('click',function(e){ if(e.target!==q && !pop.contains(e.target)) pop.classList.remove('open'); });
+}
+setupCombo('tx-cust-q','tx-cust','tx-cust-pop',function(){return ALL;},custLabel,function(c){return [c.contact,c.phone,c.area,c.ref_code?('代碼'+c.ref_code):''].filter(Boolean).join(' · ');});
+setupCombo('tp-cust-q','tp-cust','tp-cust-pop',function(){return ALL;},custLabel,function(c){return [c.contact,c.phone,c.area,c.ref_code?('代碼'+c.ref_code):''].filter(Boolean).join(' · ');});
+setupCombo('tx-guide-q','tx-guide','tx-guide-pop',function(){return GUIDES.filter(function(g){return !g.pending;});},guideLabel,function(g){return g.region||g.email||'';});
 function statusBadge(st){
   var cls=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':'st-book';
   return '<span class="status-badge '+cls+'">'+esc(st||'—')+'</span>';
@@ -588,6 +614,7 @@ $('#tx-add').onclick=async function(){
   if(r.error){ msg.textContent='失敗：'+r.error.message; msg.style.color='#C0506A'; return; }
   msg.textContent='已新增'; msg.style.color='#4F8E6E'; setTimeout(function(){msg.textContent='';},1500);
   $('#tx-service').value=''; $('#tx-date').value=''; $('#tx-time').value=''; $('#tx-amount').value=''; $('#tx-notes').value='';
+  $('#tx-cust-q').value=''; $('#tx-cust').value=''; $('#tx-guide-q').value=''; $('#tx-guide').value='';
   var rr=await db.from('transactions').select('*').order('created_at',{ascending:false}); TX=rr.data||[]; renderTx(); render();
 };
 $('#tp-add').onclick=async function(){
@@ -601,7 +628,7 @@ $('#tp-add').onclick=async function(){
   var r=await db.from('topups').insert(trow);
   if(r.error){ msg.textContent='失敗：'+r.error.message; msg.style.color='#C0506A'; return; }
   msg.textContent='已儲值'; msg.style.color='#4F8E6E'; setTimeout(function(){msg.textContent='';},1500);
-  $('#tp-amount').value=''; $('#tp-notes').value='';
+  $('#tp-amount').value=''; $('#tp-notes').value=''; $('#tp-cust-q').value=''; $('#tp-cust').value='';
   var rr=await db.from('topups').select('*').order('created_at',{ascending:false}); TOPUPS=rr.data||[]; render();
 };
 var TX_SORT={key:'appt',dir:-1};   // 預設依預約時間新→舊
