@@ -86,6 +86,20 @@
   .foldrow.open .fcar{transform:rotate(90deg)}
   .folddet{display:none;padding:0 0 11px;font-size:12.5px;color:var(--soft);line-height:1.7}
   .foldrow.open .folddet{display:block}
+  /* 引路人後台：客戶管理／交易紀錄／報表（跟總後台同步，只看自己的客戶） */
+  .gsec-lab{font-size:13px;color:var(--soft);font-weight:500;text-align:left;margin:22px 2px 8px}
+  .gstats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;text-align:left;min-width:0}
+  .gstat .k{font-size:12px;color:var(--soft)}
+  .gstat .v{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush);margin-top:3px;word-break:break-word}
+  .gbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:2px 16px;text-align:left}
+  .grow{border-top:1px solid var(--line);padding:11px 0}
+  .grow:first-child{border-top:none}
+  .grow-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .grow-name{font-size:14px;color:var(--brush);font-weight:500;line-height:1.4}
+  .grow-amt{font-variant-numeric:tabular-nums;color:var(--brush);font-weight:600;white-space:nowrap}
+  .grow-sub{font-size:12px;color:#A48C72;margin-top:4px;line-height:1.55;word-break:break-word}
+  .gempty{font-size:13px;color:var(--soft);padding:14px 2px;text-align:left}
 </style>
 </head>
 <body>
@@ -193,10 +207,18 @@
 <div id="guide-portal" class="member" style="display:none">
   <div class="seg" style="margin:0 auto 18px"><button id="gseg-m" type="button">會員</button><button id="gseg-g" class="on" type="button">引路人</button></div>
   <div class="hi" id="g-hi">引路人後台</div>
-  <div class="who">你的預約與會員</div>
-  <div class="mcard"><h3 style="margin-bottom:2px">我的預約</h3><div id="g-bookings"></div></div>
-  <div class="mcard"><h3 style="margin-bottom:2px">我的會員</h3><div id="g-members"></div></div>
-  <button class="lo" id="g-logout">登出</button>
+  <div class="who">跟總後台同步 · 只看得到預約你的客戶</div>
+
+  <div class="gsec-lab">報表</div>
+  <div class="gstats" id="g-report"></div>
+
+  <div class="gsec-lab">交易紀錄</div>
+  <div class="gbox" id="g-bookings"></div>
+
+  <div class="gsec-lab">客戶管理</div>
+  <div class="gbox" id="g-members"></div>
+
+  <button class="lo" id="g-logout" style="margin-top:22px">登出</button>
 </div>
 
 <footer class="rw-footer">
@@ -268,26 +290,40 @@ async function loadMyAccount(){
   }catch(e){}
 }
 // 引路人後台：看自己的預約 + 會員（＋自己的會員資料）
+function gstat(k,v){ return '<div class="gstat"><div class="k">'+escA(k)+'</div><div class="v">'+v+'</div></div>'; }
+function txRowG(o){
+  return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(o.customer_name||'客戶')+' <span style="color:var(--ink);font-weight:400;font-size:13px">'+escA(o.service||'')+'</span></span><span class="grow-amt">'+money(o.amount)+'</span></div>'
+    +'<div class="grow-sub">'+fmtDT(o.appointment_at)+'　·　'+escA(o.status||'')+'　·　'+escA(o.method||'')+(o.order_ref?'　·　'+escA(o.order_ref):'')+(o.method==='匯款'&&o.pay_last5?'　·　末5碼 '+escA(o.pay_last5):'')+'</div>'
+    +'<div class="grow-sub">聯絡：'+escA(o.customer_contact||'—')+'</div></div>';
+}
+function custRowG(m){
+  return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(m.name||'客戶')+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
+    +'<div class="grow-sub">'+escA(m.contact||'—')+(m.phone?'　·　'+escA(m.phone):'')+(m.area?'　·　'+escA(m.area):'')+'　·　'+(m.bookings||0)+' 次</div></div>';
+}
 async function enterGuide(d){
   d=d||GUIDE_DATA; if(!d) return;
   $('#gseg-g').classList.add('on'); $('#gseg-m').classList.remove('on');
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
-  var bk=d.bookings||[], bx=$('#g-bookings');
-  if(!bk.length){ bx.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有預約。</p>'; }
-  else{
-    bx.innerHTML=foldList(bk,
-      function(o){ return '<span><b style="color:var(--brush)">'+escA(o.customer_name||'客戶')+'</b>　<span style="color:var(--soft)">'+escA(o.service||'')+'　'+fmtDT(o.appointment_at)+'</span></span><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span>'; },
-      function(o){ return '付款：'+escA(o.method||'')+'　·　'+money(o.amount)+'<br>聯絡：'+escA(o.customer_contact||'—')+(o.order_ref?'<br>訂單編號：'+escA(o.order_ref):''); });
-    bindFold(bx);
-  }
-  var mm=d.members||[], mx=$('#g-members');
-  if(!mm.length){ mx.innerHTML='<p style="font-size:13px;color:var(--soft);text-align:left;margin-top:8px">還沒有會員預約。</p>'; }
-  else{
-    mx.innerHTML=mm.map(function(m){
-      return '<div style="text-align:left;border-top:1px solid var(--line);padding:9px 0;font-size:13.5px;display:flex;justify-content:space-between;gap:8px"><b style="color:var(--brush)">'+escA(m.name||'會員')+'</b><span style="color:var(--soft);font-size:12.5px">'+escA(m.contact||'')+(m.bookings?'　·　'+m.bookings+' 次':'')+'</span></div>';
-    }).join('');
-  }
   show('guide-portal');
+  var rep=$('#g-report'), bx=$('#g-bookings'), mx=$('#g-members');
+  rep.innerHTML=''; bx.innerHTML='<p class="gempty">載入中…</p>'; mx.innerHTML='';
+  var data=null;
+  try{ var r=await db.rpc('my_guide_data'); if(!r.error && r.data && r.data.ok) data=r.data; }catch(e){}
+  if(!data){ bx.innerHTML='<p class="gempty">目前讀不到後台資料，請稍後再試或聯繫官方 LINE。</p>'; mx.innerHTML=''; return; }
+  if(data.guide_name) $('#g-hi').textContent='引路人・'+data.guide_name;
+  // 報表
+  var rp=data.report||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
+  rep.innerHTML=
+    gstat('有效營收', money(rev)) + gstat('交易筆數', cnt+' 筆') +
+    gstat('退費', (rp.refund_count||0)+' 筆／'+money(rp.refund_amount)) + gstat('平均客單', money(cnt?Math.round(rev/cnt):0)) +
+    gstat('現金', money(rp.m_cash)) + gstat('刷卡', money(rp.m_card)) +
+    gstat('匯款', money(rp.m_transfer)) + gstat('儲值折抵', money(rp.m_stored));
+  // 交易紀錄
+  var tx=data.transactions||[];
+  bx.innerHTML= tx.length ? tx.map(txRowG).join('') : '<p class="gempty">還沒有交易。</p>';
+  // 客戶管理
+  var cs=data.customers||[];
+  mx.innerHTML= cs.length ? cs.map(custRowG).join('') : '<p class="gempty">還沒有預約你的客戶。</p>';
 }
 // LINE(LIFF) 會員也寫進客戶後台（同一瀏覽器只寫一次）
 function saveLineMember(p){
