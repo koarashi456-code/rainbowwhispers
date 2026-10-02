@@ -10,8 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
-  :root{ --c1:#D9534F; --c2:#E8894A; --c3:#E6B84B; --c4:#6FB97E; --c5:#5AA7D0; --c6:#6C6FB0; --c7:#9A77B8;
-    --chakra:linear-gradient(95deg,#D9534F,#E8894A,#E6B84B,#6FB97E,#5AA7D0,#6C6FB0,#9A77B8); }
+  :root{ --c1:#EE9E86; --c2:#F0B179; --c3:#F2C56E; --c4:#9FD49A; --c5:#86C9DA; --c6:#A9A3E3; --c7:#C6A1E2;
+    --chakra:linear-gradient(95deg,#EE9E86,#F0B179,#F2C56E,#9FD49A,#86C9DA,#A9A3E3,#C6A1E2); }
   .ck-wrap{max-width:460px;margin:0 auto;padding:26px 20px 56px;text-align:center}
   .ck-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:26px 22px;box-shadow:0 18px 40px -26px rgba(120,90,60,.45)}
   .ck-kicker{font-size:12px;letter-spacing:.2em;color:#B5713F}
@@ -20,7 +20,7 @@
   .ck-p{font-size:14px;color:var(--soft);line-height:1.8}
   .ck-dots{display:flex;justify-content:center;gap:9px;margin:20px 0 6px}
   .ck-dot{width:16px;height:16px;border-radius:50%}
-  .ck-cta{display:block;width:100%;text-align:center;background:var(--chakra);color:#fff;font-weight:600;font-size:16px;padding:15px;border-radius:999px;border:none;margin-top:20px;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+  .ck-cta{display:block;width:100%;text-align:center;background:var(--chakra);color:#4A3A2A;font-weight:600;font-size:16px;padding:15px;border-radius:999px;border:none;margin-top:20px;cursor:pointer}
   .ck-ghost{display:block;width:100%;text-align:center;border:1.5px solid #C9A7DE;color:var(--brush);font-weight:500;font-size:14px;padding:12px;border-radius:999px;margin-top:11px;background:none;cursor:pointer;text-decoration:none}
 
   .ck-qnum{font-size:12px;color:var(--soft)}
@@ -47,6 +47,17 @@
   .ck-bar .pc{width:32px;text-align:right;font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums}
   .ck-bar.lo .nm{font-weight:600}
   .ck-note{font-size:11.5px;color:#A99;margin-top:16px;line-height:1.7}
+  /* 推薦引路人 */
+  .ck-reclab{font-size:12px;letter-spacing:.1em;color:#B5713F;text-align:center;margin:22px 0 4px}
+  .ck-recdir{font-size:13px;color:var(--soft);line-height:1.7;text-align:center;margin-bottom:12px}
+  .ck-reccard{display:block;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 44px 13px 15px;margin-top:9px;position:relative;text-align:left}
+  .ck-reccard:hover{border-color:#C9A7DE}
+  .ck-recname{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush)}
+  .ck-recreg{font-family:"Noto Sans TC",sans-serif;font-size:11.5px;color:var(--soft);font-weight:400;margin-left:7px}
+  .ck-recchips{margin-top:7px;display:flex;flex-wrap:wrap;gap:5px}
+  .ck-chip{font-size:11.5px;color:var(--soft);background:var(--tint);border-radius:999px;padding:2px 9px}
+  .ck-recgo{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:#C9A7DE;font-size:15px}
+  .ck-recempty{font-size:13px;color:var(--soft);text-align:center;padding:8px}
 </style>
 </head>
 <body>
@@ -81,13 +92,13 @@ var CONFIG={ lineOaId:'@518xokyr', lineUrl:'https://lin.ee/t0NBjud0' };
 var SUPA=window.SUPA;
 
 var CHAKRAS=[
-  {k:'root',  name:'海底輪',        sub:'安穩的根',   color:'var(--c1)', blurb:'你最近也許有點不安、像站在浮動的地面上。先把生活的基本好好照顧——根穩了，其他才長得出來。'},
-  {k:'sacral',name:'臍輪',          sub:'流動的情感', color:'var(--c2)', blurb:'你可能壓抑了一些情緒或渴望。允許自己去感受、也允許自己快樂，水才會再次流動起來。'},
-  {k:'solar', name:'太陽神經叢輪',  sub:'自信的火',   color:'var(--c3)', blurb:'你也許對自己有點沒把握。其實你比想像中更有力量，先從一件小事、好好肯定自己開始。'},
-  {k:'heart', name:'心輪',          sub:'愛的連結',   color:'var(--c4)', blurb:'你最近也許對自己或別人築起了一道牆。先對自己溫柔一點，心打開了，連結就會慢慢回來。'},
-  {k:'throat',name:'喉輪',          sub:'真實的聲音', color:'var(--c5)', blurb:'有些話你一直放在心裡沒說出口。你的感受值得被聽見——從說出一句真心話開始。'},
-  {k:'third', name:'眉心輪',        sub:'直覺與清明', color:'var(--c6)', blurb:'你最近想得多、卻不太信任自己的直覺。讓思緒慢下來，答案其實一直都在。'},
-  {k:'crown', name:'頂輪',          sub:'平靜與信任', color:'var(--c7)', blurb:'你也許有點失去方向或意義感。給自己一些安靜的空間，重新接上那個更大的流動。'}
+  {k:'root',  name:'海底輪',        sub:'安穩的根',   color:'var(--c1)', blurb:'你最近也許有點不安、像站在浮動的地面上。先把生活的基本好好照顧——根穩了，其他才長得出來。', rec:{dir:'先把根基穩住——適合擅長 八字、紫微、命理塔羅 的引路人，幫你看清現實、重建安全感。', kw:['八字','紫微','命理','塔羅','占卜']}},
+  {k:'sacral',name:'臍輪',          sub:'流動的情感', color:'var(--c2)', blurb:'你可能壓抑了一些情緒或渴望。允許自己去感受、也允許自己快樂，水才會再次流動起來。', rec:{dir:'讓情緒重新流動——適合 OH卡、情感療癒、塔羅，陪你好好梳理感受。', kw:['OH卡','情感','療癒','塔羅','占卜']}},
+  {k:'solar', name:'太陽神經叢輪',  sub:'自信的火',   color:'var(--c3)', blurb:'你也許對自己有點沒把握。其實你比想像中更有力量，先從一件小事、好好肯定自己開始。', rec:{dir:'找回力量與方向——適合 占星、生命靈數、人類圖，幫你看見自己的天賦。', kw:['占星','生命靈數','人類圖','塔羅']}},
+  {k:'heart', name:'心輪',          sub:'愛的連結',   color:'var(--c4)', blurb:'你最近也許對自己或別人築起了一道牆。先對自己溫柔一點，心打開了，連結就會慢慢回來。', rec:{dir:'打開心、修復關係——適合 感情塔羅、關係諮詢，陪你把心照顧好。', kw:['感情','關係','塔羅','占卜']}},
+  {k:'throat',name:'喉輪',          sub:'真實的聲音', color:'var(--c5)', blurb:'有些話你一直放在心裡沒說出口。你的感受值得被聽見——從說出一句真心話開始。', rec:{dir:'把真實的聲音說出來——適合 溝通諮詢、聲音療癒、塔羅。', kw:['溝通','聲音','療癒','塔羅']}},
+  {k:'third', name:'眉心輪',        sub:'直覺與清明', color:'var(--c6)', blurb:'你最近想得多、卻不太信任自己的直覺。讓思緒慢下來，答案其實一直都在。', rec:{dir:'信任直覺、看清方向——適合 塔羅、占星、靈擺、直覺開發。', kw:['塔羅','占星','靈擺','直覺','占卜']}},
+  {k:'crown', name:'頂輪',          sub:'平靜與信任', color:'var(--c7)', blurb:'你也許有點失去方向或意義感。給自己一些安靜的空間，重新接上那個更大的流動。', rec:{dir:'接回平靜與意義——適合 靈氣、能量療癒、靈性諮詢、冥想。', kw:['靈氣','能量','靈性','冥想','療癒']}}
 ];
 var CKMAP={}; CHAKRAS.forEach(function(c){CKMAP[c.k]=c;});
 
@@ -174,11 +185,13 @@ function renderResult(){
     '<div class="ck-rtitle">'+esc(f.name)+' 需要被看見</div>'+
     '<div class="ck-focus"><div class="fl">此刻最需要關注</div><div class="fn" style="color:'+f.color+'">'+esc(f.name)+' · '+esc(f.sub)+'</div><div class="fd">'+esc(f.blurb)+'</div></div>'+
     '<div class="ck-bars">'+bars+'</div>'+
-    '<a class="ck-cta" href="guides.html" style="text-decoration:none">找引路人陪你調頻</a>'+
+    '<div id="ck-rec"></div>'+
+    '<a class="ck-cta" href="guides.html" style="text-decoration:none">瀏覽全部引路人</a>'+
     '<a class="ck-ghost" id="ck-line" href="'+lineHref+'" target="_blank" rel="noopener">加 LINE 收結果</a>'+
     '<button class="ck-back" id="ck-restart" style="display:block;margin:16px auto 0">重新測一次</button>'+
     '<div class="ck-note">此結果僅供自我覺察與參考，不作為醫療或心理診斷。</div>'+
   '</div>';
+  loadRec(R.focus);
   var lg=document.getElementById('ck-line'); if(lg) lg.onclick=function(){ saveLead(); };
   var rs=document.getElementById('ck-restart'); if(rs) rs.onclick=function(){ S={step:0,answers:[]}; curLead=null; leadSaved=false; render(); window.scrollTo({top:0,behavior:'smooth'}); };
   window.scrollTo({top:0,behavior:'smooth'});
@@ -186,6 +199,34 @@ function renderResult(){
 function saveLead(){
   if(leadSaved||!curLead) return; leadSaved=true;
   try{ fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:curLead.ref,topic:'七大脈輪測驗',result_type:curLead.type,status:'新客'})}); }catch(e){}
+}
+// 依焦點脈輪推薦適合的能量引路人（撈 public_guides、用關鍵字比對服務）
+var GUIDES_CACHE=null;
+async function loadRec(ckKey){
+  if(!GUIDES_CACHE){
+    try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region,service_mode,price',{headers:{apikey:SUPA.key}}); GUIDES_CACHE=r.ok?(await r.json()):[]; }catch(e){ GUIDES_CACHE=[]; }
+  }
+  renderRec(ckKey);
+}
+function renderRec(ckKey){
+  var box=document.getElementById('ck-rec'); if(!box) return;
+  var ck=CKMAP[ckKey], rec=(ck&&ck.rec)||{dir:'',kw:[]}, kw=rec.kw||[];
+  var guides=GUIDES_CACHE||[];
+  function score(g){ var hay=((g.services||[]).join(' ')+' '+(g.name||'')+' '+(g.service_mode||'')).toLowerCase(); var s=0; kw.forEach(function(k){ if(hay.indexOf(String(k).toLowerCase())>=0) s++; }); return s; }
+  var scored=guides.map(function(g){return {g:g,s:score(g)};}).sort(function(a,b){return b.s-a.s;});
+  var picks=scored.filter(function(x){return x.s>0;}).slice(0,2).map(function(x){return x.g;});
+  if(!picks.length) picks=guides.slice(0,2);
+  var h='<div class="ck-reclab">為你推薦的能量引路人</div>';
+  if(rec.dir) h+='<div class="ck-recdir">'+esc(rec.dir)+'</div>';
+  if(picks.length){
+    h+=picks.map(function(g){
+      var svc=(g.services||[]).slice(0,3).map(function(s){return '<span class="ck-chip">'+esc(s)+'</span>';}).join('');
+      return '<a class="ck-reccard" href="guide.html?id='+encodeURIComponent(g.id)+'"><div class="ck-recname">'+esc(g.name||'引路人')+(g.region?'<span class="ck-recreg">'+esc(g.region)+'</span>':'')+'</div>'+(svc?'<div class="ck-recchips">'+svc+'</div>':'')+'<span class="ck-recgo">預約 ›</span></a>';
+    }).join('');
+  } else {
+    h+='<div class="ck-recempty">引路人陸續加入中，先逛逛看看。</div>';
+  }
+  box.innerHTML=h;
 }
 render();
 </script>
