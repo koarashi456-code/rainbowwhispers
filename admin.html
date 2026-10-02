@@ -203,7 +203,7 @@
     <!-- 客戶管理 -->
     <section id="tab-customers">
       <div class="filters">
-        <input id="search" placeholder="搜尋　稱呼／聯絡／代碼／備註…">
+        <input id="search" placeholder="搜尋　稱呼／聯絡／電話／地區／代碼／備註…">
         <select id="f-source"><option value="">全部來源</option><option>測驗</option><option>會員</option></select>
         <select id="f-status"><option value="">全部狀態</option></select>
         <select id="f-type"><option value="">全部類型</option></select>
@@ -214,7 +214,12 @@
 
     <!-- 引路人管理 -->
     <section id="tab-guides" style="display:none">
-      <div class="filters"><select id="g-filter"><option value="">全部引路人</option><option>待申請</option><option>上架中</option><option>已停用</option></select></div>
+      <div class="filters">
+        <input id="g-search" placeholder="搜尋　姓名／信箱／電話／區域／服務…">
+        <select id="g-filter"><option value="">全部狀態</option><option>待申請</option><option>上架中</option><option>已停用</option></select>
+        <select id="g-region"><option value="">全部地區</option></select>
+        <select id="g-mode"><option value="">全部方式</option><option>線上</option><option>實體</option></select>
+      </div>
       <div class="sec-head">
         <div class="count" id="gcount" style="margin:0"></div>
         <div style="display:flex;gap:8px"><button class="abtn" id="guide-collapse">全部展開</button><button class="addbtn" id="add-guide">＋ 新增引路人</button></div>
@@ -381,7 +386,7 @@ function render(){
     if(fs && c.status!==fs) return false;
     if(ft && c.result_type!==ft) return false;
     if(fsrc && (c.source||'測驗')!==fsrc) return false;
-    if(q){ var hay=[c.ref_code,c.name,c.contact,c.notes,c.topic,c.result_type,(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
+    if(q){ var hay=[c.ref_code,c.name,c.contact,c.phone,c.area,c.notes,c.topic,c.result_type,(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
     return true;
   });
   $('#count').textContent='共 '+ALL.length+' 位，顯示 '+rows.length+' 位';
@@ -418,7 +423,7 @@ function card(c){
       '<label>地區<input class="in" data-f="area" value="'+esc(c.area)+'" placeholder="—"></label>'+
     '</div>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="記點什麼…">'+esc(c.notes)+'</textarea></label>'+
-    '<div class="cust-actions"><label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="portal_enabled" '+(c.portal_enabled===false?'':'checked')+'> 會員後台啟用</label><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
+    '<div class="cust-actions"><label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="is_paid" '+(c.is_paid?'checked':'')+'> 付費會員（開啟後，該會員的會員中心會顯示優惠）</label><span class="saved" data-saved></span><button class="del" data-del>刪除</button></div>'+
     '</div>'+
   '</div>';
 }
@@ -453,7 +458,19 @@ function guideState(g){ return g.pending?'待申請':(g.active?'上架中':'已�
 function guideBadge(g){ if(g.pending) return '<span class="src-badge" style="background:#FBE7CC;color:#A5643A">待申請</span>'; if(!g.active) return '<span class="src-badge" style="background:#EDE6DC;color:#8A7659">已停用</span>'; return '<span class="src-badge" style="background:#D8ECDF;color:#3F7A5E">上架中</span>'; }
 function renderGuides(){
   var f=($('#g-filter')||{}).value||'';
-  var rows=GUIDES.filter(function(g){ return !f || guideState(g)===f; });
+  var q=(($('#g-search')||{}).value||'').trim().toLowerCase();
+  var reg=($('#g-region')||{}).value||'';
+  var mode=($('#g-mode')||{}).value||'';
+  // 地區下拉：用現有引路人的區域動態帶入（保留目前選擇）
+  var rsel=$('#g-region');
+  if(rsel){ var cur=rsel.value; var regs=GUIDES.map(function(g){return g.region;}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(); rsel.innerHTML='<option value="">全部地區</option>'+regs.map(function(r){return '<option'+(r===cur?' selected':'')+'>'+esc(r)+'</option>';}).join(''); rsel.value=cur; }
+  var rows=GUIDES.filter(function(g){
+    if(f && guideState(g)!==f) return false;
+    if(reg && (g.region||'')!==reg) return false;
+    if(mode && (g.service_mode||'').indexOf(mode)<0) return false;
+    if(q){ var hay=[g.name,g.email,g.phone,g.region,g.service_mode,(g.services||[]).join(' '),g.notes].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
+    return true;
+  });
   var pend=GUIDES.filter(function(g){return g.pending;}).length;
   $('#gcount').textContent='共 '+GUIDES.length+' 位'+(pend?'　·　待申請 '+pend+' 位':'');
   if(!rows.length){ $('#glist').innerHTML='<div class="muted" style="padding:30px;text-align:center">'+(GUIDES.length?'沒有符合的引路人':'還沒有引路人。按右上角「＋ 新增引路人」建立第一位。')+'</div>'; return; }
@@ -516,7 +533,7 @@ $('#add-guide').onclick=async function(){
   await loadAll(); document.querySelector('.tabbar [data-tab="guides"]').click();
   var f=document.querySelector('#glist .cust'); if(f) f.classList.remove('collapsed');
 };
-var gflt=document.getElementById('g-filter'); if(gflt) gflt.addEventListener('change',renderGuides);
+['g-filter','g-search','g-region','g-mode'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('change',renderGuides); e.addEventListener('input',renderGuides); } });
 
 /* ===== 交易紀錄 ＋ 儲值 ===== */
 function fillSelects(){

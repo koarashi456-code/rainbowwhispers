@@ -100,6 +100,13 @@
   .grow-amt{font-variant-numeric:tabular-nums;color:var(--brush);font-weight:600;white-space:nowrap}
   .grow-sub{font-size:12px;color:#A48C72;margin-top:4px;line-height:1.55;word-break:break-word}
   .gempty{font-size:13px;color:var(--soft);padding:14px 2px;text-align:left}
+  /* 付費會員優惠卡 */
+  .promo-card{margin:12px 20px 0;border:1.5px solid transparent;border-radius:16px;background:linear-gradient(var(--card),var(--card)) padding-box, var(--rainbow) border-box;padding:15px 17px;text-align:left}
+  .promo-h{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);display:flex;align-items:center;gap:8px}
+  .promo-soon{font-size:11px;font-weight:400;color:#A5643A;background:#FBE7CC;border-radius:999px;padding:2px 9px;font-family:"Noto Sans TC",sans-serif}
+  .promo-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .promo-list li{position:relative;padding-left:20px;font-size:13.5px;color:var(--ink)}
+  .promo-list li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:var(--rainbow)}
 </style>
 </head>
 <body>
@@ -176,6 +183,14 @@
     <div class="st"><div class="stic i-a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E4F9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 3v4"/></svg></div><div class="stk">儲值餘額</div><div class="stv" id="mc-balance">$0</div></div>
     <div class="st" id="mc-order-stat" style="cursor:pointer"><div class="stic i-b"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A5643A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/><path d="M9 11h6M9 15h4"/></svg></div><div class="stk">我的訂單</div><div class="stv" id="mc-order-count">0</div><span class="stcaret">›</span></div>
   </div>
+  <div class="promo-card" id="mc-promo" style="display:none">
+    <div class="promo-h">會員優惠 <span class="promo-soon">即將開放</span></div>
+    <ul class="promo-list">
+      <li>預約媒合費折抵</li>
+      <li>引路人優先推薦</li>
+      <li>會員限定服務優惠</li>
+    </ul>
+  </div>
   <div class="sec-lab">基本資料</div>
   <div class="info-card">
     <div class="irow"><span class="il">姓名</span><input class="iv" id="mc-f-name" placeholder="—"></div>
@@ -195,11 +210,6 @@
     <input id="mc-pw2" type="password" placeholder="再輸入一次" autocomplete="new-password">
     <button class="go" id="mc-pw-go" type="button">更新密碼</button>
     <div class="msg" id="mc-pw-msg" style="text-align:center"></div>
-  </div>
-  <div class="mtabs">
-    <button class="mtab on" id="mtab-m"><div class="mti"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg></div>會員</button>
-    <button class="mtab" id="mtab-o"><div class="mti"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg></div>訂單</button>
-    <button class="mtab" id="mtab-s"><div class="mti"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>設定</button>
   </div>
 </div>
 
@@ -264,6 +274,12 @@ function enterMember(o){
   $('#mc-f-mail').textContent=o.email||'';
   show('member');
   loadMyAccount();
+  loadPromo();
+}
+// 付費會員才顯示優惠卡（暫標「即將開放」）
+async function loadPromo(){
+  var pc=$('#mc-promo'); if(!pc) return; pc.style.display='none';
+  try{ var r=await db.rpc('my_is_paid'); if(!r.error && r.data===true) pc.style.display='block'; }catch(e){}
 }
 function escA(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDT(s){ if(!s) return '待確認'; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
@@ -402,10 +418,7 @@ var mlo=document.getElementById('mc-logout'); if(mlo) mlo.onclick=doLogout;
 $('#seg-g').onclick=function(){ if(GUIDE_DATA){ enterGuide(GUIDE_DATA); } else { alert('此帳號尚未開通引路人後台。如你是彩之語引路人，請聯繫官方 LINE 幫你開通。'); } };
 $('#seg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
-// 底部分頁 + 快捷
-$('#mtab-m').onclick=function(){ window.scrollTo({top:0,behavior:'smooth'}); };
-$('#mtab-o').onclick=function(){ location.href='orders.html'; };
-$('#mtab-s').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
+// 我的訂單卡 → 訂單頁；設定走右上角齒輪
 $('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
 // 儲存基本資料（姓名／手機／地區）
