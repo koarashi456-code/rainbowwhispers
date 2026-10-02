@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>七大脈輪能量測驗｜彩之語 Rainbow Whisper</title>
+<meta name="description" content="七大脈輪能量平衡測驗：20 題、約 3 分鐘，看看此刻哪一個脈輪最需要被照顧。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  :root{ --c1:#D9534F; --c2:#E8894A; --c3:#E6B84B; --c4:#6FB97E; --c5:#5AA7D0; --c6:#6C6FB0; --c7:#9A77B8;
+    --chakra:linear-gradient(95deg,#D9534F,#E8894A,#E6B84B,#6FB97E,#5AA7D0,#6C6FB0,#9A77B8); }
+  .ck-wrap{max-width:460px;margin:0 auto;padding:26px 20px 56px;text-align:center}
+  .ck-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:26px 22px;box-shadow:0 18px 40px -26px rgba(120,90,60,.45)}
+  .ck-kicker{font-size:12px;letter-spacing:.2em;color:#B5713F}
+  .ck-title{font-family:"Noto Serif TC",serif;font-size:25px;color:var(--brush);line-height:1.5;margin-top:8px}
+  .ck-divider{width:52px;height:3px;border-radius:3px;margin:13px auto;background:var(--chakra)}
+  .ck-p{font-size:14px;color:var(--soft);line-height:1.8}
+  .ck-dots{display:flex;justify-content:center;gap:9px;margin:20px 0 6px}
+  .ck-dot{width:16px;height:16px;border-radius:50%}
+  .ck-cta{display:block;width:100%;text-align:center;background:var(--chakra);color:#fff;font-weight:600;font-size:16px;padding:15px;border-radius:999px;border:none;margin-top:20px;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.15)}
+  .ck-ghost{display:block;width:100%;text-align:center;border:1.5px solid #C9A7DE;color:var(--brush);font-weight:500;font-size:14px;padding:12px;border-radius:999px;margin-top:11px;background:none;cursor:pointer;text-decoration:none}
+
+  .ck-qnum{font-size:12px;color:var(--soft)}
+  .ck-qbar{height:5px;border-radius:5px;background:#E6D9BF;margin:9px 0 20px;overflow:hidden}
+  .ck-qbar i{display:block;height:100%;background:var(--chakra);transition:width .25s}
+  .ck-q{font-family:"Noto Serif TC",serif;font-size:19px;color:var(--ink);line-height:1.6;min-height:62px;display:flex;align-items:center;justify-content:center}
+  .ck-opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:14px 16px;margin-top:11px;font-size:15px;color:var(--ink);cursor:pointer;text-align:left;transition:border-color .12s,background .12s}
+  .ck-opt:hover{border-color:#C9A7DE}
+  .ck-opt .rd{width:18px;height:18px;border-radius:50%;border:2px solid #CBB68E;flex:none}
+  .ck-back{margin-top:16px;color:var(--soft);font-size:13px;background:none;border:none;cursor:pointer}
+
+  .ck-rsub{font-size:12px;letter-spacing:.14em;color:#B5713F}
+  .ck-rtitle{font-family:"Noto Serif TC",serif;font-size:22px;color:var(--brush);margin-top:6px}
+  .ck-focus{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:15px;text-align:center}
+  .ck-focus .fl{font-size:11.5px;color:var(--soft)}
+  .ck-focus .fn{font-family:"Noto Serif TC",serif;font-size:18px;margin-top:4px}
+  .ck-focus .fd{font-size:13px;color:var(--soft);line-height:1.8;margin-top:8px}
+  .ck-bars{margin-top:16px;display:flex;flex-direction:column;gap:11px;text-align:left}
+  .ck-bar{display:flex;align-items:center;gap:10px}
+  .ck-bar .nm{width:96px;font-size:12.5px;color:var(--ink);display:flex;align-items:center;gap:7px}
+  .ck-bar .nm i{width:11px;height:11px;border-radius:50%;flex:none}
+  .ck-track{flex:1;height:9px;border-radius:9px;background:#E9DEC6;overflow:hidden}
+  .ck-track b{display:block;height:100%;border-radius:9px;transition:width .4s}
+  .ck-bar .pc{width:32px;text-align:right;font-size:12px;color:var(--soft);font-variant-numeric:tabular-nums}
+  .ck-bar.lo .nm{font-weight:600}
+  .ck-note{font-size:11.5px;color:#A99;margin-top:16px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<nav class="rw-nav"><div class="rw-nav-in">
+  <a class="rw-brand" href="index.html">彩之語<small>RAINBOW WHISPER</small></a>
+  <input type="checkbox" id="rw-burger" class="rw-burger-cb" aria-label="選單"><label for="rw-burger" class="rw-burger" aria-hidden="true"><span></span><span></span><span></span></label>
+  <div class="rw-links">
+    <a href="index.html">首頁</a>
+    <a class="on" href="quiz.html">測驗</a>
+    <a href="guides.html">引路人介紹</a>
+    <a href="booking.html">預約引路人</a>
+    <a href="pricing.html">方案</a>
+    <a href="account.html">會員</a>
+    <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
+  </div>
+</div></nav>
+
+<div class="ck-wrap"><div id="ck-app"></div></div>
+
+<footer class="rw-footer">
+  <div class="rw-brand2 rw-serif">彩之語</div>
+  <div class="rw-foot-en">RAINBOW WHISPER</div>
+  <p class="rw-foot-note">溫馨提醒：本測驗僅供自我覺察與參考，不作為醫療或心理診斷。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
+  <div class="rw-foot-links"><a href="policies.html#privacy">隱私權政策</a>·<a href="quiz.html">心靈導航測驗</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
+  <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
+</footer>
+
+<script src="supabase-config.js"></script>
+<script>
+var CONFIG={ lineOaId:'@518xokyr', lineUrl:'https://lin.ee/t0NBjud0' };
+var SUPA=window.SUPA;
+
+var CHAKRAS=[
+  {k:'root',  name:'海底輪',        sub:'安穩的根',   color:'var(--c1)', blurb:'你最近也許有點不安、像站在浮動的地面上。先把生活的基本好好照顧——根穩了，其他才長得出來。'},
+  {k:'sacral',name:'臍輪',          sub:'流動的情感', color:'var(--c2)', blurb:'你可能壓抑了一些情緒或渴望。允許自己去感受、也允許自己快樂，水才會再次流動起來。'},
+  {k:'solar', name:'太陽神經叢輪',  sub:'自信的火',   color:'var(--c3)', blurb:'你也許對自己有點沒把握。其實你比想像中更有力量，先從一件小事、好好肯定自己開始。'},
+  {k:'heart', name:'心輪',          sub:'愛的連結',   color:'var(--c4)', blurb:'你最近也許對自己或別人築起了一道牆。先對自己溫柔一點，心打開了，連結就會慢慢回來。'},
+  {k:'throat',name:'喉輪',          sub:'真實的聲音', color:'var(--c5)', blurb:'有些話你一直放在心裡沒說出口。你的感受值得被聽見——從說出一句真心話開始。'},
+  {k:'third', name:'眉心輪',        sub:'直覺與清明', color:'var(--c6)', blurb:'你最近想得多、卻不太信任自己的直覺。讓思緒慢下來，答案其實一直都在。'},
+  {k:'crown', name:'頂輪',          sub:'平靜與信任', color:'var(--c7)', blurb:'你也許有點失去方向或意義感。給自己一些安靜的空間，重新接上那個更大的流動。'}
+];
+var CKMAP={}; CHAKRAS.forEach(function(c){CKMAP[c.k]=c;});
+
+var QUESTIONS=[
+  {c:'root',  t:'面對日常的錢、住、生活安排，我大致感到踏實安穩。'},
+  {c:'root',  t:'我能好好照顧自己的身體——該吃、該睡、該休息。'},
+  {c:'root',  t:'遇到變動時，我相信自己站得穩、撐得住。'},
+  {c:'sacral',t:'我允許自己享受生活中的小小樂趣與美好。'},
+  {c:'sacral',t:'我的情緒能自然流動，不太會長期卡住。'},
+  {c:'sacral',t:'在親密關係裡，我能自在地付出、也能接受。'},
+  {c:'solar', t:'對於自己做的決定，我大致有信心。'},
+  {c:'solar', t:'需要時，我能清楚地為自己設界線、說「不」。'},
+  {c:'solar', t:'我相信自己有能力，把想做的事推動起來。'},
+  {c:'heart', t:'我能對自己溫柔，不過度苛責自己。'},
+  {c:'heart', t:'我願意對重要的人敞開，也接受他們的關心。'},
+  {c:'heart', t:'對於過去的傷，我大致能慢慢放下。'},
+  {c:'throat',t:'我能把心裡真正的想法，好好地說出來。'},
+  {c:'throat',t:'在人群中，我敢表達自己真實的感受與需要。'},
+  {c:'third', t:'我會相信自己的直覺，並依它行動。'},
+  {c:'third', t:'面對選擇時，我大致能看清方向、不太混亂。'},
+  {c:'third', t:'我能讓思緒慢下來、專注在當下。'},
+  {c:'crown', t:'我對生活抱著一種「會慢慢好起來」的信任。'},
+  {c:'crown', t:'我能感覺到自己和某種更大的流動或意義有連結。'},
+  {c:'crown', t:'即使忙碌，我內在仍能找到片刻的平靜。'}
+];
+var OPTS=[{t:'非常符合',v:3},{t:'還算符合',v:2},{t:'偶爾如此',v:1},{t:'不太符合',v:0}];
+
+var S={step:0,answers:[]}, curLead=null, leadSaved=false;
+var app=document.getElementById('ck-app');
+
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+function genRef(){var s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r='';for(var i=0;i<5;i++)r+=s[Math.floor(Math.random()*s.length)];return r;}
+
+function compute(){
+  var sum={},cnt={};
+  CHAKRAS.forEach(function(c){sum[c.k]=0;cnt[c.k]=0;});
+  QUESTIONS.forEach(function(q,i){ var v=S.answers[i]; if(typeof v==='number'){ sum[q.c]+=v; cnt[q.c]++; } });
+  var scores=CHAKRAS.map(function(c){ var pct=cnt[c.k]?Math.round(sum[c.k]/(cnt[c.k]*3)*100):0; return {c:c,pct:pct}; });
+  var focus=scores[0]; scores.forEach(function(s){ if(s.pct<focus.pct) focus=s; });
+  return {scores:scores,focus:focus.c.k};
+}
+
+function render(){
+  if(S.step===0) return renderIntro();
+  if(S.step>=1 && S.step<=QUESTIONS.length) return renderQ();
+  return renderResult();
+}
+function renderIntro(){
+  app.innerHTML='<div class="ck-card">'+
+    '<div class="ck-kicker">彩之語 · 能量測驗</div>'+
+    '<div class="ck-title">七大脈輪<br>能量平衡測驗</div>'+
+    '<div class="ck-divider"></div>'+
+    '<div class="ck-p">20 題、約 3 分鐘。<br>看看此刻你七個脈輪的能量分布，<br>哪一輪最需要被好好照顧。</div>'+
+    '<div class="ck-dots">'+CHAKRAS.map(function(c){return '<span class="ck-dot" style="background:'+c.color+'"></span>';}).join('')+'</div>'+
+    '<div class="ck-p" style="font-size:11.5px;margin-top:4px">海底 · 臍 · 太陽神經叢 · 心 · 喉 · 眉心 · 頂</div>'+
+    '<button class="ck-cta" id="ck-start">開始測驗</button>'+
+  '</div>';
+  document.getElementById('ck-start').onclick=function(){S.step=1;render();window.scrollTo({top:0,behavior:'smooth'});};
+}
+function renderQ(){
+  var i=S.step-1, q=QUESTIONS[i];
+  app.innerHTML='<div class="ck-card">'+
+    '<div class="ck-qnum">第 '+S.step+' / '+QUESTIONS.length+' 題</div>'+
+    '<div class="ck-qbar"><i style="width:'+Math.round(S.step/QUESTIONS.length*100)+'%"></i></div>'+
+    '<div class="ck-q">'+esc(q.t)+'</div>'+
+    '<div>'+OPTS.map(function(o,oi){return '<div class="ck-opt" data-v="'+o.v+'"><span class="rd"></span><span>'+o.t+'</span></div>';}).join('')+'</div>'+
+    (S.step>1?'<button class="ck-back" id="ck-back">‹ 上一題</button>':'')+
+  '</div>';
+  app.querySelectorAll('.ck-opt').forEach(function(el){ el.onclick=function(){ S.answers[i]=parseInt(el.getAttribute('data-v'),10); S.step++; render(); window.scrollTo({top:0,behavior:'smooth'}); }; });
+  var bk=document.getElementById('ck-back'); if(bk) bk.onclick=function(){ S.step--; render(); window.scrollTo({top:0,behavior:'smooth'}); };
+}
+function renderResult(){
+  var R=compute(), f=CKMAP[R.focus];
+  var bars=R.scores.map(function(s){
+    return '<div class="ck-bar'+(s.c.k===R.focus?' lo':'')+'"><span class="nm"><i style="background:'+s.c.color+'"></i>'+s.c.name+'</span>'+
+      '<span class="ck-track"><b style="width:'+s.pct+'%;background:'+s.c.color+'"></b></span><span class="pc">'+s.pct+'</span></div>';
+  }).join('');
+  var ref=genRef();
+  curLead={ref:ref,type:f.name+'（'+f.sub+'）'}; leadSaved=false;
+  var msg='我做完彩之語的七大脈輪測驗了！此刻最需要關注的是「'+f.name+'·'+f.sub+'」。（代碼 '+ref+'）';
+  var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg);
+  app.innerHTML='<div class="ck-card">'+
+    '<div class="ck-rsub">你的脈輪能量圖</div>'+
+    '<div class="ck-rtitle">'+esc(f.name)+' 需要被看見</div>'+
+    '<div class="ck-focus"><div class="fl">此刻最需要關注</div><div class="fn" style="color:'+f.color+'">'+esc(f.name)+' · '+esc(f.sub)+'</div><div class="fd">'+esc(f.blurb)+'</div></div>'+
+    '<div class="ck-bars">'+bars+'</div>'+
+    '<a class="ck-cta" href="guides.html" style="text-decoration:none">找引路人陪你調頻</a>'+
+    '<a class="ck-ghost" id="ck-line" href="'+lineHref+'" target="_blank" rel="noopener">加 LINE 收結果</a>'+
+    '<button class="ck-back" id="ck-restart" style="display:block;margin:16px auto 0">重新測一次</button>'+
+    '<div class="ck-note">此結果僅供自我覺察與參考，不作為醫療或心理診斷。</div>'+
+  '</div>';
+  var lg=document.getElementById('ck-line'); if(lg) lg.onclick=function(){ saveLead(); };
+  var rs=document.getElementById('ck-restart'); if(rs) rs.onclick=function(){ S={step:0,answers:[]}; curLead=null; leadSaved=false; render(); window.scrollTo({top:0,behavior:'smooth'}); };
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function saveLead(){
+  if(leadSaved||!curLead) return; leadSaved=true;
+  try{ fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:curLead.ref,topic:'七大脈輪測驗',result_type:curLead.type,status:'新客'})}); }catch(e){}
+}
+render();
+</script>
+</body>
+</html>
