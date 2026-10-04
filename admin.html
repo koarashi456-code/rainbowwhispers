@@ -788,8 +788,10 @@ function bindTx(){
     if(!ids.length) return;
     if(!confirm('刪除選取的 '+ids.length+' 筆交易？會移到「刪除紀錄」，可還原。')) return;
     bd.disabled=true; bd.textContent='刪除中…';
-    for(var i=0;i<ids.length;i++){ await softDelete('transactions', ids[i], TX); }
+    var fail=0;
+    for(var i=0;i<ids.length;i++){ if(!(await softDelete('transactions', ids[i], TX, true))) fail++; }
     renderTx(); render(); renderTrash();
+    if(fail) alert('有 '+fail+' 筆刪除失敗（可能權限或已被刪除），其餘已移到刪除紀錄。');
   };
   updateTxBulk();
 }
@@ -883,9 +885,9 @@ bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#gli
 
 /* ===== 軟刪除 + 刪除紀錄 ===== */
 function activeArr(tbl){ return tbl==='customers'?ALL:tbl==='guides'?GUIDES:tbl==='transactions'?TX:TOPUPS; }
-async function softDelete(tbl,id,arr){
+async function softDelete(tbl,id,arr,quiet){
   var r=await db.from(tbl).update({deleted:true}).eq('id',id);
-  if(r.error){ alert('刪除失敗：'+r.error.message); return false; }
+  if(r.error){ if(!quiet) alert('刪除失敗：'+r.error.message); return false; }
   var i=arr.findIndex(function(x){return x.id===id;});
   if(i>=0){ var o=arr[i]; o.deleted=true; arr.splice(i,1); DEL[tbl].unshift(o); }
   return true;
@@ -926,13 +928,15 @@ function renderTrash(){
   document.querySelectorAll('#trashlist .tr-ck').forEach(function(c){ c.onclick=updateTrBulk; });
   function trSel(){ return Array.prototype.map.call(document.querySelectorAll('#trashlist .tr-ck:checked'),function(c){ var row=c.closest('.cust'); return row?{tbl:row.getAttribute('data-tbl'),id:row.getAttribute('data-id')}:null; }).filter(Boolean); }
   var rb=document.getElementById('tr-bulkrestore');
-  if(rb) rb.onclick=async function(){ var sel=trSel(); if(!sel.length) return; rb.disabled=true; rb.textContent='還原中…';
-    for(var i=0;i<sel.length;i++){ var tbl=sel[i].tbl,id=sel[i].id; var r=await db.from(tbl).update({deleted:false}).eq('id',id); if(!r.error){ var j=DEL[tbl].findIndex(function(x){return x.id===id;}); if(j>=0){ var o=DEL[tbl][j]; o.deleted=false; DEL[tbl].splice(j,1); activeArr(tbl).unshift(o); } } }
-    render(); renderGuides(); renderTx(); renderReport(); renderTrash(); fillSelects(); };
+  if(rb) rb.onclick=async function(){ var sel=trSel(); if(!sel.length) return; rb.disabled=true; rb.textContent='還原中…'; var fail=0;
+    for(var i=0;i<sel.length;i++){ var tbl=sel[i].tbl,id=sel[i].id; var r=await db.from(tbl).update({deleted:false}).eq('id',id); if(r.error){ fail++; } else { var j=DEL[tbl].findIndex(function(x){return x.id===id;}); if(j>=0){ var o=DEL[tbl][j]; o.deleted=false; DEL[tbl].splice(j,1); activeArr(tbl).unshift(o); } } }
+    render(); renderGuides(); renderTx(); renderReport(); renderTrash(); fillSelects(); if(fail) alert('有 '+fail+' 筆還原失敗。'); };
   var pb=document.getElementById('tr-bulkpurge');
   if(pb) pb.onclick=async function(){ var sel=trSel(); if(!sel.length) return; if(!confirm('永久刪除選取的 '+sel.length+' 筆？這次真的無法還原。')) return; pb.disabled=true; pb.textContent='刪除中…';
-    for(var i=0;i<sel.length;i++){ var tbl=sel[i].tbl,id=sel[i].id; var r=await db.from(tbl).delete().eq('id',id); if(!r.error){ var j=DEL[tbl].findIndex(function(x){return x.id===id;}); if(j>=0)DEL[tbl].splice(j,1); } }
-    renderTrash(); };
+    var pr={transactions:0,topups:0,guides:1,customers:2}; sel.sort(function(a,b){ return (pr[a.tbl]||0)-(pr[b.tbl]||0); });
+    var fail=0;
+    for(var i=0;i<sel.length;i++){ var tbl=sel[i].tbl,id=sel[i].id; var r=await db.from(tbl).delete().eq('id',id); if(r.error){ fail++; } else { var j=DEL[tbl].findIndex(function(x){return x.id===id;}); if(j>=0)DEL[tbl].splice(j,1); } }
+    renderTrash(); if(fail) alert('有 '+fail+' 筆永久刪除失敗（可能仍被其他資料參照）。'); };
   updateTrBulk();
 }
 function updateTrBulk(){
