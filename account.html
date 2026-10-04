@@ -227,6 +227,18 @@
     <div style="font-size:11.5px;color:var(--soft);margin-top:7px">會顯示在你的公開頁，讓客戶知道你方便的時段。</div>
   </div>
 
+  <div class="gsec-lab">我的方案</div>
+  <div class="gbox" style="padding:14px 16px">
+    <div id="g-plans" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">
+      <input id="g-plan-label" placeholder="方案名稱（例：塔羅 3 題）" style="flex:1;min-width:150px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 13px;outline:none">
+      <input id="g-plan-price" type="number" min="0" placeholder="價格" style="width:96px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 13px;outline:none">
+      <button class="lo" id="g-plan-add" style="margin-top:0;padding:9px 18px;font-size:13px">新增</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span id="g-plan-msg" style="font-size:12px;color:#4F8E6E"></span></div>
+    <div style="font-size:11.5px;color:var(--soft);margin-top:7px">新增的方案要等官方審核後，才會出現在你的預約頁讓客戶選擇。</div>
+  </div>
+
   <div class="gsec-lab">報表</div>
   <div class="gstats" id="g-report"></div>
 
@@ -335,6 +347,19 @@ async function enterGuide(d){
     if(ta){ ta.value=''; try{ db.rpc('my_guide_profile').then(function(r){ if(!r.error && r.data){ var pr=Array.isArray(r.data)?r.data[0]:r.data; if(pr && typeof pr.availability==='string') ta.value=pr.availability; } }).catch(function(){}); }catch(e){} }
     if(btn) btn.onclick=async function(){ if(!ta) return; if(msg){ msg.textContent='儲存中…'; msg.style.color='var(--soft)'; } try{ var r=await db.rpc('update_my_guide',{p_availability:ta.value.trim()}); if(r.error) throw new Error(r.error.message); if(msg){ msg.textContent='已儲存，公開頁會更新'; msg.style.color='#4F8E6E'; setTimeout(function(){ if(msg) msg.textContent=''; },1800); } }catch(e){ if(msg){ msg.textContent='存檔失敗'; msg.style.color='#C0506A'; } } };
   })();
+  // 我的方案：自設＋送審
+  (function(){
+    var addBtn=$('#g-plan-add'), li=$('#g-plan-label'), pi=$('#g-plan-price');
+    loadGuidePlans();
+    if(addBtn) addBtn.onclick=async function(){
+      var pmsg=$('#g-plan-msg'); var label=(li&&li.value||'').trim(); var price=Number(pi&&pi.value||0);
+      if(!label){ if(pmsg){ pmsg.textContent='請填方案名稱'; pmsg.style.color='#C0506A'; } return; }
+      if(!(price>=0)){ if(pmsg){ pmsg.textContent='價格請填數字'; pmsg.style.color='#C0506A'; } return; }
+      if(pmsg){ pmsg.textContent='新增中…'; pmsg.style.color='var(--soft)'; }
+      try{ var r=await db.rpc('add_my_plan',{p_label:label,p_price:price}); if(r.error) throw new Error(r.error.message); if(li) li.value=''; if(pi) pi.value=''; if(pmsg){ pmsg.textContent='已送出，待官方審核'; pmsg.style.color='#4F8E6E'; setTimeout(function(){ if(pmsg) pmsg.textContent=''; },2200); } loadGuidePlans(); }
+      catch(e){ if(pmsg){ pmsg.textContent='新增失敗'; pmsg.style.color='#C0506A'; } }
+    };
+  })();
   var rep=$('#g-report'), bx=$('#g-bookings'), mx=$('#g-members');
   rep.innerHTML=''; bx.innerHTML='<p class="gempty">載入中…</p>'; mx.innerHTML='';
   var data=null;
@@ -354,6 +379,28 @@ async function enterGuide(d){
   // 客戶管理
   var cs=data.customers||[];
   mx.innerHTML= cs.length ? cs.map(custRowG).join('') : '<p class="gempty">還沒有預約你的客戶。</p>';
+}
+
+async function loadGuidePlans(){
+  var box=$('#g-plans'); if(!box) return;
+  box.innerHTML='<p class="gempty" style="margin:0">載入中…</p>';
+  var rows=[];
+  try{ var r=await db.rpc('my_plans'); if(!r.error && Array.isArray(r.data)) rows=r.data; }catch(e){}
+  if(!rows.length){ box.innerHTML='<p class="gempty" style="margin:0">還沒有自訂方案。預約頁目前會顯示預設方案。</p>'; return; }
+  box.innerHTML=rows.map(function(p){
+    var ok=!!p.approved;
+    var badge=ok
+      ? '<span style="font-size:11.5px;color:#4F8E6E;background:#EAF4EC;border-radius:999px;padding:2px 10px">已審核</span>'
+      : '<span style="font-size:11.5px;color:#B07A2E;background:#FBF0DC;border-radius:999px;padding:2px 10px">審核中</span>';
+    return '<div style="display:flex;align-items:center;gap:10px;background:#FBF6EC;border:1px solid #EFE3CE;border-radius:12px;padding:9px 13px">'+
+      '<div style="flex:1;min-width:0"><div style="font-size:14px;color:var(--ink)">'+escA(p.label)+'</div><div style="font-size:12px;color:var(--soft);margin-top:1px">'+money(p.price)+'</div></div>'+
+      badge+
+      '<button data-pid="'+p.id+'" class="gp-del" style="border:none;background:none;color:#C0506A;font-size:13px;cursor:pointer;padding:4px 6px">刪除</button>'+
+    '</div>';
+  }).join('');
+  Array.prototype.forEach.call(box.querySelectorAll('.gp-del'),function(b){
+    b.onclick=async function(){ var id=b.getAttribute('data-pid'); if(!confirm('確定刪除這個方案？')) return; try{ var r=await db.rpc('del_my_plan',{p_id:id}); if(r.error) throw new Error(r.error.message); loadGuidePlans(); }catch(e){ alert('刪除失敗'); } };
+  });
 }
 // LINE(LIFF) 會員也寫進客戶後台（同一瀏覽器只寫一次）
 function saveLineMember(p){

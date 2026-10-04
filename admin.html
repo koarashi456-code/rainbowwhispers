@@ -337,7 +337,7 @@
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 var TYPES=['啟程者','尋光者','療心者','繫心者','破繭者','漫遊者'];
 var STATUSES=['新客','已加LINE','已諮詢','回頭客'];
-var ALL=[], GUIDES=[], TX=[], TOPUPS=[], DEL={customers:[],guides:[],transactions:[],topups:[]}, activeTab='customers';
+var ALL=[], GUIDES=[], TX=[], TOPUPS=[], GPLANS=[], DEL={customers:[],guides:[],transactions:[],topups:[]}, activeTab='customers';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
@@ -391,13 +391,15 @@ async function loadAll(){
     db.from('customers').select('*').order('created_at',{ascending:false}),
     db.from('guides').select('*').order('created_at',{ascending:false}),
     db.from('transactions').select('*').order('created_at',{ascending:false}),
-    db.from('topups').select('*').order('created_at',{ascending:false})
+    db.from('topups').select('*').order('created_at',{ascending:false}),
+    db.from('guide_plans').select('*').order('created_at',{ascending:false})
   ]);
   var nd=function(x){return !x.deleted;}, dd=function(x){return x.deleted;};
   var C=res[0].data||[], G=res[1].data||[], T=res[2].data||[], P=res[3].data||[];
+  GPLANS=((res[4]&&res[4].data)||[]).filter(function(x){return !x.deleted;});
   ALL=C.filter(nd); GUIDES=G.filter(nd); TX=T.filter(nd); TOPUPS=P.filter(nd);
   DEL={customers:C.filter(dd),guides:G.filter(dd),transactions:T.filter(dd),topups:P.filter(dd)};
-  var err=res.find(function(x){return x.error;});
+  var err=res.slice(0,4).find(function(x){return x.error;});
   if(err){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(err.error.message)+'（三張新表若尚未建立，請先跑建表 SQL）</div>'; }
   fillSelects();
   try{ if(!$('#tp-date').value) $('#tp-date').value=new Date().toISOString().slice(0,10); }catch(e){}
@@ -534,6 +536,7 @@ function guideCard(g){
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
     '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
+    guidePlansHtml(g)+
     '<div class="cust-actions">'+
       (g.pending
         ? '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#4F8E6E;margin-right:auto;cursor:pointer;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
@@ -543,9 +546,49 @@ function guideCard(g){
     '</div>'+
   '</div>';
 }
+function guidePlansHtml(g){
+  var mine=GPLANS.filter(function(p){return p.guide_id===g.id;});
+  var list = mine.length ? mine.map(function(p){
+    return '<div class="gp-row" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)">'+
+      '<div style="flex:1;min-width:0;font-size:13.5px">'+esc(p.label)+' <span style="color:var(--soft)">｜$'+Number(p.price||0).toLocaleString()+'</span></div>'+
+      '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;color:'+(p.approved?'#4F8E6E':'#B07A2E')+';white-space:nowrap"><input type="checkbox" data-pappr '+(p.approved?'checked':'')+'> '+(p.approved?'已核准':'核准')+'</label>'+
+      '<button class="del" data-pdel>刪除</button>'+
+    '</div>';
+  }).join('') : '<div style="color:var(--soft);font-size:12.5px;padding:7px 0">尚無自訂方案（客戶預約頁會顯示預設方案）</div>';
+  return '<div class="gplans" style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC">'+
+    '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:2px">方案審核（核准後才會出現在客戶預約頁）</div>'+
+    list+
+    '<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center">'+
+      '<input class="in gp-nl" placeholder="方案名稱" style="flex:1;min-width:120px">'+
+      '<input class="in gp-np" type="number" min="0" placeholder="價格" style="width:88px">'+
+      '<button class="del gp-add" style="color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 15px">新增並核准</button>'+
+    '</div>'+
+  '</div>';
+}
+function bindGuidePlans(el){
+  var id=el.getAttribute('data-id');
+  el.querySelectorAll('.gp-row').forEach(function(row){
+    var pid=row.getAttribute('data-pid');
+    var ap=row.querySelector('[data-pappr]');
+    if(ap) ap.onchange=async function(){ var v=ap.checked; var r=await db.from('guide_plans').update({approved:v}).eq('id',pid); if(r.error){ alert('更新失敗：'+r.error.message); ap.checked=!v; return; } var p=GPLANS.find(function(x){return x.id===pid;}); if(p)p.approved=v; var lab=ap.parentNode; lab.style.color=v?'#4F8E6E':'#B07A2E'; if(ap.nextSibling) ap.nextSibling.textContent=' '+(v?'已核准':'核准'); };
+    var pd=row.querySelector('[data-pdel]');
+    if(pd) pd.onclick=async function(){ if(!confirm('刪除這個方案？'))return; var r=await db.from('guide_plans').update({deleted:true}).eq('id',pid); if(r.error){ alert('刪除失敗：'+r.error.message); return; } GPLANS=GPLANS.filter(function(x){return x.id!==pid;}); var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); } };
+  });
+  var addb=el.querySelector('.gp-add');
+  if(addb) addb.onclick=async function(){
+    var nl=el.querySelector('.gp-nl'), np=el.querySelector('.gp-np');
+    var label=(nl&&nl.value||'').trim(), price=Number(np&&np.value||0);
+    if(!label){ alert('請填方案名稱'); return; }
+    var r=await db.from('guide_plans').insert({guide_id:id,label:label,price:price,approved:true}).select();
+    if(r.error){ alert('新增失敗：'+r.error.message); return; }
+    if(r.data&&r.data[0]) GPLANS.unshift(r.data[0]);
+    var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); }
+  };
+}
 function bindGuides(){
   document.querySelectorAll('#glist .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
+    bindGuidePlans(el);
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
@@ -744,7 +787,7 @@ if(txlistEl) txlistEl.addEventListener('click',function(e){ var th=e.target.clos
 ['tx-search','tx-fstatus','tx-fguide','tx-fmethod','tx-ffrom','tx-fto'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('input',renderTx); e.addEventListener('change',renderTx); } });
 var txClr=document.getElementById('tx-clear'); if(txClr) txClr.onclick=function(){ ['tx-search','tx-ffrom','tx-fto','tx-fstatus','tx-fguide','tx-fmethod'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';}); renderTx(); };
 var txExp=document.getElementById('tx-export'); if(txExp) txExp.onclick=txExportCSV;
-(function(){ var sel=document.getElementById('tx-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=15){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
+(function(){ var sel=document.getElementById('tx-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=30){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
 
 /* ===== 報表 ===== */
 function stat(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
