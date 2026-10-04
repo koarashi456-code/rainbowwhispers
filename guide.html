@@ -177,7 +177,7 @@ async function loadGuide(){
     var res=await db.from('public_guides').select('*').eq('id',id);
     if(res.error || !res.data || !res.data.length){ show('notfound'); return; }
     guide=res.data[0];
-    try{ var pr=await db.from('public_plans').select('label,price').eq('guide_id',guide.id).order('price'); GUIDE_PLANS=(pr && !pr.error && Array.isArray(pr.data)) ? pr.data.map(function(p){return {label:p.label, price:Number(p.price)||0};}) : []; }catch(e){ GUIDE_PLANS=[]; }
+    try{ var pr=await db.from('public_plans').select('label,price,unit').eq('guide_id',guide.id).order('price'); GUIDE_PLANS=(pr && !pr.error && Array.isArray(pr.data)) ? pr.data.map(function(p){return {label:p.label, price:Number(p.price)||0, unit:p.unit||''};}) : []; }catch(e){ GUIDE_PLANS=[]; }
     renderGuide(); show('content');
   }catch(e){ show('notfound'); }
 }
@@ -226,7 +226,8 @@ var PLANS_DEFAULT=[
 ];
 var GUIDE_PLANS=[];
 function planList(){ return (GUIDE_PLANS && GUIDE_PLANS.length) ? GUIDE_PLANS : PLANS_DEFAULT; }
-function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(); sel.innerHTML='<option value="">— 請選擇方案 —</option>'+L.map(function(p,i){return '<option value="'+i+'">'+esc(p.label)+'｜'+money(p.price)+'</option>';}).join(''); }
+function planLabelFull(p){ return p ? (esc(p.label)+(p.unit?(' · '+esc(p.unit)):'')) : ''; }
+function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(); sel.innerHTML='<option value="">— 請選擇方案 —</option>'+L.map(function(p,i){return '<option value="'+i+'">'+planLabelFull(p)+'｜'+money(p.price)+'</option>';}).join(''); }
 function selectedPlan(){ var sel=$('#f-plan'); if(!sel||sel.value==='') return null; return planList()[Number(sel.value)]||null; }
 function renderPayOptions(){
   var svcAmt=serviceAmount();
@@ -260,7 +261,7 @@ $('#to-pay').onclick=function(){
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
   h+='<div class="sumline"><span>服務項目</span><span>'+esc(svc)+'</span></div>';
-  h+='<div class="sumline"><span>方案</span><span>'+esc(plan?plan.label:'')+'</span></div>';
+  h+='<div class="sumline"><span>方案</span><span>'+planLabelFull(plan)+'</span></div>';
   h+='<div class="sumline"><span>希望時間</span><span>'+fmtWhen(when)+'</span></div>';
   h+='<div class="sumline"><span>姓名</span><span>'+esc(nm)+'</span></div>';
   h+='<div class="sumline"><span>電話</span><span>'+esc(ph)+'</span></div>';
@@ -292,7 +293,7 @@ $('#do-submit').onclick=async function(){
   var btn=this, err=$('#pay-err'); err.textContent='';
   if(!MEMBER){ err.textContent='請先登入會員'; return; }
   var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'', note=$('#f-note').value.trim();
-  var plan=selectedPlan(), svcFull=svc+(plan?('｜'+plan.label):'');
+  var plan=selectedPlan(), planTxt=plan?(plan.label+(plan.unit?('（'+plan.unit+'）'):'')):'', svcFull=svc+(plan?('｜'+planTxt):'');
   var email=(($('#f-email')||{}).value||'')||(MEMBER&&MEMBER.email)||'';
   var l5el=$('#f-last5'), last5=l5el?l5el.value.trim():'';
   if(PAY_METHOD==='匯款'){
@@ -313,7 +314,7 @@ $('#do-submit').onclick=async function(){
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
-    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(plan?plan.label:'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)});
+    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(planTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)});
     $('#done-ref').textContent='訂單編號 '+ref;
     $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
     $('#book-pay').style.display='none';

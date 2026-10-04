@@ -550,7 +550,7 @@ function guidePlansHtml(g){
   var mine=GPLANS.filter(function(p){return p.guide_id===g.id;});
   var list = mine.length ? mine.map(function(p){
     return '<div class="gp-row" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)">'+
-      '<div style="flex:1;min-width:0;font-size:13.5px">'+esc(p.label)+' <span style="color:var(--soft)">｜$'+Number(p.price||0).toLocaleString()+'</span></div>'+
+      '<div style="flex:1;min-width:0;font-size:13.5px">'+esc(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12px">· '+esc(p.unit)+'</span>'):'')+' <span style="color:var(--soft)">｜$'+Number(p.price||0).toLocaleString()+'</span></div>'+
       '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;color:'+(p.approved?'#4F8E6E':'#B07A2E')+';white-space:nowrap"><input type="checkbox" data-pappr '+(p.approved?'checked':'')+'> '+(p.approved?'已核准':'核准')+'</label>'+
       '<button class="del" data-pdel>刪除</button>'+
     '</div>';
@@ -560,7 +560,8 @@ function guidePlansHtml(g){
     list+
     '<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center">'+
       '<input class="in gp-nl" placeholder="方案名稱" style="flex:1;min-width:120px">'+
-      '<input class="in gp-np" type="number" min="0" placeholder="價格" style="width:88px">'+
+      '<input class="in gp-np" type="number" min="0" placeholder="價格" style="width:84px">'+
+      '<input class="in gp-nu" placeholder="時數/次數 如2小時" style="width:120px">'+
       '<button class="del gp-add" style="color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 15px">新增並核准</button>'+
     '</div>'+
   '</div>';
@@ -576,10 +577,10 @@ function bindGuidePlans(el){
   });
   var addb=el.querySelector('.gp-add');
   if(addb) addb.onclick=async function(){
-    var nl=el.querySelector('.gp-nl'), np=el.querySelector('.gp-np');
-    var label=(nl&&nl.value||'').trim(), price=Number(np&&np.value||0);
+    var nl=el.querySelector('.gp-nl'), np=el.querySelector('.gp-np'), nu=el.querySelector('.gp-nu');
+    var label=(nl&&nl.value||'').trim(), price=Number(np&&np.value||0), unit=(nu&&nu.value||'').trim();
     if(!label){ alert('請填方案名稱'); return; }
-    var r=await db.from('guide_plans').insert({guide_id:id,label:label,price:price,approved:true}).select();
+    var r=await db.from('guide_plans').insert({guide_id:id,label:label,price:price,unit:unit||null,approved:true}).select();
     if(r.error){ alert('新增失敗：'+r.error.message); return; }
     if(r.data&&r.data[0]) GPLANS.unshift(r.data[0]);
     var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); }

@@ -231,8 +231,18 @@
   <div class="gbox" style="padding:14px 16px">
     <div id="g-plans" style="display:flex;flex-direction:column;gap:8px"></div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">
-      <input id="g-plan-label" placeholder="方案名稱（例：塔羅 3 題）" style="flex:1;min-width:150px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 13px;outline:none">
-      <input id="g-plan-price" type="number" min="0" placeholder="價格" style="width:96px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 13px;outline:none">
+      <input id="g-plan-label" placeholder="方案名稱（例：塔羅占卜）" style="flex:1;min-width:150px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 13px;outline:none">
+      <input id="g-plan-price" type="number" min="0" placeholder="價格" style="width:90px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 13px;outline:none">
+      <select id="g-plan-qty" style="width:72px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 8px;outline:none"></select>
+      <select id="g-plan-unit" style="width:94px;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 8px;outline:none">
+        <option value="小時">小時</option>
+        <option value="分鐘">分鐘</option>
+        <option value="次">次</option>
+        <option value="題">題</option>
+        <option value="堂">堂</option>
+        <option value="天">天</option>
+        <option value="">不指定</option>
+      </select>
       <button class="lo" id="g-plan-add" style="margin-top:0;padding:9px 18px;font-size:13px">新增</button>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span id="g-plan-msg" style="font-size:12px;color:#4F8E6E"></span></div>
@@ -349,14 +359,18 @@ async function enterGuide(d){
   })();
   // 我的方案：自設＋送審
   (function(){
-    var addBtn=$('#g-plan-add'), li=$('#g-plan-label'), pi=$('#g-plan-price');
+    var addBtn=$('#g-plan-add'), li=$('#g-plan-label'), pi=$('#g-plan-price'), ui=$('#g-plan-unit'), qi=$('#g-plan-qty');
+    var UNIT_QTY={'小時':[1,1.5,2,2.5,3,4],'分鐘':[15,20,30,45,60,90,120],'次':[1,2,3,5,10],'題':[1,2,3,5,10],'堂':[1,2,3,4,6,8,10,12],'天':[1,2,3,5,7]};
+    function fillQty(){ if(!qi) return; var u=ui?ui.value:''; if(!u){ qi.innerHTML='<option value="">—</option>'; qi.disabled=true; return; } qi.disabled=false; var arr=UNIT_QTY[u]||[1,2,3]; qi.innerHTML=arr.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join(''); }
+    if(ui){ ui.onchange=fillQty; } fillQty();
     loadGuidePlans();
     if(addBtn) addBtn.onclick=async function(){
       var pmsg=$('#g-plan-msg'); var label=(li&&li.value||'').trim(); var price=Number(pi&&pi.value||0);
       if(!label){ if(pmsg){ pmsg.textContent='請填方案名稱'; pmsg.style.color='#C0506A'; } return; }
       if(!(price>=0)){ if(pmsg){ pmsg.textContent='價格請填數字'; pmsg.style.color='#C0506A'; } return; }
+      var u=(ui&&ui.value)||'', q=(qi&&qi.value)||'', unit=(u&&q)?(q+u):'';
       if(pmsg){ pmsg.textContent='新增中…'; pmsg.style.color='var(--soft)'; }
-      try{ var r=await db.rpc('add_my_plan',{p_label:label,p_price:price}); if(r.error) throw new Error(r.error.message); if(li) li.value=''; if(pi) pi.value=''; if(pmsg){ pmsg.textContent='已送出，待官方審核'; pmsg.style.color='#4F8E6E'; setTimeout(function(){ if(pmsg) pmsg.textContent=''; },2200); } loadGuidePlans(); }
+      try{ var r=await db.rpc('add_my_plan',{p_label:label,p_price:price,p_unit:unit}); if(r.error) throw new Error(r.error.message); if(li) li.value=''; if(pi) pi.value=''; if(pmsg){ pmsg.textContent='已送出，待官方審核'; pmsg.style.color='#4F8E6E'; setTimeout(function(){ if(pmsg) pmsg.textContent=''; },2200); } loadGuidePlans(); }
       catch(e){ if(pmsg){ pmsg.textContent='新增失敗'; pmsg.style.color='#C0506A'; } }
     };
   })();
@@ -393,7 +407,7 @@ async function loadGuidePlans(){
       ? '<span style="font-size:11.5px;color:#4F8E6E;background:#EAF4EC;border-radius:999px;padding:2px 10px">已審核</span>'
       : '<span style="font-size:11.5px;color:#B07A2E;background:#FBF0DC;border-radius:999px;padding:2px 10px">審核中</span>';
     return '<div style="display:flex;align-items:center;gap:10px;background:#FBF6EC;border:1px solid #EFE3CE;border-radius:12px;padding:9px 13px">'+
-      '<div style="flex:1;min-width:0"><div style="font-size:14px;color:var(--ink)">'+escA(p.label)+'</div><div style="font-size:12px;color:var(--soft);margin-top:1px">'+money(p.price)+'</div></div>'+
+      '<div style="flex:1;min-width:0"><div style="font-size:14px;color:var(--ink)">'+escA(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12.5px">· '+escA(p.unit)+'</span>'):'')+'</div><div style="font-size:12px;color:var(--soft);margin-top:1px">'+money(p.price)+'</div></div>'+
       badge+
       '<button data-pid="'+p.id+'" class="gp-del" style="border:none;background:none;color:#C0506A;font-size:13px;cursor:pointer;padding:4px 6px">刪除</button>'+
     '</div>';
