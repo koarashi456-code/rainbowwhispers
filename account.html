@@ -107,6 +107,15 @@
   .promo-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:7px}
   .promo-list li{position:relative;padding-left:20px;font-size:13.5px;color:var(--ink)}
   .promo-list li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:var(--rainbow)}
+  .slchips{display:flex;flex-wrap:wrap;gap:7px}
+  .slchip{font:inherit;font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:7px 13px;cursor:pointer;user-select:none}
+  .slchip.on{background:var(--rainbow);color:#4A3A2A;border-color:transparent;font-weight:500}
+  .sl-d{font-size:12.5px;color:#5A4632;font-weight:500;margin:12px 0 7px}
+  .sl-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+  .sl-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:6px 10px 6px 13px}
+  .sl-pill .sl-rm{color:#C0506A;font-size:14px;cursor:pointer;line-height:1}
+  .sl-pill.booked{background:#F3EFE6;color:#8E8065}
+  .sl-pill .sl-bk{font-size:11px;color:#8E8065;background:#E7DEC9;border-radius:999px;padding:1px 8px}
 </style>
 </head>
 <body>
@@ -222,9 +231,16 @@
 
   <div class="gsec-lab">我的開放時間</div>
   <div class="gbox" style="padding:14px 16px">
-    <textarea id="g-avail" placeholder="例：週一~週五 晚上 19:00–22:00；週末 下午" style="width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none;min-height:60px;resize:vertical"></textarea>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:9px"><button class="lo" id="g-avail-save" style="margin-top:0;padding:8px 18px;font-size:13px">儲存開放時間</button><span id="g-avail-msg" style="font-size:12px;color:#4F8E6E"></span></div>
-    <div style="font-size:11.5px;color:var(--soft);margin-top:7px">會顯示在你的公開頁，讓客戶知道你方便的時段。</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:12.5px;color:var(--soft)">選日期</span>
+      <input id="sl-date" type="date" style="font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 12px;outline:none">
+    </div>
+    <div style="font-size:12.5px;color:var(--soft);margin:12px 2px 8px">這天開放哪些時段（點選，半小時一格）</div>
+    <div id="sl-times" class="slchips"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px"><button class="lo" id="sl-add" style="margin-top:0;padding:8px 18px;font-size:13px">新增時段</button><span id="sl-msg" style="font-size:12px"></span></div>
+    <div style="font-size:12.5px;color:var(--soft);margin:18px 2px 8px">已開放時段</div>
+    <div id="sl-list"></div>
+    <div style="font-size:11.5px;color:var(--soft);margin-top:10px;line-height:1.7">客戶預約時只能從你這裡開放的時段挑；被約走的時段會自動變灰、不能再被約。沒排任何時段時，客戶端會沿用自由選時間。</div>
   </div>
 
   <div class="gsec-lab">我的方案</div>
@@ -312,7 +328,8 @@ async function loadPromo(){
   try{ var r=await db.rpc('my_is_paid'); if(!r.error && r.data===true) pc.style.display='block'; }catch(e){}
 }
 function escA(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
-function fmtDT(s){ if(!s) return '待確認'; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
+function fmtDT(s){ if(!s) return '待確認'; var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
 function orderRow(o){
   return '<div style="text-align:left;border-top:1px solid var(--line);padding:10px 0;font-size:13.5px">'+
     '<div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--brush)">'+escA(o.guide_name||'引路人')+'　'+escA(o.service||'')+'</b><span style="color:var(--soft);white-space:nowrap">'+escA(o.status||'')+'</span></div>'+
@@ -346,16 +363,56 @@ function custRowG(m){
   return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(m.name||'客戶')+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
     +'<div class="grow-sub">'+escA(m.contact||'—')+(m.phone?'　·　'+escA(m.phone):'')+(m.area?'　·　'+escA(m.area):'')+'　·　'+(m.bookings||0)+' 次</div></div>';
 }
+async function loadMySlots(){
+  var box=$('#sl-list'); if(!box) return;
+  box.innerHTML='<p class="gempty" style="margin:0">載入中…</p>';
+  var rows=[]; try{ var r=await db.rpc('my_slots'); if(!r.error && Array.isArray(r.data)) rows=r.data; }catch(e){}
+  if(!rows.length){ box.innerHTML='<p class="gempty" style="margin:0">還沒排開放時段。排了之後客戶才能從這些時間預約。</p>'; return; }
+  var WD=['日','一','二','三','四','五','六'];
+  var byDate={}, order=[];
+  rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+String(p.mo).padStart(2,'0')+'-'+String(p.d).padStart(2,'0');
+    if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
+    byDate[dk].push({id:s.id, t:String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'), taken:!!s.taken}); });
+  var html='';
+  order.forEach(function(o){
+    var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()];
+    html+='<div class="sl-d">'+o.p.mo+'/'+o.p.d+'（'+w+'）</div><div class="sl-row">';
+    byDate[o.k].forEach(function(s){
+      if(s.taken){ html+='<span class="sl-pill booked">'+s.t+'<span class="sl-bk">已被預約</span></span>'; }
+      else { html+='<span class="sl-pill">'+s.t+'<span class="sl-rm" data-id="'+s.id+'">&times;</span></span>'; }
+    });
+    html+='</div>';
+  });
+  box.innerHTML=html;
+  Array.prototype.forEach.call(box.querySelectorAll('.sl-rm'),function(x){ x.onclick=async function(){ var id=x.getAttribute('data-id'); try{ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); loadMySlots(); }catch(e){ alert(e.message||'刪除失敗'); } }; });
+}
 async function enterGuide(d){
   d=d||GUIDE_DATA; if(!d) return;
   $('#gseg-g').classList.add('on'); $('#gseg-m').classList.remove('on');
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
   show('guide-portal');
-  // 開放時間：讀自己的＋可編輯儲存
+  // 我的開放時間：選日期＋點時段＋新增／刪除
   (function(){
-    var ta=$('#g-avail'), btn=$('#g-avail-save'), msg=$('#g-avail-msg');
-    if(ta){ ta.value=''; try{ db.rpc('my_guide_profile').then(function(r){ if(!r.error && r.data){ var pr=Array.isArray(r.data)?r.data[0]:r.data; if(pr && typeof pr.availability==='string') ta.value=pr.availability; } }).catch(function(){}); }catch(e){} }
-    if(btn) btn.onclick=async function(){ if(!ta) return; if(msg){ msg.textContent='儲存中…'; msg.style.color='var(--soft)'; } try{ var r=await db.rpc('update_my_guide',{p_availability:ta.value.trim()}); if(r.error) throw new Error(r.error.message); if(msg){ msg.textContent='已儲存，公開頁會更新'; msg.style.color='#4F8E6E'; setTimeout(function(){ if(msg) msg.textContent=''; },1800); } }catch(e){ if(msg){ msg.textContent='存檔失敗'; msg.style.color='#C0506A'; } } };
+    var dIn=$('#sl-date'), times=$('#sl-times'), addB=$('#sl-add'), msg=$('#sl-msg');
+    if(times){
+      var opts=''; for(var hh=8;hh<23;hh++){ for(var mm=0;mm<60;mm+=30){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; opts+='<span class="slchip" data-t="'+v+'">'+v+'</span>'; } }
+      times.innerHTML=opts;
+      Array.prototype.forEach.call(times.querySelectorAll('.slchip'),function(c){ c.onclick=function(){ c.classList.toggle('on'); }; });
+    }
+    if(dIn && !dIn.value){ var t=new Date(); dIn.value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
+    loadMySlots();
+    function setMsg(t,c){ if(!msg) return; msg.textContent=t; msg.style.color=c; if(c!=='#C0506A') setTimeout(function(){ if(msg&&msg.textContent===t) msg.textContent=''; },2200); }
+    if(addB) addB.onclick=async function(){
+      var d=dIn?dIn.value:''; if(!d){ setMsg('請先選日期','#C0506A'); return; }
+      var picked=Array.prototype.map.call(times.querySelectorAll('.slchip.on'),function(c){return c.getAttribute('data-t');});
+      if(!picked.length){ setMsg('請點選要開放的時段','#C0506A'); return; }
+      var slots=picked.map(function(t){ return d+'T'+t; });
+      setMsg('新增中…','var(--soft)');
+      try{ var r=await db.rpc('add_my_slots',{p_slots:slots}); if(r.error) throw new Error(r.error.message);
+        Array.prototype.forEach.call(times.querySelectorAll('.slchip.on'),function(c){ c.classList.remove('on'); });
+        setMsg('已新增 '+(r.data||0)+' 個時段','#4F8E6E'); loadMySlots();
+      }catch(e){ setMsg('新增失敗','#C0506A'); }
+    };
   })();
   // 我的方案：自設＋送審
   (function(){

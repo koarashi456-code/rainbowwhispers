@@ -59,6 +59,12 @@
   #pay-summary,#done-summary{max-width:252px;margin-left:auto;margin-right:auto;text-align:left}
   .ghost-link{display:inline-block;margin-top:8px;color:var(--brush);text-decoration:underline;text-underline-offset:3px;font-size:14px}
   .err{color:#C0506A;font-size:13px;margin-top:8px;min-height:18px}
+  .lbl2{font-size:12px;color:var(--soft);margin:10px 2px 7px}
+  .slchips{display:flex;flex-wrap:wrap;gap:7px}
+  .slchip{font:inherit;font-size:13px;color:#4A3A2A;background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:7px 13px;cursor:pointer;user-select:none}
+  .slchip.on{background:var(--rainbow);color:#4A3A2A;border-color:transparent;font-weight:500}
+  .slchip.taken{background:#fff;color:#C9BEAE;border-color:#EFE6D6;cursor:not-allowed}
+  .slchip.taken .tk{font-size:10.5px;color:#C0506A;margin-left:4px}
 </style>
 </head>
 <body>
@@ -102,7 +108,8 @@
         <div class="field"><div class="lbl">服務項目 <span class="req">*</span></div><div id="service-wrap"></div></div>
         <div class="field"><div class="lbl">方案 <span class="req">*</span></div><select class="in" id="f-plan"></select></div>
         <div class="field"><div class="lbl">希望時間 <span class="req">*</span></div>
-          <div style="display:flex;gap:10px">
+          <div id="slotpick" style="display:none"></div>
+          <div id="freetime" style="display:flex;gap:10px">
             <input class="in" id="f-date" type="date" style="flex:1.4">
             <select class="in" id="f-time" style="flex:1"></select>
           </div>
@@ -164,7 +171,35 @@ function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function money(n){return '$'+Number(n||0).toLocaleString();}
 function show(id){ ['loading','notfound','content'].forEach(function(x){ $('#'+x).style.display=(x===id?'block':'none'); }); }
-function fmtWhen(s){ if(!s) return '未指定'; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
+function p2(n){ return (n<10?'0':'')+n; }
+function fmtWhen(s){ if(!s) return '未指定'; var p=wpart(s); if(!p) return '未指定'; return p.y+'/'+p.mo+'/'+p.d+' '+p2(p.h)+':'+p2(p.mi); }
+var OPEN_SLOTS=[], SEL_DATE='', SEL_WHEN='';
+function slotMode(){ var host=$('#slotpick'); return !!(host && host.style.display!=='none'); }
+function chosenWhen(){ if(slotMode()) return SEL_WHEN||''; var dt=($('#f-date')||{}).value||'', tm=($('#f-time')||{}).value||''; return (dt&&tm)?dt+'T'+tm:''; }
+function renderSlotPicker(){
+  var host=$('#slotpick'), ft=$('#freetime'); if(!host) return;
+  var fut=OPEN_SLOTS||[];
+  if(!fut.length){ host.style.display='none'; host.innerHTML=''; if(ft) ft.style.display='flex'; return; }
+  if(ft) ft.style.display='none'; host.style.display='block';
+  var byDate={}, order=[], WD=['日','一','二','三','四','五','六'];
+  fut.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+p2(p.mo)+'-'+p2(p.d);
+    if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
+    byDate[dk].push({when:dk+'T'+p2(p.h)+':'+p2(p.mi), t:p2(p.h)+':'+p2(p.mi), taken:!!s.taken}); });
+  if(!SEL_DATE || !byDate[SEL_DATE]) SEL_DATE=order[0].k;
+  var h='<div class="lbl2">選日期</div><div class="slchips">';
+  order.forEach(function(o){ var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()]; h+='<span class="slchip'+(o.k===SEL_DATE?' on':'')+'" data-d="'+o.k+'">'+o.p.mo+'/'+o.p.d+' '+w+'</span>'; });
+  h+='</div><div class="lbl2">選時段（白色＝已被約）</div><div class="slchips">';
+  byDate[SEL_DATE].forEach(function(s){
+    if(s.taken){ h+='<span class="slchip taken">'+s.t+'<span class="tk">已約</span></span>'; }
+    else { h+='<span class="slchip'+(s.when===SEL_WHEN?' on':'')+'" data-w="'+s.when+'">'+s.t+'</span>'; }
+  });
+  h+='</div>';
+  host.innerHTML=h;
+  Array.prototype.forEach.call(host.querySelectorAll('[data-d]'),function(c){ c.onclick=function(){ SEL_DATE=c.getAttribute('data-d'); SEL_WHEN=''; renderSlotPicker(); }; });
+  Array.prototype.forEach.call(host.querySelectorAll('[data-w]'),function(c){ c.onclick=function(){ SEL_WHEN=c.getAttribute('data-w'); renderSlotPicker(); }; });
+}
+async function refreshSlots(){ if(!guide) return; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(r&&!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){} renderSlotPicker(); }
 
 function getId(){ return new URLSearchParams(location.search).get('id'); }
 
@@ -178,7 +213,8 @@ async function loadGuide(){
     if(res.error || !res.data || !res.data.length){ show('notfound'); return; }
     guide=res.data[0];
     try{ var pr=await db.from('public_plans').select('label,price,unit').eq('guide_id',guide.id).order('price'); GUIDE_PLANS=(pr && !pr.error && Array.isArray(pr.data)) ? pr.data.map(function(p){return {label:p.label, price:Number(p.price)||0, unit:p.unit||''};}) : []; }catch(e){ GUIDE_PLANS=[]; }
-    renderGuide(); show('content');
+    try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(sr && !sr.error && Array.isArray(sr.data)) ? sr.data : []; }catch(e){ OPEN_SLOTS=[]; }
+    renderGuide(); renderSlotPicker(); show('content');
   }catch(e){ show('notfound'); }
 }
 
@@ -245,14 +281,14 @@ function serviceAmount(){ var p=selectedPlan(); if(p) return Number(p.price)||0;
 
 $('#to-pay').onclick=function(){
   var err=$('#form-err'); err.textContent='';
-  var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'';
+  var svc=($('#f-service')||{}).value||'', when=chosenWhen();
   var nm=(($('#f-name')||{}).value||'').trim(), ph=(($('#f-phone')||{}).value||'').trim();
   var plan=selectedPlan();
   var bad=[];
-  [['#f-date',dt],['#f-time',tm],['#f-name',nm],['#f-phone',ph]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ if(el) el.style.borderColor='#C0506A'; bad.push(1);} else if(el) el.style.borderColor='#EFE3CE'; });
+  [['#f-name',nm],['#f-phone',ph]].forEach(function(p){ var el=$(p[0]); if(!p[1]){ if(el) el.style.borderColor='#C0506A'; bad.push(1);} else if(el) el.style.borderColor='#EFE3CE'; });
   var fpl=$('#f-plan'); if(fpl) fpl.style.borderColor=plan?'#EFE3CE':'#C0506A';
-  if(!svc) bad.push(1); if(!plan) bad.push(1);
-  if(bad.length){ err.textContent='請把有 * 的欄位填完整'; return; }
+  if(!svc) bad.push(1); if(!plan) bad.push(1); if(!when) bad.push(1);
+  if(bad.length){ err.textContent = (!when ? (slotMode()?'請選預約時段':'請選預約日期與時間') : '請把有 * 的欄位填完整'); return; }
   // 訂單摘要
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
@@ -292,7 +328,8 @@ $('#back-form').onclick=function(){ $('#book-pay').style.display='none'; $('#boo
 $('#do-submit').onclick=async function(){
   var btn=this, err=$('#pay-err'); err.textContent='';
   if(!MEMBER){ err.textContent='請先登入會員'; return; }
-  var svc=($('#f-service')||{}).value||'', dt=$('#f-date').value, tm=$('#f-time').value, when=(dt&&tm)?dt+'T'+tm:'', note=$('#f-note').value.trim();
+  var svc=($('#f-service')||{}).value||'', when=chosenWhen(), note=$('#f-note').value.trim();
+  if(!when){ err.textContent = slotMode()?'這個時段已被約走，請回上一步重新選時段':'請選預約時間'; return; }
   var plan=selectedPlan(), planTxt=plan?(plan.label+(plan.unit?('（'+plan.unit+'）'):'')):'', svcFull=svc+(plan?('｜'+planTxt):'');
   var email=(($('#f-email')||{}).value||'')||(MEMBER&&MEMBER.email)||'';
   var l5el=$('#f-last5'), last5=l5el?l5el.value.trim():'';
@@ -320,7 +357,16 @@ $('#do-submit').onclick=async function(){
     $('#book-pay').style.display='none';
     $('#book-done').style.display='block';
     $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(e){ btn.disabled=false; btn.textContent='確認送出預約'; err.textContent='送出失敗：'+(((e&&e.message)||'請稍後再試')+'').slice(0,140); }
+  }catch(e){
+    btn.disabled=false; btn.textContent='確認送出預約';
+    var m=((e&&e.message)||'請稍後再試')+'';
+    if(/時段/.test(m)){
+      SEL_WHEN=''; try{ refreshSlots(); }catch(_){}
+      $('#book-pay').style.display='none'; $('#book-form').style.display='block';
+      var fe=$('#form-err'); if(fe) fe.textContent='這個時段剛被約走了，請重新選擇時段';
+      $('#book-form').scrollIntoView({behavior:'smooth',block:'start'});
+    } else { err.textContent='送出失敗：'+m.slice(0,140); }
+  }
 };
 
 // 預約完成寄預約明細到用戶信箱（用現有 FormSubmit；同時也會寄一份通知給官方）

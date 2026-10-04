@@ -344,6 +344,9 @@ function fmtDate(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/
 function fmtDay(s){if(!s)return '';var d=new Date(s);return (d.getMonth()+1)+'/'+d.getDate();}
 function fmtFull(s){if(!s)return '未定時間';var d=new Date(s);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
 function hhmm(s){if(!s)return '';var d=new Date(s);return ' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function wpart(s){var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||''));return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null;}
+function fmtAppt(s){var p=wpart(s);return p?(p.mo+'/'+p.d+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'';}
+function fmtApptFull(s){var p=wpart(s);return p?(p.y+'/'+p.mo+'/'+p.d+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'';}
 function money(n){return '$'+Number(n||0).toLocaleString();}
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
@@ -441,7 +444,7 @@ function customerRecords(cid){
   var tps=TOPUPS.filter(function(t){return t.customer_id===cid;});
   if(!txs.length && !tps.length) return '<div class="muted" style="padding:6px 0">尚無消費／儲值紀錄</div>';
   var h='';
-  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+(t.appointment_at?fmtDate(t.appointment_at):'未定時間')+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+(t.method?' · '+esc(t.method):'')+(t.order_ref?' · '+esc(t.order_ref):'')+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
+  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+(t.appointment_at?fmtAppt(t.appointment_at):'未定時間')+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+(t.method?' · '+esc(t.method):'')+(t.order_ref?' · '+esc(t.order_ref):'')+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
   tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　儲值　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'<button class="recdel" data-deltp="'+t.id+'" title="刪除">✕</button></span></div>'; });
   return h;
 }
@@ -677,9 +680,10 @@ $('#tp-add').onclick=async function(){
 };
 var TX_SORT={key:'appt',dir:-1};   // 預設依預約時間新→舊
 function txDate(t){ return t.appointment_at||t.created_at; }
+function cmpKeyTx(t){ if(t.appointment_at){ var p=wpart(t.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); } return new Date(t.created_at||t.appointment_at||0); }
 function inTxRange(t){
   var from=$('#tx-ffrom').value, to=$('#tx-fto').value; if(!from&&!to) return true;
-  var ds=txDate(t); if(!ds) return false; var d=new Date(ds);
+  var ds=txDate(t); if(!ds) return false; var d=cmpKeyTx(t);
   if(from && d<new Date(from+'T00:00:00')) return false;
   if(to && d>new Date(to+'T23:59:59')) return false;
   return true;
@@ -699,7 +703,7 @@ function txFiltered(){
     var k=TX_SORT.key, va, vb;
     if(k==='amount'){ va=Number(a.amount||0); vb=Number(b.amount||0); }
     else if(k==='created'){ va=+new Date(a.created_at||0); vb=+new Date(b.created_at||0); }
-    else { va=+new Date(txDate(a)||0); vb=+new Date(txDate(b)||0); }
+    else { va=+cmpKeyTx(a); vb=+cmpKeyTx(b); }
     return (va>vb?1:va<vb?-1:0)*TX_SORT.dir;
   });
   return rows;
@@ -732,7 +736,7 @@ function txRow(t){
   var mOpt=['現金','刷卡','匯款','儲值'].map(function(m){return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>';}).join('');
   var sOpt=['已預約','已完成','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('');
   return '<tr data-id="'+t.id+'">'+
-    '<td class="muted">'+(t.appointment_at?fmtDate(t.appointment_at):'未定')+'</td>'+
+    '<td class="muted">'+(t.appointment_at?fmtAppt(t.appointment_at):'未定')+'</td>'+
     '<td>'+esc(cname)+'</td>'+
     '<td class="muted">'+esc(guideName(t.guide_id))+'</td>'+
     '<td><input class="tin" data-f="service" value="'+esc(t.service)+'" placeholder="—"></td>'+
@@ -774,7 +778,7 @@ function txExportCSV(){
   function cell(v){ v=(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; }
   var lines=[head.map(cell).join(',')];
   rows.forEach(function(t){ var c=custById(t.customer_id); lines.push([
-    t.appointment_at?fmtDate(t.appointment_at):'', c?custLabel(c):(t.guest_name||''), guideName(t.guide_id),
+    t.appointment_at?fmtAppt(t.appointment_at):'', c?custLabel(c):(t.guest_name||''), guideName(t.guide_id),
     t.service||'', Number(t.amount||0), t.method||'', t.status||'', t.order_ref||'',
     (t.method==='匯款'?(t.pay_last5||''):''), fmtDay(t.created_at), t.notes||''
   ].map(cell).join(',')); });
@@ -792,23 +796,22 @@ var txExp=document.getElementById('tx-export'); if(txExp) txExp.onclick=txExport
 
 /* ===== 報表 ===== */
 function stat(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
-function inRange(dstr){
+function inRange(d){
   var from=$('#rp-from').value, to=$('#rp-to').value;
   if(!from && !to) return true;
-  if(!dstr) return false;
-  var d=new Date(dstr);
+  if(!d) return false;
   if(from && d < new Date(from+'T00:00:00')) return false;
   if(to && d > new Date(to+'T23:59:59')) return false;
   return true;
 }
 function renderReport(){
-  var rows=TX.filter(function(t){ return inRange(t.appointment_at||t.created_at); });
+  var rows=TX.filter(function(t){ return inRange(cmpKeyTx(t)); });
   var valid=rows.filter(function(t){ return t.status!=='已取消'&&t.status!=='已退費'; });
   var refunds=rows.filter(function(t){ return t.status==='已退費'; });
   var byM={現金:0,刷卡:0,匯款:0,儲值:0}, total=0;
   valid.forEach(function(t){ var a=Number(t.amount||0); total+=a; if(byM[t.method]!==undefined) byM[t.method]+=a; });
   var refundAmt=refunds.reduce(function(a,t){return a+Number(t.amount||0);},0);
-  var topupIn=TOPUPS.filter(function(t){return inRange(t.created_at);}).reduce(function(a,t){return a+Number(t.amount||0);},0);
+  var topupIn=TOPUPS.filter(function(t){return inRange(new Date(t.created_at||0));}).reduce(function(a,t){return a+Number(t.amount||0);},0);
   $('#rp-summary').innerHTML=
     '<div class="stats">'+stat('有效營收',money(total))+stat('交易筆數',valid.length+' 筆')+stat('退費',refunds.length+' 筆／'+money(refundAmt))+stat('儲值收入',money(topupIn))+'</div>'+
     '<div class="stats">'+stat('現金',money(byM.現金))+stat('刷卡',money(byM.刷卡))+stat('匯款',money(byM.匯款))+stat('儲值折抵',money(byM.儲值))+'</div>';
@@ -826,13 +829,13 @@ function renderReport(){
   keys.forEach(function(k){
     var gg=g[k], name=k==='__none__'?'（未指定引路人）':guideName(k);
     h+='<div class="gblock collapsed"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span class="gh-meta">'+gg.count+' 筆 · 有效 '+money(gg.amount)+(gg.refund?' · 退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
-    gg.items.sort(function(a,b){ return new Date(b.appointment_at||b.created_at) - new Date(a.appointment_at||a.created_at); });
+    gg.items.sort(function(a,b){ return cmpKeyTx(b) - cmpKeyTx(a); });
     gg.items.forEach(function(t){
       var c=custById(t.customer_id);
       var meta=[]; if(t.method) meta.push(esc(t.method)); if(t.order_ref) meta.push(esc(t.order_ref)); meta.push('下單 '+fmtDay(t.created_at)); if(t.method==='匯款'&&t.pay_last5) meta.push('末5碼 '+esc(t.pay_last5));
       h+='<div class="gitem">'
         +'<div class="gi-top"><span class="gi-name">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gi-right"><span class="gi-amt">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</span></div>'
-        +'<div class="gi-when">'+fmtFull(t.appointment_at||t.created_at)+hhmm(t.appointment_at)+' · '+esc(t.service||'—')+'</div>'
+        +'<div class="gi-when">'+(t.appointment_at?fmtApptFull(t.appointment_at):fmtFull(t.created_at))+' · '+esc(t.service||'—')+'</div>'
         +'<div class="gi-meta">'+meta.join(' · ')+'</div>'
         +'</div>';
     });
@@ -866,7 +869,7 @@ function renderTrash(){
   var items=[];
   DEL.customers.forEach(function(c){ items.push({t:'客戶',lbl:custLabel(c),sub:fmtDate(c.created_at),tbl:'customers',id:c.id,reason:c.delete_reason||''}); });
   DEL.guides.forEach(function(g){ items.push({t:'引路人',lbl:guideLabel(g),sub:(g.email||g.phone||''),tbl:'guides',id:g.id,reason:g.delete_reason||''}); });
-  DEL.transactions.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'交易',lbl:(c?custLabel(c):'客戶')+'　'+(t.service||'—')+'　'+money(t.amount),sub:(t.appointment_at?fmtDate(t.appointment_at):'')+(t.method?' · '+t.method:''),tbl:'transactions',id:t.id,reason:t.delete_reason||''}); });
+  DEL.transactions.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'交易',lbl:(c?custLabel(c):'客戶')+'　'+(t.service||'—')+'　'+money(t.amount),sub:(t.appointment_at?fmtAppt(t.appointment_at):'')+(t.method?' · '+t.method:''),tbl:'transactions',id:t.id,reason:t.delete_reason||''}); });
   DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id,reason:t.delete_reason||''}); });
   document.getElementById('trash-count').textContent='共 '+items.length+' 筆已刪除（可還原）';
   if(!items.length){ list.innerHTML='<div class="muted" style="padding:30px;text-align:center">目前沒有被刪除的資料</div>'; return; }
@@ -936,7 +939,7 @@ function buildNotifs(C,G,T){
       kind:'booking', cat:'booking', ts:t.created_at,
       tag:'新預約', color:'#B49BDD', tcolor:'#6E4F9E',
       main:(c?esc(custLabel(c)):(t.guest_name?esc(t.guest_name)+'（訪客）':'客戶'))+(t.service?'　·　'+esc(t.service):''),
-      sub:(gg?esc(guideLabel(gg)):'未指定引路人')+'　·　'+(t.appointment_at?fmtFull(t.appointment_at)+hhmm(t.appointment_at):'未定時間')+'　·　'+money(t.amount),
+      sub:(gg?esc(guideLabel(gg)):'未指定引路人')+'　·　'+(t.appointment_at?fmtApptFull(t.appointment_at):'未定時間')+'　·　'+money(t.amount),
       tab:'tx', id:t.id
     });
   });

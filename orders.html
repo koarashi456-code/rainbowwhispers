@@ -110,16 +110,18 @@ var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 function $(s){ return document.querySelector(s); }
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
 function money(n){ return '$'+Number(n||0).toLocaleString(); }
-function fmtDT(s){ if(!s) return '待確認'; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
+function fmtDT(s){ if(!s) return '待確認'; var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
 function fmtDay(s){ if(!s) return ''; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }
 function statusBadge(st){ var c=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':'st-book'; return '<span class="status-badge '+c+'">'+esc(st||'—')+'</span>'; }
 function odate(o){ return o.appointment_at || o.created_at; }
+function cmpKey(o){ if(o.appointment_at){ var p=wpart(o.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); } return new Date(o.created_at||o.appointment_at||0); }
 
 var ALL_ORDERS=[], PERIOD_DAYS=0, C_FROM='', C_TO='';
 
 function inPeriod(o){
   var ds=odate(o); if(!ds) return (PERIOD_DAYS===0 && !C_FROM && !C_TO); // 沒日期的只在「全部」出現
-  var d=new Date(ds);
+  var d=cmpKey(o);
   if(C_FROM && d < new Date(C_FROM+'T00:00:00')) return false;
   if(C_TO && d > new Date(C_TO+'T23:59:59')) return false;
   if(!C_FROM && !C_TO && PERIOD_DAYS>0){ var lim=new Date(); lim.setDate(lim.getDate()-PERIOD_DAYS); if(d<lim) return false; }
@@ -140,7 +142,7 @@ function render(){
   var total=valid.reduce(function(a,o){ return a+Number(o.amount||0); },0);
   $('#o-sum').innerHTML='共 <b>'+list.length+'</b> 筆'+(valid.length?'　·　有效合計 <b>'+money(total)+'</b>':'');
   if(!list.length){ $('#o-list').innerHTML='<div class="oempty">這個期間沒有訂單。<br>換個期間，或到「預約引路人」開始你的第一次。</div>'; return; }
-  list.sort(function(a,b){ return new Date(odate(b)) - new Date(odate(a)); });
+  list.sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   $('#o-list').innerHTML=list.map(orderCard).join('');
 }
 
