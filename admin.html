@@ -134,6 +134,11 @@
   table.txt th,table.txt td{border-right:1px solid #EFE3CC}
   table.txt th:last-child,table.txt td:last-child{border-right:none}
   table.txt tbody td{padding:7px 11px;border-bottom:1px solid #F0E6D2;white-space:nowrap;color:var(--ink);vertical-align:middle}
+  table.txt th.ck,table.txt td.ck{width:34px;min-width:34px;text-align:center;padding-left:6px;padding-right:6px}
+  .txbulk{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:8px 12px;background:#FBF6EC;border:1px solid var(--line);border-radius:10px;flex-wrap:wrap}
+  .bulkdel{font:inherit;font-size:13px;color:#C0506A;background:#fff;border:1.5px solid #E7C3C3;border-radius:999px;padding:7px 16px;cursor:pointer}
+  .bulkdel:disabled{opacity:.45;cursor:not-allowed}
+  .trbulk{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:8px 12px;background:#FBF6EC;border:1px solid var(--line);border-radius:10px;flex-wrap:wrap}
   table.txt tbody tr:nth-child(even){background:#FCF7EC}
   table.txt tbody tr:hover{background:#F6EEDC}
   table.txt td.num{text-align:right;font-variant-numeric:tabular-nums}
@@ -717,7 +722,9 @@ function renderTx(){
   $('#txcount').textContent='顯示 '+rows.length+' 筆（全部 '+TX.length+' 筆）';
   if(!rows.length){ $('#txlist').innerHTML='<div class="muted" style="padding:24px;text-align:center">沒有符合的交易</div>'; return; }
   function arr(k){ return TX_SORT.key===k?'<span class="arr">'+(TX_SORT.dir<0?'▼':'▲')+'</span>':''; }
-  $('#txlist').innerHTML='<div class="txtable-wrap"><table class="txt"><thead><tr>'+
+  $('#txlist').innerHTML='<div class="txbulk" id="tx-bulk"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="tx-ckall">全選本頁</label><span style="font-size:13px">已選 <b id="tx-cksel">0</b> 筆</span><span style="flex:1"></span><button class="bulkdel" id="tx-bulkdel" disabled>刪除選取</button></div>'+
+    '<div class="txtable-wrap"><table class="txt"><thead><tr>'+
+    '<th class="ck"></th>'+
     '<th class="sortable" data-sort="appt">預約日期時間'+arr('appt')+'</th>'+
     '<th>客戶</th><th>引路人</th><th>服務</th>'+
     '<th class="sortable" data-sort="amount" style="text-align:right">金額'+arr('amount')+'</th>'+
@@ -736,6 +743,7 @@ function txRow(t){
   var mOpt=['現金','刷卡','匯款','儲值'].map(function(m){return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>';}).join('');
   var sOpt=['已預約','已完成','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('');
   return '<tr data-id="'+t.id+'">'+
+    '<td class="ck"><input type="checkbox" class="tx-ck"></td>'+
     '<td class="muted">'+(t.appointment_at?fmtAppt(t.appointment_at):'未定')+'</td>'+
     '<td>'+esc(cname)+'</td>'+
     '<td class="muted">'+esc(guideName(t.guide_id))+'</td>'+
@@ -771,6 +779,25 @@ function bindTx(){
       if(await softDelete('transactions',id,TX)){ renderTx(); render(); renderTrash(); }
     };
   });
+  var ckall=$('#tx-ckall');
+  if(ckall) ckall.onclick=function(){ document.querySelectorAll('#txlist .tx-ck').forEach(function(c){ c.checked=ckall.checked; }); updateTxBulk(); };
+  document.querySelectorAll('#txlist .tx-ck').forEach(function(c){ c.onclick=updateTxBulk; });
+  var bd=$('#tx-bulkdel');
+  if(bd) bd.onclick=async function(){
+    var ids=Array.prototype.map.call(document.querySelectorAll('#txlist .tx-ck:checked'),function(c){ var tr=c.closest('tr'); return tr?tr.getAttribute('data-id'):null; }).filter(Boolean);
+    if(!ids.length) return;
+    if(!confirm('刪除選取的 '+ids.length+' 筆交易？會移到「刪除紀錄」，可還原。')) return;
+    bd.disabled=true; bd.textContent='刪除中…';
+    for(var i=0;i<ids.length;i++){ await softDelete('transactions', ids[i], TX); }
+    renderTx(); render(); renderTrash();
+  };
+  updateTxBulk();
+}
+function updateTxBulk(){
+  var cks=document.querySelectorAll('#txlist .tx-ck'), sel=document.querySelectorAll('#txlist .tx-ck:checked'), n=sel.length;
+  var cs=$('#tx-cksel'); if(cs) cs.textContent=n;
+  var bd=$('#tx-bulkdel'); if(bd){ bd.disabled=(n===0); if(n===0) bd.textContent='刪除選取'; }
+  var all=$('#tx-ckall'); if(all){ all.checked=(cks.length>0 && n===cks.length); all.indeterminate=(n>0 && n<cks.length); }
 }
 function txExportCSV(){
   var rows=txFiltered();
@@ -873,7 +900,8 @@ function renderTrash(){
   DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id,reason:t.delete_reason||''}); });
   document.getElementById('trash-count').textContent='共 '+items.length+' 筆已刪除（可還原）';
   if(!items.length){ list.innerHTML='<div class="muted" style="padding:30px;text-align:center">目前沒有被刪除的資料</div>'; return; }
-  list.innerHTML=items.map(function(it){ return '<div class="cust" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="cust-top"><div><span class="src-badge" style="background:#EDE6DC;color:#8A7659">'+it.t+'</span> <b>'+esc(it.lbl)+'</b></div><div class="meta">'+esc(it.sub)+'</div></div><label class="notes-l" style="margin-top:0"><input class="in" data-reason value="'+esc(it.reason)+'" placeholder="刪除原因（選填）…"></label><div class="cust-actions"><span class="saved" data-rsaved></span><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div>'; }).join('');
+  list.innerHTML='<div class="trbulk" id="tr-bulk"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="tr-ckall">全選</label><span style="font-size:13px">已選 <b id="tr-cksel">0</b> 筆</span><span style="flex:1"></span><button class="abtn" id="tr-bulkrestore" disabled>還原選取</button><button class="bulkdel" id="tr-bulkpurge" disabled>永久刪除選取</button></div>'+
+    items.map(function(it){ return '<div class="cust" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="cust-top"><label style="display:flex;flex-direction:row;align-items:center;gap:8px;cursor:pointer;min-width:0"><input type="checkbox" class="tr-ck" style="flex-shrink:0"><span style="min-width:0"><span class="src-badge" style="background:#EDE6DC;color:#8A7659">'+it.t+'</span> <b>'+esc(it.lbl)+'</b></span></label><div class="meta">'+esc(it.sub)+'</div></div><label class="notes-l" style="margin-top:0"><input class="in" data-reason value="'+esc(it.reason)+'" placeholder="刪除原因（選填）…"></label><div class="cust-actions"><span class="saved" data-rsaved></span><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div>'; }).join('');
   document.querySelectorAll('#trashlist .cust').forEach(function(row){
     var tbl=row.getAttribute('data-tbl'), id=row.getAttribute('data-id');
     var ri=row.querySelector('[data-reason]');
@@ -893,6 +921,26 @@ function renderTrash(){
       renderTrash();
     };
   });
+  var trAll=document.getElementById('tr-ckall');
+  if(trAll) trAll.onclick=function(){ document.querySelectorAll('#trashlist .tr-ck').forEach(function(c){ c.checked=trAll.checked; }); updateTrBulk(); };
+  document.querySelectorAll('#trashlist .tr-ck').forEach(function(c){ c.onclick=updateTrBulk; });
+  function trSel(){ return Array.prototype.map.call(document.querySelectorAll('#trashlist .tr-ck:checked'),function(c){ var row=c.closest('.cust'); return row?{tbl:row.getAttribute('data-tbl'),id:row.getAttribute('data-id')}:null; }).filter(Boolean); }
+  var rb=document.getElementById('tr-bulkrestore');
+  if(rb) rb.onclick=async function(){ var sel=trSel(); if(!sel.length) return; rb.disabled=true; rb.textContent='還原中…';
+    for(var i=0;i<sel.length;i++){ var tbl=sel[i].tbl,id=sel[i].id; var r=await db.from(tbl).update({deleted:false}).eq('id',id); if(!r.error){ var j=DEL[tbl].findIndex(function(x){return x.id===id;}); if(j>=0){ var o=DEL[tbl][j]; o.deleted=false; DEL[tbl].splice(j,1); activeArr(tbl).unshift(o); } } }
+    render(); renderGuides(); renderTx(); renderReport(); renderTrash(); fillSelects(); };
+  var pb=document.getElementById('tr-bulkpurge');
+  if(pb) pb.onclick=async function(){ var sel=trSel(); if(!sel.length) return; if(!confirm('永久刪除選取的 '+sel.length+' 筆？這次真的無法還原。')) return; pb.disabled=true; pb.textContent='刪除中…';
+    for(var i=0;i<sel.length;i++){ var tbl=sel[i].tbl,id=sel[i].id; var r=await db.from(tbl).delete().eq('id',id); if(!r.error){ var j=DEL[tbl].findIndex(function(x){return x.id===id;}); if(j>=0)DEL[tbl].splice(j,1); } }
+    renderTrash(); };
+  updateTrBulk();
+}
+function updateTrBulk(){
+  var cks=document.querySelectorAll('#trashlist .tr-ck'), sel=document.querySelectorAll('#trashlist .tr-ck:checked'), n=sel.length;
+  var cs=document.getElementById('tr-cksel'); if(cs) cs.textContent=n;
+  var rb=document.getElementById('tr-bulkrestore'); if(rb){ rb.disabled=(n===0); if(n===0) rb.textContent='還原選取'; }
+  var pb=document.getElementById('tr-bulkpurge'); if(pb){ pb.disabled=(n===0); if(n===0) pb.textContent='永久刪除選取'; }
+  var all=document.getElementById('tr-ckall'); if(all){ all.checked=(cks.length>0 && n===cks.length); all.indeterminate=(n>0 && n<cks.length); }
 }
 
 /* ===== 通知鈴鐺 ===== */

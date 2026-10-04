@@ -145,8 +145,10 @@
         <h2>預約已送出！</h2>
         <div class="ordref" id="done-ref"></div>
         <div id="done-summary" style="margin:14px auto 6px"></div>
-        <p class="muted" style="font-size:14px;line-height:1.7">我們會盡快與你確認時間與後續付款方式，並提供完整地址。<br>（此為測試流程，尚未真的收款）</p>
-        <a class="ghost-link" href="guides.html">← 回引路人介紹</a>
+        <p class="muted" style="font-size:14px;line-height:1.7">請加 LINE 好友，把<b>訂單編號</b>傳給我們，確認後提供<b>完整地址</b>與報到細節。</p>
+        <a class="cta-big" id="done-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE 好友領取地址</a>
+        <button class="ghost-link" id="copy-ref" type="button" style="background:none;border:none;cursor:pointer;font:inherit">複製訂單編號</button>
+        <div style="margin-top:6px"><a class="ghost-link" href="guides.html">← 回引路人介紹</a></div>
       </div>
     </div>
 
@@ -353,6 +355,7 @@ $('#do-submit').onclick=async function(){
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
     sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(planTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)});
     $('#done-ref').textContent='訂單編號 '+ref;
+    var cr=$('#copy-ref'); if(cr){ cr.onclick=function(){ try{ navigator.clipboard.writeText(ref); cr.textContent='已複製：'+ref; setTimeout(function(){ cr.textContent='複製訂單編號'; },1800); }catch(e){ cr.textContent='訂單編號 '+ref; } }; }
     $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
     $('#book-pay').style.display='none';
     $('#book-done').style.display='block';
