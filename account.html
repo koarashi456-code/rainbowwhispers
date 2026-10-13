@@ -141,7 +141,7 @@
 <div id="authbox" class="acc" style="display:none">
   <div class="logo"></div>
   <h1>彩之語</h1>
-  <div class="sub" id="acc-sub">登入後，之後辦活動就能直接報名參加</div>
+  <div class="sub" id="acc-sub">登入後就能預約引路人、查看訂單和儲值紀錄</div>
 
   <div class="tabs" style="margin-bottom:16px">
     <button id="at-user" class="on" type="button">用戶帳號</button>
@@ -514,7 +514,7 @@ function setAtype(t){
   $('#at-guide').classList.toggle('on',t==='guide');
   $('#user-auth').style.display=(t==='user')?'block':'none';
   $('#guide-auth').style.display=(t==='guide')?'block':'none';
-  $('#acc-sub').textContent=(t==='user')?'登入後，之後辦活動就能直接報名參加':'給彩之語的引路人';
+  $('#acc-sub').textContent=(t==='user')?'登入後就能預約引路人、查看訂單和儲值紀錄':'給彩之語的引路人';
 }
 $('#at-user').onclick=function(){setAtype('user');};
 $('#at-guide').onclick=function(){setAtype('guide');};
