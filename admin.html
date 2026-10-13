@@ -103,6 +103,12 @@
   .chead{cursor:pointer}
   .cust.collapsed .caret{transform:rotate(-90deg)}
   .cust.collapsed .cbody{display:none}
+  .gslots{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC}
+  .gs-d{font-size:12.5px;color:#5A4632;font-weight:500;margin:9px 0 6px}
+  .gs-row{display:flex;flex-wrap:wrap;gap:6px}
+  .gs-p{font-size:12.5px;color:var(--ink);background:#fff;border:1px solid #EFE3CE;border-radius:999px;padding:3px 11px}
+  .gs-p.bk{background:#F3EFE6;color:#8E8065}
+  .gs-p.bk small{font-size:10.5px;margin-left:4px;color:#C0506A}
 
   .formcard{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
   .formcard h3{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin-bottom:12px}
@@ -535,7 +541,7 @@ function guideCard(g){
       '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
       '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
       '<label>信箱<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com"></label>'+
-      '<label>可預約時間<input class="in" data-f="availability" value="'+esc(g.availability)+'" placeholder="例：週一~五 晚上"></label>'+
+      '<label>可預約時間（文字說明）<input class="in" data-f="availability" value="'+esc(g.availability)+'" placeholder="例：週一~五 晚上"></label>'+
       '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
@@ -543,6 +549,7 @@ function guideCard(g){
     '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
+    '<div class="gslots"><div style="font-size:12.5px;color:var(--soft);font-weight:500">開放時段（引路人在自己後台排的，客戶只能從這些時段預約）</div><div class="gs-body" style="font-size:12.5px;color:var(--soft);margin-top:6px">展開時載入…</div></div>'+
     '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
     guidePlansHtml(g)+
     '<div class="cust-actions">'+
@@ -619,11 +626,28 @@ function bindGuides(){
     if(ap) ap.onchange=async function(){ if(!ap.checked)return; var r=await db.from('guides').update({pending:false,active:true}).eq('id',id); if(r.error){ alert('上架失敗：'+r.error.message); ap.checked=false; return; } var gg=guideById(id); if(gg){gg.pending=false;gg.active=true;} renderGuides(); fillSelects(); };
   });
 }
+// 開放時段：展開引路人卡片時才載入（同公開預約頁的 guide_open_slots）
+async function loadGuideSlots(card){
+  var id=card.getAttribute('data-id'), box=card.querySelector('.gs-body'); if(!box) return;
+  box.textContent='載入中…';
+  var rows=[]; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:id}); if(r.error) throw new Error(r.error.message); rows=Array.isArray(r.data)?r.data:[]; }catch(e){ box.textContent='讀取失敗：'+(e.message||''); return; }
+  if(!rows.length){ box.textContent='目前沒有開放時段（客戶預約時會改成自由選時間）'; return; }
+  var WD=['日','一','二','三','四','五','六'], byDate={}, order=[], open=0, taken=0;
+  rows.forEach(function(x){ var p=wpart(x.slot_at); if(!p) return; var dk=p.y+'-'+p.mo+'-'+p.d;
+    if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
+    byDate[dk].push({t:String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'),taken:!!x.taken}); if(x.taken) taken++; else open++; });
+  var h='<div style="color:var(--soft)">可約 '+open+' 個'+(taken?'　·　已被約 '+taken+' 個':'')+'</div>';
+  order.forEach(function(o){
+    h+='<div class="gs-d">'+o.p.mo+'/'+o.p.d+'（'+WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()]+'）</div><div class="gs-row">'+
+      byDate[o.k].map(function(x){ return x.taken?'<span class="gs-p bk">'+x.t+'<small>已約</small></span>':'<span class="gs-p">'+x.t+'</span>'; }).join('')+'</div>';
+  });
+  box.innerHTML=h;
+}
 $('#add-guide').onclick=async function(){
   var r=await db.from('guides').insert({name:'',active:true});
   if(r.error){ alert('新增失敗：'+r.error.message); return; }
   await loadAll(); document.querySelector('.tabbar [data-tab="guides"]').click();
-  var f=document.querySelector('#glist .cust'); if(f) f.classList.remove('collapsed');
+  var f=document.querySelector('#glist .cust'); if(f){ f.classList.remove('collapsed'); loadGuideSlots(f); }
 };
 ['g-filter','g-search','g-region','g-mode'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('change',renderGuides); e.addEventListener('input',renderGuides); } });
 
@@ -879,7 +903,7 @@ var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
 if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
-['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });
+['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card){ card.classList.toggle('collapsed'); if(sel==='#glist' && !card.classList.contains('collapsed')) loadGuideSlots(card); } } }); });
 function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
 bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#glist'); bindCollapseAll('tx-collapse','#txlist');
 
