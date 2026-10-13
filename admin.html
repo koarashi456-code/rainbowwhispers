@@ -535,9 +535,12 @@ function guideCard(g){
       '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
       '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
       '<label>信箱<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com"></label>'+
-      '<label>可預約時間<input class="in" data-f="availability" value="'+esc(g.availability)+'" placeholder="例：週一~五 晚上"></label>'+
       '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
+    '</div>'+
+    '<div class="gslots" data-gslots style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC">'+
+      '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:6px">可預約時間（引路人自己設定，客戶只能從這些時段預約）</div>'+
+      '<div data-gslots-body style="color:var(--soft);font-size:12.5px">展開後載入…</div>'+
     '</div>'+
     '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
     '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
@@ -594,10 +597,39 @@ function bindGuidePlans(el){
     var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); }
   };
 }
+// 引路人自己在後台排的開放時段（唯讀顯示；走公開 RPC guide_open_slots，含已被約）
+async function loadGuideSlots(el,id){
+  var box=el.querySelector('[data-gslots-body]'); if(!box) return;
+  box.textContent='載入中…';
+  var rows=[]; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:id}); if(r.error) throw new Error(r.error.message); rows=Array.isArray(r.data)?r.data:[]; }
+  catch(e){ box.textContent='讀取失敗：'+(e.message||''); return; }
+  if(!rows.length){ box.textContent='引路人尚未設定開放時段（客戶預約頁會改用自填日期時間）'; return; }
+  var WD=['日','一','二','三','四','五','六'], byDate={}, order=[], taken=0;
+  rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+p.mo+'-'+p.d;
+    if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
+    if(s.taken) taken++;
+    byDate[dk].push({t:String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'), taken:!!s.taken}); });
+  var pill='display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:5px 11px;border-radius:999px;margin:0 6px 6px 0;';
+  var h='<div style="margin-bottom:8px">可約 '+(rows.length-taken)+' 個　·　已被約 '+taken+' 個</div>';
+  order.forEach(function(o){
+    var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()];
+    h+='<div style="font-weight:500;color:var(--brush);margin:6px 0 5px">'+o.p.mo+'/'+o.p.d+'（'+w+'）</div><div>';
+    byDate[o.k].forEach(function(s){
+      h+=s.taken ? '<span style="'+pill+'background:#EFE7DA;color:#A9967E;border:1px solid #E6DAC6">'+s.t+'<span style="font-size:11px;color:#C0506A">已約</span></span>'
+                 : '<span style="'+pill+'background:#fff;color:var(--ink,#4A3A2A);border:1px solid var(--line)">'+s.t+'</span>';
+    });
+    h+='</div>';
+  });
+  box.innerHTML=h;
+}
+function ensureGuideSlots(el){ if(!el.classList.contains('collapsed') && !el._slotsLoaded){ el._slotsLoaded=true; loadGuideSlots(el,el.getAttribute('data-id')); } }
+// 卡片展開（點標題、全部展開、新增後自動展開）時才載入時段
+(function(){ var gl=document.getElementById('glist'); if(gl && window.MutationObserver) new MutationObserver(function(ms){ ms.forEach(function(m){ if(m.target.classList && m.target.classList.contains('cust')) ensureGuideSlots(m.target); }); }).observe(gl,{subtree:true,attributes:true,attributeFilter:['class']}); })();
 function bindGuides(){
   document.querySelectorAll('#glist .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
     bindGuidePlans(el);
+    ensureGuideSlots(el);
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
