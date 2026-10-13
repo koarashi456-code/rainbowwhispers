@@ -228,7 +228,6 @@ function renderGuide(){
   if(svcs.length) h+='<div class="gchips">'+svcs.map(function(s){return '<span class="gchip">'+esc(s)+'</span>';}).join('')+'</div>';
   var meta=[];
   if(g.region) meta.push('服務區域：'+esc(g.region));
-  if(g.availability) meta.push('可預約：'+esc(g.availability));
   if(meta.length) h+='<div class="gmeta">'+meta.join('<br>')+'</div>';
   if(g.notes) h+='<div class="gnotes">'+esc(g.notes)+'</div>';
   if(g.price!=null) h+='<div class="gprice">'+money(g.price)+' <small>／次　起</small></div>';
