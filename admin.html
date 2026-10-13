@@ -551,11 +551,12 @@ function guideCard(g){
     '</div>'+
     '<div class="gslots" data-gslots style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC">'+
       '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:6px">可預約時間（引路人自己設定，客戶只能從這些時段預約）</div>'+
+      (g.availability ? '<div data-gs-legacy style="font-size:12px;color:var(--soft);background:#fff;border:1px dashed var(--line);border-radius:10px;padding:6px 10px;margin-bottom:8px">舊的文字說明：「'+esc(g.availability)+'」（客戶頁只在沒有開放時段時顯示）<button type="button" class="del" data-gs-clear style="margin-left:6px">清除</button></div>' : '')+
       '<div data-gslots-body style="color:var(--soft);font-size:12.5px">展開後載入…</div>'+
       '<div data-gs-add style="display:none;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)">'+
         '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:12.5px;color:var(--soft)">選日期</span><input type="date" data-gs-date class="in" style="width:auto;padding:6px 10px"><span style="font-size:12px;color:var(--soft)">再點要開放的時段（可複選）</span></div>'+
         '<div class="gs-chips" data-gs-times></div>'+
-        '<div style="display:flex;align-items:center;gap:10px;margin-top:10px"><button type="button" class="del" data-gs-addbtn style="color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 16px">新增時段</button><span data-gs-msg style="font-size:12px"></span></div>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button type="button" class="del" data-gs-addbtn style="flex:none;white-space:nowrap;color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 16px">新增時段</button><span data-gs-msg style="font-size:12px;min-width:0;overflow-wrap:anywhere"></span></div>'+
       '</div>'+
     '</div>'+
     '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
@@ -630,7 +631,7 @@ async function fetchGuideSlots(id){
 async function loadGuideSlots(el,id){
   var box=el.querySelector('[data-gslots-body]'), add=el.querySelector('[data-gs-add]'); if(!box) return;
   if(!box.innerHTML || box.textContent==='展開後載入…') box.textContent='載入中…';
-  var res; try{ res=await fetchGuideSlots(id); }catch(e){ box.textContent='讀取失敗：'+(e.message||''); return; }
+  var res; try{ res=await fetchGuideSlots(id); }catch(e){ box.textContent='讀取失敗：'+(e.message||'')+'（收合再展開可重試）'; el._slotsLoaded=false; return; }
   var rows=res.rows;
   el._gsTaken={}; el._gsHave={};
   var WD=['日','一','二','三','四','五','六'], byDate={}, order=[], taken=0;
@@ -661,6 +662,7 @@ async function loadGuideSlots(el,id){
     if(!confirm('刪除這個開放時段？')) return;
     var r=await db.rpc('admin_del_guide_slot',{p_guide_id:id, p_id:x.getAttribute('data-gs-rm')});
     if(r.error){ alert('刪除失敗：'+r.error.message); return; }
+    if(r.data===false) alert('找不到這個時段（可能已被刪除），已重新整理');
     loadGuideSlots(el,id);
   }; });
   if(add){ add.style.display=res.editable?'block':'none'; if(res.editable) setupGuideSlotAdd(el,id); }
@@ -674,6 +676,16 @@ function drawGuideSlotTimes(el){
     else h+='<span class="gs-chip'+(picked[v]?' on':'')+'" data-t="'+v+'">'+v+'</span>'; } }
   times.innerHTML=h;
   times.querySelectorAll('.gs-chip[data-t]').forEach(function(c){ c.onclick=function(){ c.classList.toggle('on'); }; });
+}
+function bindGuideLegacy(el,id){
+  var clr=el.querySelector('[data-gs-clear]');
+  if(clr) clr.onclick=async function(){
+    if(!confirm('清除這段舊的文字說明？（只影響文字，不會動到開放時段）')) return;
+    var r=await db.from('guides').update({availability:null}).eq('id',id);
+    if(r.error){ alert('清除失敗：'+r.error.message); return; }
+    var g=guideById(id); if(g) g.availability=null;
+    var lg=el.querySelector('[data-gs-legacy]'); if(lg) lg.remove();
+  };
 }
 function setupGuideSlotAdd(el,id){
   var dIn=el.querySelector('[data-gs-date]'), btn=el.querySelector('[data-gs-addbtn]'), msg=el.querySelector('[data-gs-msg]');
@@ -704,6 +716,7 @@ function bindGuides(){
   document.querySelectorAll('#glist .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
     bindGuidePlans(el);
+    bindGuideLegacy(el,id);
     ensureGuideSlots(el);
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
