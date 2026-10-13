@@ -549,6 +549,12 @@ function guideCard(g){
       '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
+    '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
+    '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
+    '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
+    '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
+    '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
+    guidePlansHtml(g)+
     '<div class="gslots" data-gslots style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC">'+
       '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:6px">可預約時間（引路人自己設定，客戶只能從這些時段預約）</div>'+
       (g.availability ? '<div data-gs-legacy style="font-size:12px;color:var(--soft);background:#fff;border:1px dashed var(--line);border-radius:10px;padding:6px 10px;margin-bottom:8px">舊的文字說明：「'+esc(g.availability)+'」（客戶頁只在沒有開放時段時顯示）<button type="button" class="del" data-gs-clear style="margin-left:6px">清除</button></div>' : '')+
@@ -559,12 +565,6 @@ function guideCard(g){
         '<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button type="button" class="del" data-gs-addbtn style="flex:none;white-space:nowrap;color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 16px">新增時段</button><span data-gs-msg style="font-size:12px;min-width:0;overflow-wrap:anywhere"></span></div>'+
       '</div>'+
     '</div>'+
-    '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
-    '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
-    '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
-    '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
-    '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
-    guidePlansHtml(g)+
     '<div class="cust-actions">'+
       (g.pending
         ? '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#4F8E6E;margin-right:auto;cursor:pointer;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
