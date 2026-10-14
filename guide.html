@@ -13,8 +13,9 @@
   .testbar{max-width:560px;margin:12px auto 0;padding:8px 18px}
   .testbar span{display:inline-block;font-size:12px;color:#A5643A;background:#FBE7CC;border-radius:999px;padding:5px 13px}
   .gcard{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 24px;text-align:center}
-  .gava{width:78px;height:78px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 160deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center}
-  .gava div{width:58px;height:58px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center}
+  .gava{width:96px;height:96px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 160deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center}
+  .gava div{position:relative;overflow:hidden;width:88px;height:88px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center}
+  .gava img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .gname{font-family:"Noto Serif TC",serif;font-size:23px;color:var(--brush);font-weight:600}
   .gmode{display:inline-block;font-size:12.5px;color:#5A7A94;background:#E7EEF4;border-radius:999px;padding:3px 12px;margin-top:8px}
   .gchips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:14px 0 4px}
@@ -222,7 +223,7 @@ async function loadGuide(){
 
 function renderGuide(){
   var g=guide, svcs=g.services||[];
-  var h='<div class="gava"><div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c.4 3.5 1.5 4.6 5 5-3.5.4-4.6 1.5-5 5-.4-3.5-1.5-4.6-5-5 3.5-.4 4.6-1.5 5-5Z"/></svg></div></div>';
+  var h='<div class="gava"><div><img alt="" src="'+esc(window.SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(g.id)+'.jpg')+'" onerror="this.remove()"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c.4 3.5 1.5 4.6 5 5-3.5.4-4.6 1.5-5 5-.4-3.5-1.5-4.6-5-5 3.5-.4 4.6-1.5 5-5Z"/></svg></div></div>';
   h+='<div class="gname">'+esc(g.name||'引路人')+'</div>';
   if(g.service_mode) h+='<div class="gmode">'+esc(g.service_mode)+'</div>';
   if(svcs.length) h+='<div class="gchips">'+svcs.map(function(s){return '<span class="gchip">'+esc(s)+'</span>';}).join('')+'</div>';

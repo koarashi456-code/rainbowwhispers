@@ -542,6 +542,7 @@ function guideCard(g){
   return '<div class="cust collapsed" data-id="'+g.id+'">'+
     '<div class="chead"><span class="caret">▾</span> <b style="color:var(--brush)">'+esc(g.name||'(未命名引路人)')+'</b> '+guideBadge(g)+'</div>'+
     '<div class="cbody">'+
+    guidePhotoHtml(g)+
     '<div class="cust-grid">'+
       '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
       '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
@@ -552,7 +553,7 @@ function guideCard(g){
     '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
     '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
-    '<label class="notes-l">備註<textarea class="in" data-f="notes" placeholder="收費、經歷等…">'+esc(g.notes)+'</textarea></label>'+
+    '<label class="notes-l">自我介紹／經歷（公開顯示在引路人頁）<textarea class="in" data-f="notes" rows="5" placeholder="例：我是 XUAN，接觸彩虹卡 5 年，擅長陪你把卡住的感受說清楚…">'+esc(g.notes)+'</textarea></label>'+
     '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
     guidePlansHtml(g)+
     '<div class="gslots" data-gslots style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC">'+
@@ -712,11 +713,62 @@ function setupGuideSlotAdd(el,id){
 function ensureGuideSlots(el){ if(!el.classList.contains('collapsed') && !el._slotsLoaded){ el._slotsLoaded=true; loadGuideSlots(el,el.getAttribute('data-id')); } }
 // 卡片展開（點標題、全部展開、新增後自動展開）時才載入時段
 (function(){ var gl=document.getElementById('glist'); if(gl && window.MutationObserver) new MutationObserver(function(ms){ ms.forEach(function(m){ if(m.target.classList && m.target.classList.contains('cust')) ensureGuideSlots(m.target); }); }).observe(gl,{subtree:true,attributes:true,attributeFilter:['class']}); })();
+/* ===== 引路人大頭照：存在 Supabase Storage 的 guide-photos/<引路人id>.jpg（公開讀取，只有管理員能上傳） ===== */
+function guidePhotoUrl(id){ return window.SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(id)+'.jpg'; }
+function guidePhotoHtml(g){
+  return '<div class="gphoto" style="display:flex;align-items:center;gap:14px;margin-bottom:12px">'+
+    '<span style="flex:none;position:relative;width:72px;height:72px;border-radius:50%;background:conic-gradient(from 160deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center">'+
+      '<span style="position:relative;width:62px;height:62px;border-radius:50%;background:#FFFDF8;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--soft)">尚無照片'+
+        '<img data-gp-img alt="" src="'+esc(guidePhotoUrl(g.id))+'?t='+Date.now()+'" onerror="this.style.display=\'none\'" onload="this.style.display=\'block\'" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">'+
+      '</span></span>'+
+    '<div style="font-size:12.5px;color:var(--soft)"><div style="font-weight:500;margin-bottom:6px">大頭照（公開顯示）</div>'+
+      '<label class="del" style="display:inline-block;cursor:pointer;color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:6px 14px">選擇照片<input type="file" accept="image/*" data-gp-file style="display:none"></label> '+
+      '<button type="button" class="del" data-gp-del>移除</button> <span data-gp-msg></span>'+
+      '<div style="font-size:11.5px;margin-top:5px">建議正方形、臉在中間；會自動裁成正方形並壓縮</div></div>'+
+  '</div>';
+}
+// 讀圖 → 置中裁正方形 → 縮到 480px → JPEG
+function squareJpeg(file,size){
+  return new Promise(function(res,rej){
+    var url=URL.createObjectURL(file), im=new Image();
+    im.onload=function(){
+      var s=Math.min(im.naturalWidth,im.naturalHeight), c=document.createElement('canvas'); c.width=c.height=size;
+      var ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
+      ctx.drawImage(im,(im.naturalWidth-s)/2,(im.naturalHeight-s)/2,s,s,0,0,size,size);
+      URL.revokeObjectURL(url);
+      c.toBlob(function(b){ b?res(b):rej(new Error('轉檔失敗')); },'image/jpeg',0.85);
+    };
+    im.onerror=function(){ URL.revokeObjectURL(url); rej(new Error('讀不到這張圖片，請換 JPG 或 PNG')); };
+    im.src=url;
+  });
+}
+function bindGuidePhoto(el,id){
+  var fi=el.querySelector('[data-gp-file]'), del=el.querySelector('[data-gp-del]'), msg=el.querySelector('[data-gp-msg]'), img=el.querySelector('[data-gp-img]');
+  function setMsg(t,c){ if(msg){ msg.textContent=t; msg.style.color=c||'var(--soft)'; } }
+  function reload(){ if(img){ img.style.display='none'; img.src=guidePhotoUrl(id)+'?t='+Date.now(); } }
+  if(fi) fi.onchange=async function(){
+    var f=fi.files&&fi.files[0]; fi.value=''; if(!f) return;
+    setMsg('上傳中…');
+    try{
+      var blob=await squareJpeg(f,480);
+      var r=await db.storage.from('guide-photos').upload(id+'.jpg',blob,{upsert:true,contentType:'image/jpeg',cacheControl:'300'});
+      if(r.error) throw new Error(r.error.message);
+      setMsg('已更新（公開頁約 5 分鐘內換新）','#4F8E6E'); reload();
+    }catch(e){ setMsg('上傳失敗：'+(e.message||''),'#C0506A'); }
+  };
+  if(del) del.onclick=async function(){
+    if(!confirm('移除這位引路人的大頭照？')) return;
+    var r=await db.storage.from('guide-photos').remove([id+'.jpg']);
+    if(r.error){ setMsg('移除失敗：'+r.error.message,'#C0506A'); return; }
+    setMsg('已移除','#4F8E6E'); reload();
+  };
+}
 function bindGuides(){
   document.querySelectorAll('#glist .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
     bindGuidePlans(el);
     bindGuideLegacy(el,id);
+    bindGuidePhoto(el,id);
     ensureGuideSlots(el);
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
