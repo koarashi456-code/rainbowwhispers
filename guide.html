@@ -67,6 +67,18 @@
   .slchip.taken{background:#fff;color:#C9BEAE;border-color:#EFE6D6;cursor:not-allowed}
   .slchip.taken .tk{font-size:10.5px;color:#C0506A;margin-left:4px}
 </style>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="彩之語 Rainbow Whisper">
+<meta property="og:title" content="引路人｜彩之語 Rainbow Whisper">
+<meta property="og:description" content="身心靈引路人配對平台：先做約 3 分鐘的心靈導航測驗，遇見頻率真正合得來的引路人。">
+<meta property="og:url" content="https://koarashi456-code.github.io/rainbowwhispers/guide.html">
+<meta property="og:image" content="https://koarashi456-code.github.io/rainbowwhispers/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAF4E6">
 </head>
 <body>
 
@@ -375,17 +387,20 @@ $('#do-submit').onclick=async function(){
 };
 
 // 預約完成寄預約明細到用戶信箱（用現有 FormSubmit；同時也會寄一份通知給官方）
-function sendBookingEmail(info){
+async function sendBookingEmail(info){
   if(!info || !info.email) return;
+  // 同時副本給被預約的引路人（只有剛下這筆訂單的會員本人查得到，SQL：my_order_guide_email）
+  var gmail='';
+  try{ var gr=await db.rpc('my_order_guide_email',{p_ref:info.ref}); if(!gr.error && typeof gr.data==='string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(gr.data)) gmail=gr.data; }catch(e){}
   try{
     fetch('https://formsubmit.co/ajax/koarashi456@gmail.com',{
       method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({
-        _subject:'彩之語 · 新預約 '+info.ref, _template:'table',
+      body:JSON.stringify(Object.assign(gmail?{_cc:gmail}:{},{
+        _subject:'彩之語 · 新預約 '+info.ref+(info.guide?'（'+info.guide+'）':''), _template:'table',
         name:info.name||'', email:info.email, 電話:info.phone||'', 引路人:info.guide||'',
         服務項目:info.service||'', 方案:info.plan||'', 預約時間:info.when||'', 付款方式:info.method||'', 金額:info.total||'', 訂單編號:info.ref||'',
         _autoresponse:'你好 '+(info.name||'')+'，\n\n你在彩之語的預約已收到，以下是預約明細：\n\n引路人：'+(info.guide||'')+'\n服務項目：'+(info.service||'')+'\n方案：'+(info.plan||'')+'\n預約時間：'+(info.when||'')+'\n付款方式：'+(info.method||'')+'\n金額：'+(info.total||'')+'\n訂單編號：'+(info.ref||'')+'\n\n我們會盡快與你確認時間與後續，並提供完整地址。\n（此為測試流程，尚未真的收款）\n\n— 彩之語 Rainbow Whisper'
-      })
+      }))
     }).catch(function(){});
   }catch(e){}
 }
