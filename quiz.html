@@ -103,7 +103,6 @@
   <div class="rw-links">
     <a href="index.html">首頁</a>
     <a href="tests.html" class="on">測驗</a>
-    <a href="guides.html">引路人介紹</a>
     <a href="booking.html">預約引路人</a>
     <a href="pricing.html">方案</a>
     <a href="account.html">會員</a>
@@ -351,7 +350,7 @@ async function fillQuizRec(R){
       var sub=[(best.services||[]).slice(0,3).join('、'), best.region||''].filter(Boolean).join(' · ');
       box.innerHTML='<a href="guide.html?id='+encodeURIComponent(best.id)+'"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(best.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'favicon.svg\'"><span class="trn">'+esc(best.name||'引路人')+'<span class="trs">'+esc(sub)+'</span></span><span class="trgo">看介紹・預約 ›</span></a>';
     } else {
-      box.innerHTML='<a href="guides.html"><span class="trn">看看所有引路人<span class="trs">這個方向的引路人陸續加入中</span></span><span class="trgo">›</span></a>';
+      box.innerHTML='<a href="booking.html#pick"><span class="trn">看看所有引路人<span class="trs">這個方向的引路人陸續加入中</span></span><span class="trgo">›</span></a>';
     }
   });
 }
