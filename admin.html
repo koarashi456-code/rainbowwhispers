@@ -301,7 +301,7 @@
         <div class="fgrid">
           <label>客戶 *<span class="cbx"><input class="in cbx-input" id="tp-cust-q" placeholder="打字搜尋客戶…" autocomplete="off"><input type="hidden" id="tp-cust"><div class="cbx-pop" id="tp-cust-pop"></div></span></label>
           <label>日期<input class="in" id="tp-date" type="date"></label>
-          <label>金額 *<input class="in" id="tp-amount" type="number" min="0" placeholder="0"></label>
+          <label>金額 *<input class="in" id="tp-amount" type="number" min="0" max="20000" placeholder="0（上限 20,000）"></label>
           <label>方式<select class="in" id="tp-method"><option>現金</option><option>刷卡</option><option>匯款</option></select></label>
           <label>備註<input class="in" id="tp-notes" placeholder="選填"></label>
         </div>
@@ -849,6 +849,7 @@ $('#tp-add').onclick=async function(){
   var msg=$('#tp-msg');
   if(!cid){ msg.textContent='請先選客戶'; msg.style.color='#C0506A'; return; }
   if(amt===''){ msg.textContent='請填金額'; msg.style.color='#C0506A'; return; }
+  if(Number(amt)>20000){ msg.textContent='單筆儲值上限 NT$20,000（依退費條款）'; msg.style.color='#C0506A'; return; }
   msg.textContent='新增中…'; msg.style.color='var(--soft)';
   var trow={customer_id:cid, amount:Number(amt)||0, method:$('#tp-method').value, notes:$('#tp-notes').value||null};
   var td=$('#tp-date').value; if(td){ trow.created_at=td; }
