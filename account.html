@@ -229,6 +229,25 @@
   <div class="hi" id="g-hi">引路人後台</div>
   <div class="who">跟總後台同步 · 只看得到預約你的客戶</div>
 
+  <div class="gsec-lab">我的介紹</div>
+  <div class="gbox" style="padding:14px 16px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="flex:none;width:76px;height:76px;border-radius:50%;background:conic-gradient(from 160deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center">
+        <span style="position:relative;width:66px;height:66px;border-radius:50%;background:#FFFDF8;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--soft)">尚無照片
+          <img id="gi-img" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'" onload="this.style.display='block'">
+        </span>
+      </span>
+      <div style="font-size:12.5px;color:var(--soft)">
+        <div style="font-weight:500;margin-bottom:6px">大頭照（顯示在你的引路人頁）</div>
+        <label class="lo" style="display:inline-block;margin-top:0;padding:8px 16px;font-size:13px;cursor:pointer">換照片<input type="file" accept="image/*" id="gi-file" style="display:none"></label>
+        <div style="font-size:11.5px;margin-top:6px">建議正方形、臉在中間；會自動裁切並壓縮</div>
+      </div>
+    </div>
+    <div style="font-size:12.5px;color:var(--soft);margin:14px 0 6px">自我介紹／經歷（客戶會看到）</div>
+    <textarea id="gi-notes" rows="6" maxlength="1000" placeholder="例：我是 XUAN，接觸彩虹卡 5 年，擅長陪你把卡住的感受說清楚…" style="width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.7;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;outline:none;resize:vertical"></textarea>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button class="lo" id="gi-save" style="margin-top:0;padding:8px 18px;font-size:13px">儲存介紹</button><span id="gi-msg" style="font-size:12px"></span></div>
+  </div>
+
   <div class="gsec-lab">我的開放時間</div>
   <div class="gbox" style="padding:14px 16px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -391,6 +410,47 @@ async function enterGuide(d){
   $('#gseg-g').classList.add('on'); $('#gseg-m').classList.remove('on');
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
   show('guide-portal');
+  // 我的介紹：大頭照（Storage guide-photos/<引路人id>.jpg）＋自我介紹（guides.notes）
+  (function(){
+    var img=$('#gi-img'), fi=$('#gi-file'), ta=$('#gi-notes'), sv=$('#gi-save'), msg=$('#gi-msg'), GID=null;
+    function setMsg(t,c){ if(!msg) return; msg.textContent=t; msg.style.color=c||'var(--soft)'; }
+    function photoUrl(){ return window.SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(GID)+'.jpg?t='+Date.now(); }
+    (async function(){
+      try{ var r=await db.rpc('my_guide_intro'); if(r.error) throw new Error(r.error.message);
+        if(r.data && r.data.id){ GID=r.data.id; if(ta) ta.value=r.data.notes||''; if(img) img.src=photoUrl(); }
+      }catch(e){ setMsg('讀取介紹失敗：'+(e.message||''),'#C0506A'); }
+    })();
+    function squareJpeg(file,size){
+      return new Promise(function(res,rej){
+        var url=URL.createObjectURL(file), im=new Image();
+        im.onload=function(){ var s=Math.min(im.naturalWidth,im.naturalHeight), c=document.createElement('canvas'); c.width=c.height=size;
+          var ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
+          ctx.drawImage(im,(im.naturalWidth-s)/2,(im.naturalHeight-s)/2,s,s,0,0,size,size); URL.revokeObjectURL(url);
+          c.toBlob(function(b){ b?res(b):rej(new Error('轉檔失敗')); },'image/jpeg',0.85); };
+        im.onerror=function(){ URL.revokeObjectURL(url); rej(new Error('讀不到這張圖片，請換 JPG 或 PNG')); };
+        im.src=url;
+      });
+    }
+    if(fi) fi.onchange=async function(){
+      var f=fi.files&&fi.files[0]; fi.value=''; if(!f) return;
+      if(!GID){ setMsg('還在載入，請稍候再試','#C0506A'); return; }
+      setMsg('上傳中…');
+      try{ var blob=await squareJpeg(f,480);
+        var r=await db.storage.from('guide-photos').upload(GID+'.jpg',blob,{upsert:true,contentType:'image/jpeg',cacheControl:'300'});
+        if(r.error) throw new Error(r.error.message);
+        if(img){ img.style.display='none'; img.src=photoUrl(); }
+        setMsg('照片已更新（公開頁約 5 分鐘內換新）','#4F8E6E');
+      }catch(e){ setMsg('上傳失敗：'+(e.message||''),'#C0506A'); }
+    };
+    if(sv) sv.onclick=async function(){
+      sv.disabled=true; setMsg('儲存中…');
+      try{ var r=await db.rpc('update_my_guide_intro',{p_notes:(ta&&ta.value||'').trim()}); if(r.error) throw new Error(r.error.message);
+        if(r.data===false) throw new Error('找不到你的引路人資料');
+        setMsg('已儲存，你的引路人頁會顯示新的介紹','#4F8E6E');
+      }catch(e){ setMsg('儲存失敗：'+(e.message||''),'#C0506A'); }
+      sv.disabled=false;
+    };
+  })();
   // 我的開放時間：選日期＋點時段＋新增／刪除
   (function(){
     var dIn=$('#sl-date'), times=$('#sl-times'), addB=$('#sl-add'), msg=$('#sl-msg');
