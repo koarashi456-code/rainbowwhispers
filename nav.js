@@ -1,5 +1,18 @@
 /* 共用導覽：登入後把「會員」改成顯示登入帳號；手機漢堡選單把會員排到最上面。
    純讀 localStorage 的 Supabase session，不需載 supabase-js，可在每頁用。 */
+// 登入中會員的 token（過期就回 null）：測驗頁用它把結果記到會員本人
+window.rwMemberToken=function(){
+  try{
+    var raw=localStorage.getItem('sb-awqvsddsizqzttzzalps-auth-token');
+    if(!raw){ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(/^sb-.*-auth-token$/.test(k)){ raw=localStorage.getItem(k); break; } } }
+    if(!raw) return null;
+    var o=JSON.parse(raw), sess=o&&(o.currentSession||o);
+    var at=(sess&&sess.access_token)||null, exp=(sess&&sess.expires_at)||0;
+    if(!at) return null;
+    if(exp && exp*1000 < Date.now()+30000) return null;
+    return at;
+  }catch(e){ return null; }
+};
 (function(){
   try{
     var link=document.querySelector('.rw-links a[href="account.html"]');

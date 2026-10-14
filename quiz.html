@@ -318,9 +318,17 @@ function resultHTML(R){
   '</div>';
 }
 
+function saveTestResult(topic,result,ref){
+  // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客'})});}catch(e){} }
+  var tk=window.rwMemberToken&&window.rwMemberToken();
+  if(!tk){ anon(); return; }
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref})})
+    .then(function(r){ if(!r.ok) anon(); }).catch(anon);
+}
 function saveLead(){
   if(leadSaved||!curLead||!window.SUPA)return; leadSaved=true;
-  try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:curLead.ref,topic:curLead.topic,result_type:curLead.type,status:'新客'})});}catch(e){}
+  saveTestResult(curLead.topic,curLead.type,curLead.ref);
 }
 
 function bind(){
@@ -332,6 +340,7 @@ function bind(){
   if(lg){
     var R=compute(); var ref=genRef();
     curLead={ref:ref,topic:R.type.dir,type:R.type.name}; leadSaved=false;
+    if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：一出結果就記到會員資料
     var msg='我做完彩之語測驗了！我的類型是「'+R.type.name+'」，方向是「'+R.type.dir+'」。（代碼 '+ref+'）';
     lg.setAttribute('href','https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg));
     lg.onclick=function(){saveLead();};
