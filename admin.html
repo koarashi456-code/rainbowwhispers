@@ -335,7 +335,7 @@
         <button class="abtn" id="rp-clear">全部</button>
       </div>
       <div id="rp-summary"></div>
-      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><button class="abtn" id="rp-collapse">全部展開</button></div>
+      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><span style="display:flex;gap:8px"><button class="abtn" id="rp-export">匯出 CSV</button><button class="abtn" id="rp-collapse">全部展開</button></span></div>
       <div id="rp-guides"></div>
     </section>
 
@@ -994,6 +994,38 @@ if(txlistEl) txlistEl.addEventListener('click',function(e){ var th=e.target.clos
 ['tx-search','tx-fstatus','tx-fguide','tx-fmethod','tx-ffrom','tx-fto'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('input',renderTx); e.addEventListener('change',renderTx); } });
 var txClr=document.getElementById('tx-clear'); if(txClr) txClr.onclick=function(){ ['tx-search','tx-ffrom','tx-fto','tx-fstatus','tx-fguide','tx-fmethod'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';}); renderTx(); };
 var txExp=document.getElementById('tx-export'); if(txExp) txExp.onclick=txExportCSV;
+// 報表匯出：依目前日期範圍，先放總覽，再依引路人分組列出交易＋小計（與畫面同一份資料）
+function rpExportCSV(){
+  function cell(v){ v=(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; }
+  function line(a){ return a.map(cell).join(','); }
+  var from=$('#rp-from').value, to=$('#rp-to').value;
+  var rows=TX.filter(function(t){ return inRange(cmpKeyTx(t)); });
+  var isValid=function(t){ return t.status!=='已取消'&&t.status!=='已退費'; };
+  var valid=rows.filter(isValid), refunds=rows.filter(function(t){return t.status==='已退費';});
+  var sum=function(a){ return a.reduce(function(x,t){return x+Number(t.amount||0);},0); };
+  var byM={現金:0,刷卡:0,匯款:0,儲值:0}; valid.forEach(function(t){ if(byM[t.method]!==undefined) byM[t.method]+=Number(t.amount||0); });
+  var topupIn=sum(TOPUPS.filter(function(t){return inRange(new Date(t.created_at||0));}));
+  var L=[];
+  L.push(line(['彩之語報表', (from||to)?((from||'最早')+' ~ '+(to||'今天')):'全部期間']));
+  L.push(line(['有效營收',sum(valid),'交易筆數',valid.length,'退費筆數',refunds.length,'退費金額',sum(refunds),'儲值收入',topupIn]));
+  L.push(line(['現金',byM.現金,'刷卡',byM.刷卡,'匯款',byM.匯款,'儲值折抵',byM.儲值]));
+  L.push('');
+  L.push(line(['引路人','預約日期時間','客戶','服務','金額','付款','狀態','訂單編號','末5碼','下單日','備註']));
+  var g={}; rows.forEach(function(t){ var k=t.guide_id||'__none__'; (g[k]=g[k]||[]).push(t); });
+  Object.keys(g).sort(function(a,b){ return sum(g[b].filter(isValid))-sum(g[a].filter(isValid)); }).forEach(function(k){
+    var name=k==='__none__'?'（未指定引路人）':guideName(k), items=g[k].slice().sort(function(a,b){ return cmpKeyTx(b)-cmpKeyTx(a); });
+    items.forEach(function(t){ var c=custById(t.customer_id); L.push(line([
+      name, t.appointment_at?fmtApptFull(t.appointment_at):'', c?custLabel(c):(t.guest_name||''), t.service||'', Number(t.amount||0),
+      t.method||'', t.status||'', t.order_ref||'', (t.method==='匯款'?(t.pay_last5||''):''), fmtDay(t.created_at), t.notes||'' ])); });
+    var v=items.filter(isValid), rf=items.filter(function(t){return t.status==='已退費';});
+    L.push(line([name+' 小計','','','有效 '+v.length+' 筆',sum(v),'','退費 '+rf.length+' 筆',sum(rf)?('退費 $'+sum(rf)):'','','','']));
+    L.push('');
+  });
+  var blob=new Blob(['\ufeff'+L.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='彩之語報表'+((from||to)?('_'+(from||'')+'~'+(to||'')):'')+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},800);
+}
+var rpExp=document.getElementById('rp-export'); if(rpExp) rpExp.onclick=rpExportCSV;
 (function(){ var sel=document.getElementById('tx-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=30){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
 
 /* ===== 報表 ===== */
