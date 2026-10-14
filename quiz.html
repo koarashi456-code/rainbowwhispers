@@ -60,6 +60,11 @@
   .tmatch .mbar>i{display:block;height:100%;background:linear-gradient(90deg,#9FD49A,#86C9DA)}
   .tmatch .mpct{font-size:12.5px;color:#4F8E6E;font-weight:600;flex:none}
   .twhy{font-size:12.5px;color:var(--soft);line-height:1.65}
+  .trec a{display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 12px;background:#FBF6EC;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink)}
+  .trec .trn{flex:1;min-width:0;font-size:13.5px;font-weight:500;color:var(--brush)}
+  .trec .trs{display:block;font-size:11.5px;font-weight:400;color:var(--soft);margin-top:2px}
+  .trec .trgo{flex:none;font-size:12.5px;color:#B5713F}
+  .trec img{flex:none;width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--tint)}
   .tsoon{display:inline-block;font-size:11px;color:#8A6A44;background:var(--tint);border-radius:999px;padding:2px 10px;margin-top:8px}
   .states{display:flex;flex-direction:column;gap:8px;margin-top:12px}
   .st{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;opacity:.5}
@@ -77,6 +82,18 @@
   .policy{display:none;font-size:12px;color:var(--soft);background:var(--tint);border-radius:10px;padding:12px 14px;margin-top:10px;line-height:1.7;text-align:left}
   .policy h4{font-size:12.5px;color:var(--brush);margin-bottom:4px}
 </style>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="彩之語 Rainbow Whisper">
+<meta property="og:title" content="找到屬於你的心靈方向｜彩之語 Rainbow Whisper">
+<meta property="og:description" content="透過幾個直覺選擇，看見你目前的內在類型與最適合的探索方向。沒有標準答案，第一直覺就是你的答案。">
+<meta property="og:url" content="https://koarashi456-code.github.io/rainbowwhispers/quiz.html">
+<meta property="og:image" content="https://koarashi456-code.github.io/rainbowwhispers/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAF4E6">
 </head>
 <body>
 
@@ -137,17 +154,17 @@ var TYPES={
 /* ===== 引路人原型（五維分數 + icon + 說明） ===== */
 function ic(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
 var ARCH=[
-  {name:'卡牌 · 塔羅探索', v:{s:70,f:85,r:80,e:55,a:65}, icon:ic('<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M12 8l1.1 2.2 2.4.3-1.75 1.6.45 2.3L12 13.7 9.8 14.7l.45-2.3L8.5 10.8l2.4-.3L12 8Z"/>'),
+  {name:'卡牌 · 塔羅探索', kw:['塔羅','tarot','雷諾曼'], v:{s:70,f:85,r:80,e:55,a:65}, icon:ic('<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M12 8l1.1 2.2 2.4.3-1.75 1.6.45 2.3L12 13.7 9.8 14.7l.45-2.3L8.5 10.8l2.4-.3L12 8Z"/>'),
    why:'塔羅擅長用象徵與提問，陪你把腦中太多的想法慢慢理清楚。'},
-  {name:'命理 · 星盤占星', v:{s:88,f:72,r:65,e:50,a:45}, icon:ic('<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'),
+  {name:'命理 · 星盤占星', kw:['占星','星盤','星座'], v:{s:88,f:72,r:65,e:50,a:45}, icon:ic('<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'),
    why:'星盤能給你一張全局的地圖，看見自己長期反覆出現的人生模式。'},
-  {name:'命理 · 八字紫微', v:{s:60,f:85,r:50,e:32,a:52}, icon:ic('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>'),
+  {name:'命理 · 八字紫微', kw:['八字','紫微','命理','易經','風水','擇日'], v:{s:60,f:85,r:50,e:32,a:52}, icon:ic('<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16M15 4v16"/>'),
    why:'從命盤看你的人生結構與方向，適合想釐清長期規劃、事業選擇的你。'},
-  {name:'能量 · 身心療癒', v:{s:74,f:30,r:55,e:92,a:55}, icon:ic('<path d="M12 21c-4-3-7-6-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 4-3 7-7 10Z"/><path d="M8.5 12h2l1-2 2 4 1-2h1.5"/>'),
+  {name:'能量 · 身心療癒', kw:['能量','療癒','調頻','靈氣','頌缽','脈輪'], v:{s:74,f:30,r:55,e:92,a:55}, icon:ic('<path d="M12 21c-4-3-7-6-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 4-3 7-7 10Z"/><path d="M8.5 12h2l1-2 2 4 1-2h1.5"/>'),
    why:'先把情緒與能量安頓下來，讓一直繃著的心慢慢鬆開。'},
-  {name:'內在 · 催眠探索', v:{s:90,f:45,r:50,e:72,a:66}, icon:ic('<path d="M12 12c0-3 4-3 4 0s-8 3-8-2 12-4 12 3-9 8-9-1"/>'),
+  {name:'內在 · 催眠探索', kw:['催眠','元辰宮','前世','內在'], v:{s:90,f:45,r:50,e:72,a:66}, icon:ic('<path d="M12 12c0-3 4-3 4 0s-8 3-8-2 12-4 12 3-9 8-9-1"/>'),
    why:'帶你往內在更深的地方走，看見平常沒察覺到的自己。'},
-  {name:'療癒卡 · 彩虹卡', v:{s:72,f:45,r:68,e:82,a:52}, icon:ic('<rect x="4" y="7" width="11" height="14" rx="2"/><path d="M9 3h11v14"/><path d="M7 13c1.5-2 3.5-2 5 0"/>'),
+  {name:'療癒卡 · 彩虹卡', kw:['彩虹卡','療癒卡','牌卡','OH卡'], v:{s:72,f:45,r:68,e:82,a:52}, icon:ic('<rect x="4" y="7" width="11" height="14" rx="2"/><path d="M9 3h11v14"/><path d="M7 13c1.5-2 3.5-2 5 0"/>'),
    why:'用溫柔的牌卡陪你對話，慢慢接住現在的心情。'}
 ];
 
@@ -289,7 +306,7 @@ function resultHTML(R){
       '<div class="ttitle">'+esc(m.a.name)+'</div>'+
       '<div class="tmatch"><span class="mbar"><i style="width:'+m.pct+'%"></i></span><span class="mpct">'+m.pct+'%</span></div>'+
       '<div class="twhy">依你「'+esc(t.dir.split(' × ')[0])+'」的傾向，'+esc(m.a.why)+'</div>'+
-      '<span class="tsoon">真人配對 · 即將開放</span></div></div>';
+      '<div class="trec" data-rec="'+i+'"></div></div></div>';
   }).join('');
   var dims=DIMS.map(function(d){ return '<div class="dim"><span class="name">'+d.label+'</span><span class="dbar"><i style="width:'+R.dim[d.k]+'%"></i></span><span class="val">'+R.dim[d.k]+'</span></div>'; }).join('');
   var ctaText=R.green?'加 LINE，認識適合你的引路人　→':'加 LINE，讓彩之語先陪你　→';
@@ -318,6 +335,26 @@ function resultHTML(R){
   '</div>';
 }
 
+// 依推薦的探索方式，撈 public_guides 用服務關鍵字比對，每個推薦配一位真的引路人（不重複）
+var QUIZ_GUIDES=null;
+async function fillQuizRec(R){
+  if(!window.SUPA) return;
+  if(!QUIZ_GUIDES){ try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region,service_mode',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}); QUIZ_GUIDES=r.ok?(await r.json()):[]; }catch(e){ QUIZ_GUIDES=[]; } }
+  var used={};
+  R.matches.forEach(function(m,i){
+    var box=document.querySelector('.trec[data-rec="'+i+'"]'); if(!box) return;
+    var kw=m.a.kw||[];
+    var best=null, bestS=0;
+    (QUIZ_GUIDES||[]).forEach(function(g){ if(used[g.id]) return; var hay=((g.services||[]).join(' ')+' '+(g.name||'')).toLowerCase(); var sc=0; kw.forEach(function(k){ if(hay.indexOf(String(k).toLowerCase())>=0) sc++; }); if(sc>bestS){ bestS=sc; best=g; } });
+    if(best){
+      used[best.id]=true;
+      var sub=[(best.services||[]).slice(0,3).join('、'), best.region||''].filter(Boolean).join(' · ');
+      box.innerHTML='<a href="guide.html?id='+encodeURIComponent(best.id)+'"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(best.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'favicon.svg\'"><span class="trn">'+esc(best.name||'引路人')+'<span class="trs">'+esc(sub)+'</span></span><span class="trgo">看介紹・預約 ›</span></a>';
+    } else {
+      box.innerHTML='<a href="guides.html"><span class="trn">看看所有引路人<span class="trs">這個方向的引路人陸續加入中</span></span><span class="trgo">›</span></a>';
+    }
+  });
+}
 function saveTestResult(topic,result,ref){
   // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
   function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客'})});}catch(e){} }
@@ -341,6 +378,7 @@ function bind(){
     var R=compute(); var ref=genRef();
     curLead={ref:ref,topic:R.type.dir,type:R.type.name}; leadSaved=false;
     if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：一出結果就記到會員資料
+    fillQuizRec(R);
     var msg='我做完彩之語測驗了！我的類型是「'+R.type.name+'」，方向是「'+R.type.dir+'」。（代碼 '+ref+'）';
     lg.setAttribute('href','https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg));
     lg.onclick=function(){saveLead();};
