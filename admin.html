@@ -839,7 +839,7 @@ $('#tx-add').onclick=async function(){
   msg.textContent='已新增'; msg.style.color='#4F8E6E'; setTimeout(function(){msg.textContent='';},1500);
   $('#tx-service').value=''; $('#tx-date').value=''; $('#tx-time').value=''; $('#tx-amount').value=''; $('#tx-notes').value='';
   $('#tx-cust-q').value=''; $('#tx-cust').value=''; $('#tx-guide-q').value=''; $('#tx-guide').value='';
-  var rr=await db.from('transactions').select('*').order('created_at',{ascending:false}); TX=rr.data||[]; renderTx(); render();
+  var rr=await db.from('transactions').select('*').order('created_at',{ascending:false}); var allTx=rr.data||[]; TX=allTx.filter(function(x){return !x.deleted;}); DEL.transactions=allTx.filter(function(x){return x.deleted;}); renderTx(); render(); renderTrash();
 };
 $('#tp-add').onclick=async function(){
   var cid=$('#tp-cust').value, amt=$('#tp-amount').value;
@@ -886,6 +886,7 @@ function txFiltered(){
   return rows;
 }
 function renderTx(){
+  renderReport();  // 報表與交易紀錄同一份資料：交易有新增／修改／刪除就一起更新
   var rows=txFiltered();
   var valid=rows.filter(function(t){return t.status!=='已取消'&&t.status!=='已退費';});
   var sum=valid.reduce(function(a,t){return a+Number(t.amount||0);},0);
@@ -1005,6 +1006,7 @@ function inRange(d){
   if(to && d > new Date(to+'T23:59:59')) return false;
   return true;
 }
+var RP_OPEN={};  // 報表裡展開中的引路人（重畫時保留）
 function renderReport(){
   var rows=TX.filter(function(t){ return inRange(cmpKeyTx(t)); });
   var valid=rows.filter(function(t){ return t.status!=='已取消'&&t.status!=='已退費'; });
@@ -1029,26 +1031,38 @@ function renderReport(){
   var h='';
   keys.forEach(function(k){
     var gg=g[k], name=k==='__none__'?'（未指定引路人）':guideName(k);
-    h+='<div class="gblock collapsed"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span class="gh-meta">'+gg.count+' 筆 · 有效 '+money(gg.amount)+(gg.refund?' · 退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
+    h+='<div class="gblock'+(RP_OPEN[k]?'':' collapsed')+'" data-k="'+esc(k)+'"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span class="gh-meta">'+gg.count+' 筆 · 有效 '+money(gg.amount)+(gg.refund?' · 退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
     gg.items.sort(function(a,b){ return cmpKeyTx(b) - cmpKeyTx(a); });
-    gg.items.forEach(function(t){
-      var c=custById(t.customer_id);
-      var meta=[]; if(t.method) meta.push(esc(t.method)); if(t.order_ref) meta.push(esc(t.order_ref)); meta.push('下單 '+fmtDay(t.created_at)); if(t.method==='匯款'&&t.pay_last5) meta.push('末5碼 '+esc(t.pay_last5));
-      h+='<div class="gitem">'
-        +'<div class="gi-top"><span class="gi-name">'+esc(c?custLabel(c):(t.guest_name||'(客戶)'))+'</span><span class="gi-right"><span class="gi-amt">'+money(t.amount)+'</span>'+statusBadge(t.status)+'</span></div>'
-        +'<div class="gi-when">'+(t.appointment_at?fmtApptFull(t.appointment_at):fmtFull(t.created_at))+' · '+esc(t.service||'—')+'</div>'
-        +'<div class="gi-meta">'+meta.join(' · ')+'</div>'
-        +'</div>';
-    });
+    // 與「交易紀錄」同一份資料、同樣欄位（唯讀、不打勾）；交易刪除/修改後報表跟著變
+    h+='<div class="txtable-wrap"><table class="txt rp-txt"><thead><tr>'+
+      '<th>預約日期時間</th><th>客戶</th><th>服務</th><th style="text-align:right">金額</th>'+
+      '<th>付款</th><th>狀態</th><th>訂單編號</th><th>末5碼</th><th>下單日</th><th>備註</th></tr></thead><tbody>'+
+      gg.items.map(function(t){
+        var c=custById(t.customer_id);
+        var cname=c?custLabel(c):(t.guest_name?t.guest_name+'（訪客）':'(已刪客戶)');
+        return '<tr>'+
+          '<td class="muted">'+(t.appointment_at?fmtAppt(t.appointment_at):'未定')+'</td>'+
+          '<td>'+esc(cname)+'</td>'+
+          '<td>'+esc(t.service||'—')+'</td>'+
+          '<td class="num">'+money(t.amount)+'</td>'+
+          '<td>'+esc(t.method||'—')+'</td>'+
+          '<td>'+statusBadge(t.status)+'</td>'+
+          '<td class="ref">'+esc(t.order_ref||'—')+'</td>'+
+          '<td class="ref">'+((t.method==='匯款'&&t.pay_last5)?esc(t.pay_last5):'—')+'</td>'+
+          '<td class="muted">'+fmtDay(t.created_at)+'</td>'+
+          '<td class="muted">'+esc(t.notes||'—')+'</td>'+
+        '</tr>';
+      }).join('')+
+      '</tbody></table></div>';
     h+='</div></div>';
   });
   $('#rp-guides').innerHTML=h;
 }
 ['rp-from','rp-to'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('change',renderReport); });
 var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('#rp-from').value=''; $('#rp-to').value=''; renderReport(); };
-$('#rp-guides').addEventListener('click',function(e){ var head=e.target.closest('.gblock-head'); if(head&&head.parentNode) head.parentNode.classList.toggle('collapsed'); });
+$('#rp-guides').addEventListener('click',function(e){ var head=e.target.closest('.gblock-head'); if(head&&head.parentNode){ var gb=head.parentNode; gb.classList.toggle('collapsed'); RP_OPEN[gb.getAttribute('data-k')]=!gb.classList.contains('collapsed'); } });
 var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
-if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
+if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); RP_OPEN[b.getAttribute('data-k')]=!rpAllCollapsed; }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
 ['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });

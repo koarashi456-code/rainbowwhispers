@@ -179,6 +179,7 @@ function renderResult(){
   }).join('');
   var ref=genRef();
   curLead={ref:ref,type:f.name+'（'+f.sub+'）'}; leadSaved=false;
+  if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：一出結果就記到會員資料
   var msg='我做完彩之語的七大脈輪測驗了！此刻最需要關注的是「'+f.name+'·'+f.sub+'」。（代碼 '+ref+'）';
   var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg);
   app.innerHTML='<div class="ck-card">'+
@@ -197,9 +198,17 @@ function renderResult(){
   var rs=document.getElementById('ck-restart'); if(rs) rs.onclick=function(){ S={step:0,answers:[]}; curLead=null; leadSaved=false; render(); window.scrollTo({top:0,behavior:'smooth'}); };
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function saveTestResult(topic,result,ref){
+  // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客'})});}catch(e){} }
+  var tk=window.rwMemberToken&&window.rwMemberToken();
+  if(!tk){ anon(); return; }
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref})})
+    .then(function(r){ if(!r.ok) anon(); }).catch(anon);
+}
 function saveLead(){
   if(leadSaved||!curLead) return; leadSaved=true;
-  try{ fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:curLead.ref,topic:'七大脈輪測驗',result_type:curLead.type,status:'新客'})}); }catch(e){}
+  saveTestResult('七大脈輪測驗',curLead.type,curLead.ref);
 }
 // 依焦點脈輪推薦適合的能量引路人（撈 public_guides、用關鍵字比對服務）
 var GUIDES_CACHE=null;
