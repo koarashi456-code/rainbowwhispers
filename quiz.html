@@ -18,8 +18,8 @@
   .step-no{color:var(--soft);font-size:13px;margin-bottom:12px}
   /* 首頁 */
   .intro{text-align:center;padding:28px 4px}
-  .intro .ring{width:104px;height:104px;border-radius:50%;margin:0 auto 20px;background:conic-gradient(from 200deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#E6A3C3,#EE9E86);display:flex;align-items:center;justify-content:center;box-shadow:0 0 36px rgba(200,160,210,.35)}
-  .intro .ring>div{width:76px;height:76px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center}
+  .intro .ring{width:104px;height:104px;border-radius:50%;margin:0 auto 20px;background:conic-gradient(from 200deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4,#E6A3C3,#EE9E86);display:flex;align-items:center;justify-content:center}
+  .intro .ring>div{width:96px;height:96px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center}
   .intro h1{font-family:"Noto Serif TC",serif;font-size:26px;font-weight:600;color:var(--brush);margin-bottom:14px;line-height:1.5}
   .intro p{font-size:15px;color:var(--soft);line-height:1.9;margin-bottom:8px}
   .intro .go{display:inline-block;margin-top:22px;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:16px;padding:14px 40px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
@@ -281,7 +281,7 @@ function render(){
   var html='';
   if(S.step===0){
     html='<div class="intro fade">'+
-      '<div class="ring"><div><svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 4.5 2 6 6.5 6.5C14 10 12.5 11.5 12 16c-.5-4.5-2-6-6.5-6.5C10 9 11.5 7.5 12 3Z"/><path d="M19 14c.2 1.6.8 2.2 2.4 2.4-1.6.2-2.2.8-2.4 2.4-.2-1.6-.8-2.2-2.4-2.4 1.6-.2 2.2-.8 2.4-2.4Z"/></svg></div></div>'+
+      '<div class="ring"><div><svg width="30" height="30" style="width:30px;height:30px;display:block" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5c.5 4 2.5 6 6.5 6.5-4 .5-6 2.5-6.5 6.5-.5-4-2.5-6-6.5-6.5 4-.5 6-2.5 6.5-6.5Z"/></svg></div></div>'+
       '<h1>找到屬於你的<br>心靈方向</h1>'+
       '<p>每個人面對人生的方式都不一樣。<br>有些人需要答案，有些人需要理解自己，<br>有些人只是想知道：「我現在到底怎麼了？」</p>'+
       '<p style="margin-top:12px">透過幾個簡單的直覺選擇，<br>彩之語陪你找到目前最適合自己的探索方向。</p>'+
