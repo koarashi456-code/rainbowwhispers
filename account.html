@@ -155,6 +155,17 @@
   .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#8A7659}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
   .cal-open{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
   .cal-open span{font-size:12px;color:#3F7A5E;background:#E4F2E7;border-radius:999px;padding:3px 10px}
+  .gmenu{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-align:left;margin-top:6px}
+  .gmenu button{font:inherit;display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--line);padding:14px 16px;cursor:pointer;text-align:left;color:var(--ink)}
+  .gmenu button:last-child{border-bottom:0}
+  .gmenu .gm-ic{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .gmenu .gm-t{flex:1;min-width:0;font-size:15px;font-weight:500;color:var(--brush)}
+  .gmenu .gm-t small{display:block;font-size:12px;font-weight:400;color:var(--soft);margin-top:2px}
+  .gmenu .gm-go{flex:none;color:#C2A878;font-size:20px}
+  .gpage-top{display:flex;align-items:center;gap:10px;margin:6px 0 10px;text-align:left}
+  .gpage-back{font:inherit;font-size:14px;color:var(--soft);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+  .gpage-h{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;color:var(--brush)}
+  .gpage .gsec-lab{display:none}
 </style>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -486,6 +497,7 @@ async function loadSchedule(){
   try{ var r=await db.rpc('my_guide_orders'); if(!r.error && Array.isArray(r.data)) o=r.data; }catch(e){}
   try{ var r2=await db.rpc('my_slots'); if(!r2.error && Array.isArray(r2.data)) sl=r2.data; }catch(e){}
   CAL.orders=o; CAL.slots=sl; drawCal();
+  var tk=calTodayKey(), nt=(calIndex().bk[tk]||[]).length, sub=document.getElementById('gm-sched-sub'); if(sub) sub.textContent=nt?('今天有 '+nt+' 筆預約'):'今天沒有預約・點進去看整個月';
 }
 function calIndex(){
   var bk={}, op={};
@@ -525,6 +537,50 @@ function drawCalDetail(idx){
   if(nx) nx.onclick=function(){ CAL.m++; if(CAL.m>12){ CAL.m=1; CAL.y++; } drawCal(); };
   if(td) td.onclick=function(){ var t=new Date(); CAL.y=t.getFullYear(); CAL.m=t.getMonth()+1; CAL.sel=calTodayKey(); drawCal(); };
 })();
+// 引路人後台：條列選單 → 點進單一頁（不用下拉）
+var GMENU=[
+  {t:'我的行程',sub:'看哪天有預約、還有哪些時段開放',ic:'📅',bg:'#FBE7CC'},
+  {t:'我的介紹',sub:'大頭照與自我介紹',ic:'🙂',bg:'#EAD9F2'},
+  {t:'我的開放時間',sub:'排客人可以預約的時段',ic:'🕒',bg:'#E4F2E7'},
+  {t:'我的方案',sub:'服務方案與價格（送官方審核）',ic:'🏷️',bg:'#DCEAF2'},
+  {t:'報表',sub:'營收與付款方式統計',ic:'📊',bg:'#F6DDE3'},
+  {t:'交易紀錄',sub:'每筆預約明細、標記未出席',ic:'🧾',bg:'#F4EAD4'},
+  {t:'客戶管理',sub:'預約過你的客戶',ic:'👥',bg:'#E7DBF4'}
+];
+function setupGuideMenu(){
+  var gp=document.getElementById('guide-portal'); if(!gp || gp._menu) return; gp._menu=true;
+  var labs=Array.prototype.slice.call(gp.querySelectorAll(':scope > .gsec-lab')), lo=document.getElementById('g-logout');
+  labs.forEach(function(lab){
+    var page=document.createElement('div'); page.className='gpage'; page.setAttribute('data-t',lab.textContent.trim()); page.style.display='none';
+    gp.insertBefore(page,lab);
+    var n=lab; while(n && n!==lo && !(n!==lab && n.classList && n.classList.contains('gsec-lab'))){ var nx=n.nextElementSibling; page.appendChild(n); n=nx; }
+    var top=document.createElement('div'); top.className='gpage-top';
+    top.innerHTML='<button type="button" class="gpage-back">‹ 返回</button><span class="gpage-h">'+escA(page.getAttribute('data-t'))+'</span>';
+    page.insertBefore(top,page.firstChild);
+    top.querySelector('button').onclick=function(){ showGuideMenu(); };
+  });
+  var menu=document.createElement('div'); menu.className='gmenu'; menu.id='g-menu';
+  menu.innerHTML=GMENU.filter(function(m){ return gp.querySelector('.gpage[data-t="'+m.t+'"]'); }).map(function(m){
+    return '<button type="button" data-go="'+m.t+'"><span class="gm-ic" style="background:'+m.bg+'">'+m.ic+'</span><span class="gm-t">'+m.t+'<small'+(m.t==='我的行程'?' id="gm-sched-sub"':'')+'>'+m.sub+'</small></span><span class="gm-go">›</span></button>';
+  }).join('');
+  var first=gp.querySelector('.gpage'); gp.insertBefore(menu,first);
+  menu.querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ openGuidePage(b.getAttribute('data-go')); }; });
+}
+function showGuideMenu(){
+  var gp=document.getElementById('guide-portal'); if(!gp) return;
+  gp.querySelectorAll('.gpage').forEach(function(p){ p.style.display='none'; });
+  var m=document.getElementById('g-menu'); if(m) m.style.display='block';
+  var lo=document.getElementById('g-logout'); if(lo) lo.style.display='';
+  window.scrollTo({top:0});
+}
+function openGuidePage(t){
+  var gp=document.getElementById('guide-portal'); if(!gp) return;
+  gp.querySelectorAll('.gpage').forEach(function(p){ p.style.display=(p.getAttribute('data-t')===t)?'block':'none'; });
+  var m=document.getElementById('g-menu'); if(m) m.style.display='none';
+  var lo=document.getElementById('g-logout'); if(lo) lo.style.display='none';
+  if(t==='我的行程' && CAL.y) drawCal();
+  window.scrollTo({top:0});
+}
 async function loadGuideOrders(){
   var bx=$('#g-bookings'); if(!bx) return;
   try{ await db.rpc('auto_complete_orders'); }catch(e){}
@@ -573,6 +629,7 @@ async function enterGuide(d){
   d=d||GUIDE_DATA; if(!d) return;
   $('#gseg-g').classList.add('on'); $('#gseg-m').classList.remove('on');
   $('#g-hi').textContent=d.guide_name?('引路人・'+d.guide_name):'引路人後台';
+  setupGuideMenu(); showGuideMenu();
   show('guide-portal');
   // 我的介紹：大頭照（Storage guide-photos/<引路人id>.jpg）＋自我介紹（guides.notes）
   (function(){
