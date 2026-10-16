@@ -124,6 +124,7 @@
   .st-book{background:#FBE7CC;color:#A5643A}
   .st-done{background:#D8ECDF;color:#3F7A5E}
   .st-cancel{background:#EDE6DC;color:#8A7659}
+  .st-noshow{background:#F6DDE3;color:#B4566E}
   .st-refund{background:#F3D9DE;color:#B5566E}
   /* 交易紀錄 Excel 風表格 */
   .txtable-wrap{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -291,7 +292,7 @@
           <label>預約／服務時間<span style="display:flex;gap:8px"><input class="in" id="tx-date" type="date" style="flex:1.3"><select class="in" id="tx-time" style="flex:1"></select></span></label>
           <label>金額 *<input class="in" id="tx-amount" type="number" min="0" placeholder="0"></label>
           <label>付款方式<select class="in" id="tx-method"><option>現金</option><option>刷卡</option><option>匯款</option><option>儲值</option></select></label>
-          <label>狀態<select class="in" id="tx-status"><option>已預約</option><option>已完成</option><option>已取消</option><option>已退費</option></select></label>
+          <label>狀態<select class="in" id="tx-status"><option>已預約</option><option>已完成</option><option>未出席</option><option>已取消</option><option>已退費</option></select></label>
           <label>備註<input class="in" id="tx-notes" placeholder="選填"></label>
         </div>
         <button class="addbtn" id="tx-add">新增交易</button>
@@ -317,7 +318,7 @@
         <span style="color:var(--soft)">~</span>
         <input id="tx-fto" type="date" class="in-sm" style="flex:none">
         <select id="tx-ftype"><option value="">全部類型</option><option value="tx">消費</option><option value="topup">儲值</option></select>
-        <select id="tx-fstatus"><option value="">全部狀態</option><option>已預約</option><option>已完成</option><option>已取消</option><option>已退費</option></select>
+        <select id="tx-fstatus"><option value="">全部狀態</option><option>已預約</option><option>已完成</option><option>未出席</option><option>已取消</option><option>已退費</option></select>
         <select id="tx-fmethod"><option value="">全部付款</option><option>現金</option><option>刷卡</option><option>匯款</option><option>儲值</option></select>
         <select id="tx-fguide"><option value="">全部引路人</option></select>
         <input id="tx-search" placeholder="搜尋 客戶／訂單編號／項目…" style="flex:1;min-width:150px">
@@ -409,6 +410,7 @@ document.querySelectorAll('.tabbar button').forEach(function(b){
 });
 
 async function loadAll(){
+  try{ await db.rpc('auto_complete_orders'); }catch(e){}  // 預約日已過的「已預約」自動改「已完成」（未建 SQL 時略過）
   if(!seenTs()) setSeen(new Date().toISOString());
   $('#list').innerHTML='<div class="muted" style="padding:24px;text-align:center">載入中…</div>';
   var res=await Promise.all([
@@ -828,7 +830,7 @@ setupCombo('tx-cust-q','tx-cust','tx-cust-pop',function(){return ALL;},custLabel
 setupCombo('tp-cust-q','tp-cust','tp-cust-pop',function(){return ALL;},custLabel,function(c){return [c.contact,c.phone,c.area,c.ref_code?('代碼'+c.ref_code):''].filter(Boolean).join(' · ');});
 setupCombo('tx-guide-q','tx-guide','tx-guide-pop',function(){return GUIDES.filter(function(g){return !g.pending;});},guideLabel,function(g){return g.region||g.email||'';});
 function statusBadge(st){
-  var cls=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':'st-book';
+  var cls=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':st==='未出席'?'st-noshow':'st-book';
   return '<span class="status-badge '+cls+'">'+esc(st||'—')+'</span>';
 }
 $('#tx-add').onclick=async function(){
@@ -946,7 +948,7 @@ function txRow(t){
   var c=custById(t.customer_id);
   var cname=c?custLabel(c):(t.guest_name?t.guest_name+'（訪客）':'(已刪客戶)');
   var mOpt=['現金','刷卡','匯款','儲值'].map(function(m){return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>';}).join('');
-  var sOpt=['已預約','已完成','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('');
+  var sOpt=['已預約','已完成','未出席','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('');
   return '<tr data-id="'+t.id+'">'+
     '<td class="ck"><input type="checkbox" class="tx-ck"></td>'+
     '<td class="muted">'+(t.appointment_at?fmtAppt(t.appointment_at):'未定')+'</td>'+

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>生命靈數｜彩之語 Rainbow Whisper</title>
+<meta name="description" content="輸入生日，算出你的生命靈數，看看屬於你的天賦數字；想更深入，讓適合的引路人陪你解讀。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="彩之語 Rainbow Whisper">
+<meta property="og:title" content="生命靈數｜彩之語 Rainbow Whisper">
+<meta property="og:description" content="輸入生日，算出你的生命靈數，看看屬於你的天賦數字；想更深入，讓適合的引路人陪你解讀。">
+<meta property="og:url" content="https://koarashi456-code.github.io/rainbowwhispers/numerology.html">
+<meta property="og:image" content="https://koarashi456-code.github.io/rainbowwhispers/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FAF4E6">
+</head>
+<body>
+
+<nav class="rw-nav"><div class="rw-nav-in">
+  <a class="rw-brand" href="index.html">彩之語<small>RAINBOW WHISPER</small></a>
+  <input type="checkbox" id="rw-burger" class="rw-burger-cb" aria-label="選單"><label for="rw-burger" class="rw-burger" aria-hidden="true"><span></span><span></span><span></span></label>
+  <div class="rw-links">
+    <a href="index.html">首頁</a>
+    <a href="tests.html" class="on">測驗</a>
+    <a href="booking.html">預約引路人</a>
+    <a href="shop.html">商品</a>
+    <a href="pricing.html">方案</a>
+    <a href="account.html">會員</a>
+    <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
+  </div>
+</div></nav>
+<script src="nav.js"></script>
+
+<section class="rw-sec rw-center" style="padding-bottom:10px">
+  <div class="rw-in">
+    <div class="rw-kicker">彩之語 · 生命靈數</div>
+    <h1 class="rw-h1" style="margin-bottom:12px">你的生命靈數是幾號？</h1>
+    <p class="rw-p" style="margin-bottom:18px">輸入你的出生年月日，<br>看看屬於你的天賦數字。</p>
+    <div style="max-width:340px;margin:0 auto;text-align:left">
+      <label style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">出生日期（西元）</label>
+      <input id="nm-bd" type="date" min="1900-01-01" style="display:block;width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:var(--ink);background:#FFFDF8;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 12px;outline:none">
+      <div id="nm-err" style="font-size:12.5px;color:#C0506A;min-height:1.2em;margin:6px 2px"></div>
+      <button class="rw-cta" id="nm-go" type="button" style="display:block;width:100%;border:0;cursor:pointer;font:inherit;font-size:15px">看我的生命靈數　→</button>
+      <p class="rw-p" style="font-size:12px;margin-top:10px;text-align:center">生日只用來計算，不會被儲存。</p>
+    </div>
+  </div>
+</section>
+
+<section class="rw-sec rw-center" id="nm-result" style="display:none;padding-top:10px">
+  <div class="rw-in">
+    <div style="width:110px;height:110px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 200deg,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7);display:flex;align-items:center;justify-content:center"><div style="width:80px;height:80px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:40px;font-weight:600;color:var(--brush)" id="nm-num"></div></div>
+    <div class="rw-kicker" id="nm-kw" style="margin-bottom:4px"></div>
+    <h2 class="rw-h2" id="nm-title"></h2>
+    <p class="rw-p" id="nm-desc" style="max-width:460px;margin:10px auto 0;text-align:left"></p>
+    <div class="rw-card" style="max-width:460px;margin:16px auto 0;text-align:left;font-size:14px"><b class="rw-strong">給你的小提醒</b><br><span id="nm-tip"></span></div>
+    <p class="rw-p" style="font-size:12.5px;margin:12px auto 0;max-width:460px">這只是簡單的介紹。生命靈數還能看見你的天賦、課題與流年；想了解更細節，讓適合的引路人陪你解讀。</p>
+    <div id="nm-rec" style="max-width:460px;margin:16px auto 0"></div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a class="rw-cta" id="nm-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE，請引路人幫我解讀　→</a>
+    </div>
+    <div style="margin-top:14px"><a class="rw-textlink" href="tests.html">再做一份測驗</a></div>
+  </div>
+</section>
+
+<footer class="rw-footer">
+  <div class="rw-brand2 rw-serif">彩之語</div>
+  <div class="rw-foot-en">RAINBOW WHISPER</div>
+  <p class="rw-foot-note">溫馨提醒：本測驗僅供自我覺察與參考，不作為醫療或心理診斷。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
+  <div class="rw-foot-links"><a href="policies.html#privacy">隱私權政策</a>·<a href="booking.html">預約引路人</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
+  <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
+</footer>
+<script src="supabase-config.js"></script>
+<script>
+var NUM={
+ 1:{kw:'開創 · 獨立',t:'1 號人｜開路先鋒',d:'你有很強的主見和行動力，喜歡自己做決定、走在前面。你天生帶著領導氣質，遇到新的挑戰反而會興奮。',tip:'偶爾放慢腳步聽聽身邊的人，你會發現一起走更輕鬆。'},
+ 2:{kw:'合作 · 細膩',t:'2 號人｜溫柔的協調者',d:'你很能感受別人的情緒，擅長傾聽與陪伴，是大家身邊最貼心的那個人。和諧的關係對你來說很重要。',tip:'照顧別人之前，也記得先照顧自己的感受。'},
+ 3:{kw:'創意 · 表達',t:'3 號人｜快樂的創作者',d:'你充滿想像力，喜歡分享、說話有感染力，常常是人群中的開心果。透過表達和創作，你能把能量傳給別人。',tip:'把想法一步一步落實，你的創意會開出更美的花。'},
+ 4:{kw:'穩定 · 務實',t:'4 號人｜可靠的建築師',d:'你踏實、有條理、重視承諾，做事一步一腳印，是身邊的人最信任的依靠。你喜歡清楚的計畫和安全感。',tip:'允許一點變化和彈性，生活會多出意外的驚喜。'},
+ 5:{kw:'自由 · 冒險',t:'5 號人｜自由的旅人',d:'你好奇心旺盛，喜歡新鮮事物和不同體驗，適應力很強。一成不變會讓你悶，自由對你來說像空氣一樣重要。',tip:'在自由之中找到一個讓你安心的根，會走得更遠。'},
+ 6:{kw:'愛 · 責任',t:'6 號人｜溫暖的守護者',d:'你重視家人和身邊的人，很有責任感，總是願意付出、照顧大家。你帶來的溫暖，常讓人覺得像回到家。',tip:'愛別人的同時，也練習接受別人對你的好。'},
+ 7:{kw:'智慧 · 探索',t:'7 號人｜內在的探索者',d:'你喜歡思考、追根究柢，對人生和心靈有很深的好奇。你需要獨處的時間，在安靜裡找到答案。',tip:'試著把心裡的想法分享出來，你會被更多人理解。'},
+ 8:{kw:'力量 · 成就',t:'8 號人｜堅定的實踐者',d:'你目標明確、有魄力，擅長把事情做成、累積成果。你對物質與成就有自己的追求，也很有擔當。',tip:'在努力衝刺的路上，記得留一點時間給自己的心。'},
+ 9:{kw:'包容 · 理想',t:'9 號人｜溫柔的理想家',d:'你心胸寬大、富有同理心，常常想為別人、為世界做些什麼。你的善良與包容，是身邊人最珍貴的禮物。',tip:'先把自己照顧好，你的善意才能走得長長久久。'}
+};
+function esc(t){return (t==null?'':String(t)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+// 生命靈數：西元生日每一位數字加總，反覆相加到個位數
+function lifePath(ymd){ var s=ymd.replace(/\D/g,''), n=0; for(var i=0;i<s.length;i++) n+=+s[i]; var master=(n===11||n===22||n===33)?n:0; while(n>9){ var t=0; String(n).split('').forEach(function(c){t+=+c;}); n=t; } return {n:n,sum:master}; }
+var CUR=null, saved=false;
+function saveTestResult(topic,result,ref){
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客'})});}catch(e){} }
+  var tk=window.rwMemberToken&&window.rwMemberToken();
+  if(!tk){ anon(); return; }
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref})}).then(function(r){ if(!r.ok) anon(); }).catch(anon);
+}
+function saveLead(){ if(saved||!CUR||!window.SUPA) return; saved=true; saveTestResult('生命靈數',CUR.n+' 號人',CUR.ref); }
+async function loadRec(){
+  var box=document.getElementById('nm-rec'); var guides=[];
+  try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}); guides=r.ok?(await r.json()):[]; }catch(e){}
+  var kw=['生命靈數','靈數','數字','命理','易經','占星','紫微','八字'];
+  var picks=(guides||[]).map(function(g){ var hay=((g.services||[]).join(' ')+' '+(g.name||'')).toLowerCase(); var s=0; kw.forEach(function(k){ if(hay.indexOf(k.toLowerCase())>=0) s++; }); return {g:g,s:s}; }).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;}).slice(0,2).map(function(x){return x.g;});
+  if(!picks.length){ box.innerHTML='<a class="rw-card" href="booking.html#pick" style="display:block;text-decoration:none;font-size:14px;color:var(--ink)"><b class="rw-strong">看看所有引路人 ›</b><br><span style="font-size:12.5px;color:var(--soft)">擅長生命靈數的引路人陸續加入中</span></a>'; return; }
+  box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px;text-align:left">適合陪你深入解讀的引路人</div>'+picks.map(function(g){
+    return '<a href="guide.html?id='+encodeURIComponent(g.id)+'" style="display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:12px 14px;margin-bottom:10px;color:var(--ink)"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(g.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'favicon.svg\'" style="flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;background:#F4EAD4"><span style="flex:1;min-width:0"><b style="color:var(--brush)">'+esc(g.name||'引路人')+'</b><span style="display:block;font-size:12px;color:var(--soft);margin-top:2px">'+esc([(g.services||[]).slice(0,3).join('、'),g.region||''].filter(Boolean).join(' · '))+'</span></span><span style="flex:none;color:#B5713F;font-size:13px">看介紹・預約 ›</span></a>';
+  }).join('');
+}
+document.getElementById('nm-go').onclick=function(){
+  var v=document.getElementById('nm-bd').value, err=document.getElementById('nm-err');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){ err.textContent='請選擇你的出生日期'; return; }
+  var y=+v.slice(0,4); if(y<1900 || new Date(v)>new Date()){ err.textContent='請確認出生日期是否正確'; return; }
+  err.textContent='';
+  var r=lifePath(v), a=NUM[r.n];
+  CUR={n:r.n, ref:'NUM'+Date.now().toString(36).toUpperCase().slice(-6)}; saved=false;
+  document.getElementById('nm-num').textContent=r.n;
+  document.getElementById('nm-kw').textContent=a.kw;
+  document.getElementById('nm-title').textContent=a.t+(r.sum?'（主數 '+r.sum+'）':'');
+  document.getElementById('nm-desc').textContent=a.d;
+  document.getElementById('nm-tip').textContent=a.tip;
+  var sec=document.getElementById('nm-result'); sec.style.display='block'; sec.scrollIntoView({behavior:'smooth',block:'start'});
+  if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：記到會員資料
+  loadRec();
+};
+document.getElementById('nm-line').onclick=function(){ saveLead(); };
+</script>
+</body>
+</html>
