@@ -246,6 +246,14 @@ function renderGuide(){
   if(meta.length) h+='<div class="gmeta">'+meta.join('<br>')+'</div>';
   if(g.notes) h+='<div class="gnotes">'+esc(g.notes)+'</div>';
   if(g.price!=null) h+='<div class="gprice">'+money(g.price)+' <small>／次　起</small></div>';
+  // 引路人沒有開放（或都被約滿）的時段：不能線上預約，請客人洽官方 LINE
+  var hasOpen=(OPEN_SLOTS||[]).some(function(x){ return !x.taken; });
+  if(!hasOpen){
+    h+='<div class="gnotes" style="text-align:center;margin-top:16px">這位引路人目前<b>尚未開放線上預約時段</b><br>想預約或詢問時間，請先加官方 LINE，我們幫你安排。</div>';
+    h+='<a class="cta-big" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="display:block;text-decoration:none;text-align:center">加官方 LINE 詢問　→</a>';
+    $('#gcard').innerHTML=h;
+    return;
+  }
   h+='<button class="cta-big" id="open-book">'+(MEMBER?'立即預約　→':'登入會員後預約　→')+'</button>';
   if(!MEMBER) h+='<div class="muted" style="font-size:12.5px;margin-top:8px">預約需先登入會員</div>';
   $('#gcard').innerHTML=h;
