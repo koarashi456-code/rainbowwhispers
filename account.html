@@ -539,13 +539,13 @@ function drawCalDetail(idx){
 })();
 // 引路人後台：條列選單 → 點進單一頁（不用下拉）
 var GMENU=[
-  {t:'我的行程',sub:'看哪天有預約、還有哪些時段開放',ic:'📅',bg:'#FBE7CC'},
   {t:'我的介紹',sub:'大頭照與自我介紹',ic:'🙂',bg:'#EAD9F2'},
+  {t:'我的行程',sub:'看哪天有預約、還有哪些時段開放',ic:'📅',bg:'#FBE7CC'},
   {t:'我的開放時間',sub:'排客人可以預約的時段',ic:'🕒',bg:'#E4F2E7'},
   {t:'我的方案',sub:'服務方案與價格（送官方審核）',ic:'🏷️',bg:'#DCEAF2'},
-  {t:'報表',sub:'營收與付款方式統計',ic:'📊',bg:'#F6DDE3'},
   {t:'交易紀錄',sub:'每筆預約明細、標記未出席',ic:'🧾',bg:'#F4EAD4'},
-  {t:'客戶管理',sub:'預約過你的客戶',ic:'👥',bg:'#E7DBF4'}
+  {t:'客戶管理',sub:'預約過你的客戶',ic:'👥',bg:'#E7DBF4'},
+  {t:'報表',sub:'營收與付款方式統計',ic:'📊',bg:'#F6DDE3'}
 ];
 function setupGuideMenu(){
   var gp=document.getElementById('guide-portal'); if(!gp || gp._menu) return; gp._menu=true;
