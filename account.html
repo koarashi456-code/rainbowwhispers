@@ -127,6 +127,34 @@
   .ob-in{display:block;width:100%;box-sizing:border-box;margin-top:5px;font:inherit;font-size:15px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;outline:none}
   .ob-msg{font-size:12.5px;min-height:1.2em;margin:4px 0 8px}
   .ob-go{display:block;width:100%;font:inherit;font-size:15px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:12px;cursor:pointer}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .cal-head span{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:600;color:var(--brush)}
+  .cal-nav{font:inherit;font-size:20px;line-height:1;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;width:34px;height:34px;cursor:pointer}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal-wd span{font-size:11.5px;color:var(--soft);text-align:center;padding:2px 0}
+  .cal-d{font:inherit;position:relative;aspect-ratio:1/1;min-height:38px;border:1.5px solid transparent;border-radius:10px;background:#FBF6EC;color:var(--ink);font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0}
+  .cal-d.out{background:transparent;color:#C9BBA4;cursor:default}
+  .cal-d.today{border-color:#E7C9A6}
+  .cal-d.sel{background:var(--rainbow);color:#4A3A2A;font-weight:600}
+  .cal-d .dots{display:flex;gap:3px;height:6px}
+  .cal-d .dots i,.cal-legend i{display:inline-block;width:6px;height:6px;border-radius:50%}
+  .cal-d .cnt{position:absolute;top:2px;right:4px;font-size:10px;color:#A5643A;font-weight:600}
+  .cd-bk{background:#B5713F}
+  .cd-op{background:#8CC79A}
+  .cal-legend{display:flex;align-items:center;gap:12px;font-size:11.5px;color:var(--soft);margin-top:10px}
+  .cal-legend i{margin-right:4px;vertical-align:1px}
+  .cal-today{margin-left:auto;font:inherit;font-size:12px;color:var(--brush);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
+  #cal-detail{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;text-align:left}
+  .cal-dt{font-size:13px;font-weight:600;color:var(--brush);margin-bottom:6px}
+  .cal-item{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed #EFE3CE;font-size:13px}
+  .cal-item:last-child{border-bottom:0}
+  .cal-item .t{flex:none;width:46px;font-weight:600;color:var(--brush)}
+  .cal-item .m{flex:1;min-width:0;color:var(--ink)}
+  .cal-item .m small{display:block;color:var(--soft);font-size:11.5px;margin-top:2px}
+  .cal-st{flex:none;font-size:11px;padding:2px 8px;border-radius:999px;background:#FBE7CC;color:#A5643A}
+  .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#8A7659}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
+  .cal-open{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .cal-open span{font-size:12px;color:#3F7A5E;background:#E4F2E7;border-radius:999px;padding:3px 10px}
 </style>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -251,6 +279,15 @@
   <div class="seg" style="margin:0 auto 18px"><button id="gseg-m" type="button">會員</button><button id="gseg-g" class="on" type="button">引路人</button></div>
   <div class="hi" id="g-hi">引路人後台</div>
   <div class="who">跟總後台同步 · 只看得到預約你的客戶</div>
+
+  <div class="gsec-lab">我的行程</div>
+  <div class="gbox" style="padding:14px 14px 12px">
+    <div class="cal-head"><button type="button" class="cal-nav" id="cal-prev" aria-label="上個月">‹</button><span id="cal-title"></span><button type="button" class="cal-nav" id="cal-next" aria-label="下個月">›</button></div>
+    <div class="cal-grid cal-wd"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+    <div class="cal-grid" id="cal-days"></div>
+    <div class="cal-legend"><span><i class="cd-bk"></i>有預約</span><span><i class="cd-op"></i>開放中</span><button type="button" class="cal-today" id="cal-today">回到今天</button></div>
+    <div id="cal-detail"></div>
+  </div>
 
   <div class="gsec-lab">我的介紹</div>
   <div class="gbox" style="padding:14px 16px">
@@ -438,6 +475,56 @@ function txRowG(o){
     +'<div class="grow-sub">聯絡：'+escA(o.customer_contact||'—')+'</div></div>';
 }
 // 交易紀錄（新版）：預約時間過了可標記「未出席」；需 SQL my_guide_orders / guide_mark_noshow，沒有時維持舊列表
+// 我的行程：月曆＋點日期看當天的預約與開放時段（資料：my_guide_orders、my_slots）
+var CAL={y:0,m:0,sel:'',orders:[],slots:[]};
+function calKey(p){ return p.y+'-'+String(p.mo).padStart(2,'0')+'-'+String(p.d).padStart(2,'0'); }
+function calTodayKey(){ var t=new Date(); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
+async function loadSchedule(){
+  if(!$('#cal-days')) return;
+  if(!CAL.y){ var t=new Date(); CAL.y=t.getFullYear(); CAL.m=t.getMonth()+1; CAL.sel=calTodayKey(); }
+  var o=[], sl=[];
+  try{ var r=await db.rpc('my_guide_orders'); if(!r.error && Array.isArray(r.data)) o=r.data; }catch(e){}
+  try{ var r2=await db.rpc('my_slots'); if(!r2.error && Array.isArray(r2.data)) sl=r2.data; }catch(e){}
+  CAL.orders=o; CAL.slots=sl; drawCal();
+}
+function calIndex(){
+  var bk={}, op={};
+  CAL.orders.forEach(function(x){ var p=wpart(x.appointment_at); if(!p) return; if(x.status==='已取消'||x.status==='已退費') return; var k=calKey(p); (bk[k]=bk[k]||[]).push(x); });
+  CAL.slots.forEach(function(x){ if(x.taken) return; var p=wpart(x.slot_at); if(!p) return; var k=calKey(p); (op[k]=op[k]||[]).push(x); });
+  return {bk:bk,op:op};
+}
+function drawCal(){
+  var idx=calIndex(), y=CAL.y, m=CAL.m, first=new Date(y,m-1,1).getDay(), days=new Date(y,m,0).getDate(), today=calTodayKey();
+  $('#cal-title').textContent=y+' 年 '+m+' 月';
+  var h='';
+  for(var i=0;i<first;i++) h+='<span class="cal-d out"></span>';
+  for(var d=1;d<=days;d++){
+    var k=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'), nb=(idx.bk[k]||[]).length, no=(idx.op[k]||[]).length;
+    h+='<button type="button" class="cal-d'+(k===today?' today':'')+(k===CAL.sel?' sel':'')+'" data-k="'+k+'">'+(nb?'<span class="cnt">'+nb+'</span>':'')+d+'<span class="dots">'+(nb?'<i class="cd-bk"></i>':'')+(no?'<i class="cd-op"></i>':'')+'</span></button>';
+  }
+  $('#cal-days').innerHTML=h;
+  $('#cal-days').querySelectorAll('[data-k]').forEach(function(b){ b.onclick=function(){ CAL.sel=b.getAttribute('data-k'); drawCal(); }; });
+  drawCalDetail(idx);
+}
+function drawCalDetail(idx){
+  var k=CAL.sel, box=$('#cal-detail'); if(!k){ box.innerHTML=''; return; }
+  var pr=k.split('-'), WD=['日','一','二','三','四','五','六'], w=WD[new Date(+pr[0],+pr[1]-1,+pr[2]).getDay()];
+  var bk=(idx.bk[k]||[]).slice().sort(function(a,b){ return String(a.appointment_at)<String(b.appointment_at)?-1:1; });
+  var op=(idx.op[k]||[]).slice().sort(function(a,b){ return String(a.slot_at)<String(b.slot_at)?-1:1; });
+  var hm=function(s){ var p=wpart(s); return p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):''; };
+  var stc=function(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st==='已取消'||st==='已退費')?'cancel':''; };
+  var h='<div class="cal-dt">'+(+pr[1])+'/'+(+pr[2])+'（'+w+'）'+(k===calTodayKey()?'　今天':'')+'</div>';
+  if(bk.length) h+=bk.map(function(x){ return '<div class="cal-item"><span class="t">'+hm(x.appointment_at)+'</span><span class="m">'+escA(x.customer_name||'客戶')+'　'+escA(x.service||'')+'<small>'+escA(x.customer_contact||'')+(x.order_ref?'　·　'+escA(x.order_ref):'')+'</small></span><span class="cal-st '+stc(x.status)+'">'+escA(x.status||'')+'</span></div>'; }).join('');
+  else h+='<div style="font-size:12.5px;color:var(--soft);padding:4px 0">這天沒有預約</div>';
+  if(op.length) h+='<div style="font-size:12px;color:var(--soft);margin-top:10px">還開放中的時段</div><div class="cal-open">'+op.map(function(x){ return '<span>'+hm(x.slot_at)+'</span>'; }).join('')+'</div>';
+  box.innerHTML=h;
+}
+(function(){
+  var pv=document.getElementById('cal-prev'), nx=document.getElementById('cal-next'), td=document.getElementById('cal-today');
+  if(pv) pv.onclick=function(){ CAL.m--; if(CAL.m<1){ CAL.m=12; CAL.y--; } drawCal(); };
+  if(nx) nx.onclick=function(){ CAL.m++; if(CAL.m>12){ CAL.m=1; CAL.y++; } drawCal(); };
+  if(td) td.onclick=function(){ var t=new Date(); CAL.y=t.getFullYear(); CAL.m=t.getMonth()+1; CAL.sel=calTodayKey(); drawCal(); };
+})();
 async function loadGuideOrders(){
   var bx=$('#g-bookings'); if(!bx) return;
   try{ await db.rpc('auto_complete_orders'); }catch(e){}
@@ -451,7 +538,7 @@ async function loadGuideOrders(){
   bx.querySelectorAll('.g-noshow').forEach(function(b){ b.onclick=async function(){
     if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
     b.disabled=true; b.textContent='處理中…';
-    try{ var x=await db.rpc('guide_mark_noshow',{p_id:b.getAttribute('data-id')}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); loadGuideOrders(); }
+    try{ var x=await db.rpc('guide_mark_noshow',{p_id:b.getAttribute('data-id')}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); loadGuideOrders(); loadSchedule(); }
     catch(e){ alert('標記失敗：'+(e.message||'')); b.disabled=false; b.textContent='客戶沒來？標記未出席'; }
   }; });
 }
@@ -480,7 +567,7 @@ async function loadMySlots(){
     html+='</div>';
   });
   box.innerHTML=html;
-  Array.prototype.forEach.call(box.querySelectorAll('.sl-rm'),function(x){ x.onclick=async function(){ var id=x.getAttribute('data-id'); try{ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); loadMySlots(); }catch(e){ alert(e.message||'刪除失敗'); } }; });
+  Array.prototype.forEach.call(box.querySelectorAll('.sl-rm'),function(x){ x.onclick=async function(){ var id=x.getAttribute('data-id'); try{ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); loadMySlots(); loadSchedule(); }catch(e){ alert(e.message||'刪除失敗'); } }; });
 }
 async function enterGuide(d){
   d=d||GUIDE_DATA; if(!d) return;
@@ -538,6 +625,7 @@ async function enterGuide(d){
     }
     if(dIn && !dIn.value){ var t=new Date(); dIn.value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
     loadMySlots();
+    loadSchedule();
     function setMsg(t,c){ if(!msg) return; msg.textContent=t; msg.style.color=c; if(c!=='#C0506A') setTimeout(function(){ if(msg&&msg.textContent===t) msg.textContent=''; },2200); }
     if(addB) addB.onclick=async function(){
       var d=dIn?dIn.value:''; if(!d){ setMsg('請先選日期','#C0506A'); return; }
@@ -547,7 +635,7 @@ async function enterGuide(d){
       setMsg('新增中…','var(--soft)');
       try{ var r=await db.rpc('add_my_slots',{p_slots:slots}); if(r.error) throw new Error(r.error.message);
         Array.prototype.forEach.call(times.querySelectorAll('.slchip.on'),function(c){ c.classList.remove('on'); });
-        setMsg('已新增 '+(r.data||0)+' 個時段','#4F8E6E'); loadMySlots();
+        setMsg('已新增 '+(r.data||0)+' 個時段','#4F8E6E'); loadMySlots(); loadSchedule();
       }catch(e){ setMsg('新增失敗','#C0506A'); }
     };
   })();

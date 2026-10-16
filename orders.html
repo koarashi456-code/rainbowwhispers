@@ -195,7 +195,9 @@ async function openReschedule(ref){
   var now=new Date(), cur=String(o.appointment_at||'').slice(0,16);
   var open=slots.map(function(x){ var p=wpart(x.slot_at); return p?{w:p.y+'-'+p2(p.mo)+'-'+p2(p.d)+'T'+p2(p.h)+':'+p2(p.mi),p:p,taken:!!x.taken}:null; })
     .filter(function(x){ return x && new Date(x.p.y,x.p.mo-1,x.p.d,x.p.h,x.p.mi)>now; });
-  if(open.length) drawSlotPick(open,cur); else drawFreePick();
+  var avail=open.some(function(x){ return !x.taken && x.w!==cur; });
+  if(avail) drawSlotPick(open,cur);
+  else $('#rs-pick').innerHTML='<div class="rs-sub">這位引路人目前沒有其他可改的開放時段，請加官方 LINE，我們幫你安排改期。</div><a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:11px">加官方 LINE 詢問改期　→</a>';
 }
 function drawSlotPick(open,cur){
   var WD=['日','一','二','三','四','五','六'], days=[], by={};
