@@ -247,7 +247,7 @@ function renderGuide(){
   if(g.notes) h+='<div class="gnotes">'+esc(g.notes)+'</div>';
   if(g.price!=null) h+='<div class="gprice">'+money(g.price)+' <small>／次　起</small></div>';
   h+='<button class="cta-big" id="open-book">'+(MEMBER?'立即預約　→':'登入會員後預約　→')+'</button>';
-  if(!MEMBER) h+='<div class="muted" style="font-size:12.5px;margin-top:8px">預約需先登入會員（方便對帳與紀錄）</div>';
+  if(!MEMBER) h+='<div class="muted" style="font-size:12.5px;margin-top:8px">預約需先登入會員</div>';
   $('#gcard').innerHTML=h;
   $('#open-book').onclick=function(){
     if(!MEMBER){ location.href='account.html?next='+encodeURIComponent(location.pathname+location.search); return; }
