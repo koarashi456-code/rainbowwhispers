@@ -116,6 +116,17 @@
   .sl-pill .sl-rm{color:#C0506A;font-size:14px;cursor:pointer;line-height:1}
   .sl-pill.booked{background:#F3EFE6;color:#8E8065}
   .sl-pill .sl-bk{font-size:11px;color:#8E8065;background:#E7DEC9;border-radius:999px;padding:1px 8px}
+  .ob-mask{position:fixed;inset:0;background:rgba(60,45,30,.4);display:none;align-items:center;justify-content:center;z-index:90;padding:16px}
+  .ob-mask.on{display:flex}
+  .ob-box{background:var(--card);width:100%;max-width:420px;border-radius:20px;padding:22px 20px 20px;max-height:92vh;overflow:auto;text-align:left}
+  .ob-h{font-family:"Noto Serif TC",serif;font-size:19px;font-weight:600;color:var(--brush);margin-bottom:6px;text-align:center}
+  .ob-sub{font-size:13px;color:var(--soft);line-height:1.7;margin-bottom:14px;text-align:center}
+  .ob-box label{display:block;font-size:12.5px;color:var(--soft);margin-bottom:10px}
+  .ob-box label i{color:#C0506A;font-style:normal}
+  .ob-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ob-in{display:block;width:100%;box-sizing:border-box;margin-top:5px;font:inherit;font-size:15px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;outline:none}
+  .ob-msg{font-size:12.5px;min-height:1.2em;margin:4px 0 8px}
+  .ob-go{display:block;width:100%;font:inherit;font-size:15px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:12px;cursor:pointer}
 </style>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -139,6 +150,7 @@
     <a href="index.html">首頁</a>
     <a href="tests.html">測驗</a>
     <a href="booking.html">預約引路人</a>
+    <a href="shop.html">商品</a>
     <a href="pricing.html">方案</a>
     <a href="account.html" class="on">會員</a>
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
@@ -315,6 +327,16 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 
+<div class="ob-mask" id="ob-mask"><div class="ob-box">
+  <div class="ob-h">歡迎加入彩之語 ✨</div>
+  <div class="ob-sub">第一次使用，請先填寫基本資料。<br>居住地區能幫我們為你配對附近、合適的引路人。</div>
+  <div class="ob-row"><label>姓氏 <i>*</i><input id="ob-last" class="ob-in" maxlength="10" autocomplete="family-name"></label><label>名字 <i>*</i><input id="ob-first" class="ob-in" maxlength="20" autocomplete="given-name"></label></div>
+  <label>手機 <i>*</i><input id="ob-phone" class="ob-in" inputmode="tel" maxlength="12" placeholder="09xxxxxxxx" autocomplete="tel"></label>
+  <label>信箱<input id="ob-mail" class="ob-in" readonly style="opacity:.7"></label>
+  <label>居住地區 <i>*</i><select id="ob-area" class="ob-in"><option value="">請選擇</option><option>臺北市</option><option>新北市</option><option>基隆市</option><option>桃園市</option><option>新竹市</option><option>新竹縣</option><option>苗栗縣</option><option>臺中市</option><option>彰化縣</option><option>南投縣</option><option>雲林縣</option><option>嘉義市</option><option>嘉義縣</option><option>臺南市</option><option>高雄市</option><option>屏東縣</option><option>宜蘭縣</option><option>花蓮縣</option><option>臺東縣</option><option>澎湖縣</option><option>金門縣</option><option>連江縣</option><option>海外</option></select></label>
+  <div class="ob-msg" id="ob-msg"></div>
+  <button type="button" class="ob-go" id="ob-go">完成，開始探索</button>
+</div></div>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -369,6 +391,31 @@ function orderRow(o){
 function money(n){ return '$'+Number(n||0).toLocaleString(); }
 function foldList(items, headFn, detFn){ return items.map(function(it){ return '<div class="foldrow"><div class="foldhead">'+headFn(it)+' <span class="fcar">›</span></div><div class="folddet">'+detFn(it)+'</div></div>'; }).join(''); }
 function bindFold(container){ container.querySelectorAll('.foldhead').forEach(function(h){ h.onclick=function(){ h.closest('.foldrow').classList.toggle('open'); }; }); }
+// 第一次註冊：填寫基本資料（姓氏、名字、電話、信箱、居住地區）→ 存好後回首頁
+function openOnboard(d){
+  var m=$('#ob-mask'); if(!m || m.classList.contains('on')) return;
+  var nm=String(d&&d.name||'').trim();
+  if(nm && !$('#ob-last').value && !$('#ob-first').value){ if(/^[\u4e00-\u9fff]{2,4}$/.test(nm)){ $('#ob-last').value=nm.slice(0,1); $('#ob-first').value=nm.slice(1); } else { $('#ob-first').value=nm; } }
+  if(d && d.phone) $('#ob-phone').value=d.phone;
+  if(d && d.area) $('#ob-area').value=d.area;
+  $('#ob-mail').value=(CURRENT_USER&&CURRENT_USER.email)||'';
+  m.classList.add('on');
+}
+async function saveOnboard(){
+  var last=$('#ob-last').value.trim(), first=$('#ob-first').value.trim(), ph=$('#ob-phone').value.replace(/[\s-]/g,''), area=$('#ob-area').value, msg=$('#ob-msg');
+  msg.style.color='#C0506A';
+  if(!last || !first){ msg.textContent='請填寫姓氏和名字'; return; }
+  if(!/^09\d{8}$/.test(ph)){ msg.textContent='請填寫正確的手機號碼（09 開頭共 10 碼）'; return; }
+  if(!area){ msg.textContent='請選擇居住地區'; return; }
+  var name=/^[\u4e00-\u9fff]+$/.test(last+first)?(last+first):(first+' '+last);
+  var b=$('#ob-go'); b.disabled=true; b.textContent='儲存中…'; msg.style.color='var(--soft)'; msg.textContent='';
+  try{
+    var r=await db.rpc('update_my_profile',{p_name:name,p_phone:ph,p_area:area}); if(r.error) throw new Error(r.error.message);
+    try{ await db.auth.updateUser({data:{name:name,last_name:last,first_name:first}}); }catch(e){}
+    msg.style.color='#4F8E6E'; msg.textContent='完成！帶你回首頁…';
+    setTimeout(function(){ location.href='index.html'; },700);
+  }catch(e){ msg.textContent='儲存失敗：'+(e.message||'請稍後再試'); b.disabled=false; b.textContent='完成，開始探索'; }
+}
 // 會員自助：讀自己的儲值餘額＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
 async function loadMyAccount(){
   try{
@@ -378,6 +425,7 @@ async function loadMyAccount(){
     $('#mc-balance').textContent=money(r.data.balance);
     if(r.data.name) $('#mc-name').textContent=r.data.name;
     $('#mc-f-name').value=r.data.name||''; $('#mc-f-phone').value=r.data.phone||''; $('#mc-f-area').value=r.data.area||'';
+    if(!r.data.name || !r.data.phone || !r.data.area) openOnboard(r.data);  // 第一次（或資料不完整）：先填基本資料
     var orders=r.data.orders||[];
     $('#mc-order-count').textContent=orders.length;
   }catch(e){}
@@ -388,6 +436,24 @@ function txRowG(o){
   return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(o.customer_name||'客戶')+' <span style="color:var(--ink);font-weight:400;font-size:13px">'+escA(o.service||'')+'</span></span><span class="grow-amt">'+money(o.amount)+'</span></div>'
     +'<div class="grow-sub">'+fmtDT(o.appointment_at)+'　·　'+escA(o.status||'')+'　·　'+escA(o.method||'')+(o.order_ref?'　·　'+escA(o.order_ref):'')+(o.method==='匯款'&&o.pay_last5?'　·　末5碼 '+escA(o.pay_last5):'')+'</div>'
     +'<div class="grow-sub">聯絡：'+escA(o.customer_contact||'—')+'</div></div>';
+}
+// 交易紀錄（新版）：預約時間過了可標記「未出席」；需 SQL my_guide_orders / guide_mark_noshow，沒有時維持舊列表
+async function loadGuideOrders(){
+  var bx=$('#g-bookings'); if(!bx) return;
+  try{ await db.rpc('auto_complete_orders'); }catch(e){}
+  var r; try{ r=await db.rpc('my_guide_orders'); }catch(e){ return; }
+  if(!r || r.error || !Array.isArray(r.data)) return;
+  var tx=r.data;
+  bx.innerHTML= tx.length ? tx.map(function(o){
+    var can=o.past && (o.status==='已預約'||o.status==='已完成');
+    return txRowG(o).replace(/<\/div>$/, (can?'<div style="margin-top:8px;text-align:right"><button type="button" class="g-noshow" data-id="'+escA(o.id)+'" style="font:inherit;font-size:12.5px;color:#B4566E;background:#fff;border:1.5px solid #F0D5DC;border-radius:999px;padding:5px 12px;cursor:pointer">客戶沒來？標記未出席</button></div>':'')+'</div>');
+  }).join('') : '<p class="gempty">還沒有交易。</p>';
+  bx.querySelectorAll('.g-noshow').forEach(function(b){ b.onclick=async function(){
+    if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
+    b.disabled=true; b.textContent='處理中…';
+    try{ var x=await db.rpc('guide_mark_noshow',{p_id:b.getAttribute('data-id')}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); loadGuideOrders(); }
+    catch(e){ alert('標記失敗：'+(e.message||'')); b.disabled=false; b.textContent='客戶沒來？標記未出席'; }
+  }; });
 }
 function custRowG(m){
   return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(m.name||'客戶')+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
@@ -518,6 +584,7 @@ async function enterGuide(d){
   // 交易紀錄
   var tx=data.transactions||[];
   bx.innerHTML= tx.length ? tx.map(txRowG).join('') : '<p class="gempty">還沒有交易。</p>';
+  loadGuideOrders();
   // 客戶管理
   var cs=data.customers||[];
   mx.innerHTML= cs.length ? cs.map(custRowG).join('') : '<p class="gempty">還沒有預約你的客戶。</p>';
@@ -630,6 +697,7 @@ $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({beh
 $('#mc-pw').onclick=function(){ var b=$('#mc-pwbox'); b.style.display=(b.style.display==='none'?'block':'none'); if(b.style.display==='block'){ b.scrollIntoView({behavior:'smooth',block:'center'}); $('#mc-pw1').focus(); } };
 $('#mc-pw-go').onclick=async function(){ var p1=$('#mc-pw1').value,p2=$('#mc-pw2').value,m=$('#mc-pw-msg'); m.style.color='#C0506A'; if(!p1||p1.length<6){m.textContent='密碼至少 6 碼';return;} if(p1!==p2){m.textContent='兩次密碼不一樣';return;} var b=this;b.disabled=true;b.textContent='更新中…'; try{ var r=await db.auth.updateUser({password:p1}); if(r.error) throw new Error(r.error.message); m.style.color='#4F8E6E'; m.textContent='密碼已更新'; $('#mc-pw1').value='';$('#mc-pw2').value=''; setTimeout(function(){ $('#mc-pwbox').style.display='none'; m.textContent=''; },1500); }catch(e){ m.textContent='更新失敗：'+((e&&e.message)||''); } b.disabled=false;b.textContent='更新密碼'; };
 
+$('#ob-go').onclick=saveOnboard;
 route();
 </script>
 </body>

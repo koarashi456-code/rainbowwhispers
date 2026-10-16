@@ -42,6 +42,25 @@
   .oc-line .k{color:#A48C72}
   .status-badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px}
   .st-book{background:#FBE7CC;color:#A5643A}
+  .st-noshow{background:#F6DDE3;color:#B4566E}
+  .oc-act{margin-top:10px;display:flex;justify-content:flex-end}
+  .oc-btn{font:inherit;font-size:13px;color:var(--brush);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+  .rs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:80}
+  .rs-mask.on{display:flex}
+  .rs-box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px 18px 26px;max-height:86vh;overflow:auto}
+  @media(min-width:600px){ .rs-mask{align-items:center} .rs-box{border-radius:20px} }
+  .rs-h{font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush);font-weight:600;margin-bottom:4px}
+  .rs-sub{font-size:12.5px;color:var(--soft);margin-bottom:12px;line-height:1.6}
+  .rs-lab{font-size:12.5px;color:var(--soft);margin:12px 0 7px}
+  .rs-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .rs-chip{font:inherit;font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:7px 13px;cursor:pointer}
+  .rs-chip.on{background:var(--rainbow);border-color:transparent;font-weight:500}
+  .rs-chip.off{opacity:.45;cursor:default}
+  .rs-in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 12px}
+  .rs-acts{display:flex;gap:10px;margin-top:18px}
+  .rs-acts button{flex:1;font:inherit;font-size:14px;border-radius:999px;padding:11px;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--brush)}
+  .rs-acts .go{background:var(--rainbow);border-color:transparent;color:#4A3A2A;font-weight:500}
+  .rs-msg{font-size:12.5px;margin-top:10px;min-height:1em}
   .st-done{background:#D8ECDF;color:#3F7A5E}
   .st-cancel{background:#EDE6DC;color:#8A7659}
   .st-refund{background:#F3D9DE;color:#B5566E}
@@ -71,6 +90,7 @@
     <a href="index.html">首頁</a>
     <a href="tests.html">測驗</a>
     <a href="booking.html">預約引路人</a>
+    <a href="shop.html">商品</a>
     <a href="pricing.html">方案</a>
     <a href="account.html" class="on">會員</a>
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
@@ -114,6 +134,13 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 
+<div class="rs-mask" id="rs-mask"><div class="rs-box">
+  <div class="rs-h">修改訂單（改期）</div>
+  <div class="rs-sub" id="rs-sub"></div>
+  <div id="rs-pick"></div>
+  <div class="rs-msg" id="rs-msg"></div>
+  <div class="rs-acts"><button type="button" id="rs-cancel">取消</button><button type="button" class="go" id="rs-go" disabled>確認改期</button></div>
+</div></div>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -124,7 +151,7 @@ function money(n){ return '$'+Number(n||0).toLocaleString(); }
 function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
 function fmtDT(s){ if(!s) return '待確認'; var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
 function fmtDay(s){ if(!s) return ''; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }
-function statusBadge(st){ var c=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':'st-book'; return '<span class="status-badge '+c+'">'+esc(st||'—')+'</span>'; }
+function statusBadge(st){ var c=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':st==='未出席'?'st-noshow':'st-book'; return '<span class="status-badge '+c+'">'+esc(st||'—')+'</span>'; }
 function odate(o){ return o.appointment_at || o.created_at; }
 function cmpKey(o){ if(o.appointment_at){ var p=wpart(o.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); } return new Date(o.created_at||o.appointment_at||0); }
 
@@ -145,7 +172,57 @@ function orderCard(o){
     +'<div class="oc-right"><span class="oc-amt">'+money(o.amount)+'</span>'+statusBadge(o.status)+'</div></div>'
     +'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>'
     +'<div class="oc-line"><span class="k">付款</span> '+esc(o.method||'—')+(o.order_ref?'　·　<span class="k">編號</span> '+esc(o.order_ref):'')+'</div>'
+    +(canEdit(o)?'<div class="oc-act"><button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button></div>':'')
     +'</div>';
+}
+// 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
+function canEdit(o){ return o.status==='已預約' && o.order_ref && o.appointment_at && cmpKey(o) > new Date(); }
+function p2(n){ return (n<10?'0':'')+n; }
+var RS={ref:'',sel:'',date:''};
+function rsClose(){ $('#rs-mask').classList.remove('on'); }
+function rsMsg(t,c){ var m=$('#rs-msg'); m.textContent=t; m.style.color=c||'var(--soft)'; }
+async function openReschedule(ref){
+  var o=ALL_ORDERS.find(function(x){ return x.order_ref===ref; }); if(!o) return;
+  RS={ref:ref,sel:'',date:''};
+  $('#rs-sub').innerHTML=esc(o.guide_name||'引路人')+'　'+esc(o.service||'')+'<br>原本時間：<b>'+fmtDT(o.appointment_at)+'</b><br>只會改日期時間，方案與金額不變，不用再付款。每筆訂單限改期一次。';
+  $('#rs-pick').innerHTML='<div class="rs-sub">載入可選時段中…</div>'; rsMsg(''); $('#rs-go').disabled=true;
+  $('#rs-mask').classList.add('on');
+  var info=null;
+  try{ var r=await db.rpc('my_order_reschedule_info',{p_ref:ref}); if(r.error) throw new Error(r.error.message); info=r.data; }catch(e){ $('#rs-pick').innerHTML='<div class="rs-sub" style="color:#C0506A">目前無法改期：'+esc(e.message||'')+'</div>'; return; }
+  if(!info){ $('#rs-pick').innerHTML='<div class="rs-sub" style="color:#C0506A">找不到這筆訂單。</div>'; return; }
+  if(!info.can){ $('#rs-pick').innerHTML='<div class="rs-sub" style="color:#C0506A">'+(Number(info.reschedule_count||0)>=1?'這筆訂單已經改期過一次了，如需協助請聯繫官方 LINE。':'這筆訂單目前不能改期。')+'</div>'; return; }
+  var slots=[]; try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:info.guide_id}); if(!sr.error && Array.isArray(sr.data)) slots=sr.data; }catch(e){}
+  var now=new Date(), cur=String(o.appointment_at||'').slice(0,16);
+  var open=slots.map(function(x){ var p=wpart(x.slot_at); return p?{w:p.y+'-'+p2(p.mo)+'-'+p2(p.d)+'T'+p2(p.h)+':'+p2(p.mi),p:p,taken:!!x.taken}:null; })
+    .filter(function(x){ return x && new Date(x.p.y,x.p.mo-1,x.p.d,x.p.h,x.p.mi)>now; });
+  if(open.length) drawSlotPick(open,cur); else drawFreePick();
+}
+function drawSlotPick(open,cur){
+  var WD=['日','一','二','三','四','五','六'], days=[], by={};
+  open.forEach(function(x){ var k=x.w.slice(0,10); if(!by[k]){ by[k]=[]; days.push(x); } by[k].push(x); });
+  if(!RS.date || !by[RS.date]) RS.date=days[0].w.slice(0,10);
+  var h='<div class="rs-lab">選日期</div><div class="rs-chips">'+days.map(function(x){ var k=x.w.slice(0,10); return '<button type="button" class="rs-chip'+(k===RS.date?' on':'')+'" data-d="'+k+'">'+x.p.mo+'/'+x.p.d+' '+WD[new Date(x.p.y,x.p.mo-1,x.p.d).getDay()]+'</button>'; }).join('')+'</div>';
+  h+='<div class="rs-lab">選時段（灰色＝已被約或原本的時間）</div><div class="rs-chips">'+by[RS.date].map(function(x){ var off=x.taken||x.w===cur; return '<button type="button" class="rs-chip'+(off?' off':'')+(x.w===RS.sel?' on':'')+'"'+(off?' disabled':' data-w="'+x.w+'"')+'>'+p2(x.p.h)+':'+p2(x.p.mi)+'</button>'; }).join('')+'</div>';
+  $('#rs-pick').innerHTML=h;
+  $('#rs-pick').querySelectorAll('[data-d]').forEach(function(b){ b.onclick=function(){ RS.date=b.getAttribute('data-d'); RS.sel=''; $('#rs-go').disabled=true; drawSlotPick(open,cur); }; });
+  $('#rs-pick').querySelectorAll('[data-w]').forEach(function(b){ b.onclick=function(){ RS.sel=b.getAttribute('data-w'); $('#rs-go').disabled=false; drawSlotPick(open,cur); }; });
+}
+function drawFreePick(){
+  var t=new Date(); t.setDate(t.getDate()+1); var min=t.getFullYear()+'-'+p2(t.getMonth()+1)+'-'+p2(t.getDate());
+  var opts='<option value="">選時間</option>'; for(var hh=8;hh<23;hh++){ for(var mm=0;mm<60;mm+=30){ var v=p2(hh)+':'+p2(mm); opts+='<option value="'+v+'">'+v+'</option>'; } }
+  $('#rs-pick').innerHTML='<div class="rs-lab">選新的日期與時間</div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="date" class="rs-in" id="rs-d" min="'+min+'"><select class="rs-in" id="rs-t">'+opts+'</select></div><div class="rs-sub" style="margin-top:8px">這位引路人沒有排固定時段，送出後我們會與引路人確認。</div>';
+  function upd(){ var d=$('#rs-d').value, tm=$('#rs-t').value; RS.sel=(d&&tm)?d+'T'+tm:''; $('#rs-go').disabled=!RS.sel; }
+  $('#rs-d').onchange=upd; $('#rs-t').onchange=upd;
+}
+async function doReschedule(){
+  if(!RS.sel) return;
+  var btn=$('#rs-go'); btn.disabled=true; rsMsg('改期中…');
+  try{
+    var r=await db.rpc('reschedule_my_order',{p_ref:RS.ref,p_new:RS.sel}); if(r.error) throw new Error(r.error.message);
+    var o=ALL_ORDERS.find(function(x){ return x.order_ref===RS.ref; }); if(o) o.appointment_at=RS.sel+':00';
+    rsMsg('改期成功！新的時間：'+fmtDT(RS.sel),'#4F8E6E');
+    setTimeout(function(){ rsClose(); render(); },1200);
+  }catch(e){ rsMsg('改期失敗：'+(e.message||''),'#C0506A'); btn.disabled=false; }
 }
 function render(){
   var list=ALL_ORDERS.filter(inPeriod);
@@ -155,6 +232,7 @@ function render(){
   if(!list.length){ $('#o-list').innerHTML='<div class="oempty">這個期間沒有訂單。<br>換個期間，或到「預約引路人」開始你的第一次。</div>'; return; }
   list.sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   $('#o-list').innerHTML=list.map(orderCard).join('');
+  $('#o-list').querySelectorAll('[data-rs]').forEach(function(b){ b.onclick=function(){ openReschedule(b.getAttribute('data-rs')); }; });
 }
 
 // 期間 chips
@@ -179,10 +257,13 @@ $('#o-clear').onclick=function(){
   render();
 };
 
+$('#rs-cancel').onclick=rsClose; $('#rs-go').onclick=doReschedule;
+$('#rs-mask').addEventListener('click',function(e){ if(e.target===this) rsClose(); });
 (async function init(){
   var s;
   try{ s=(await db.auth.getSession()).data.session; }catch(e){}
   if(!s){ location.replace('account.html?next=orders.html'); return; }
+  try{ await db.rpc('auto_complete_orders'); }catch(e){}  // 預約日已過的訂單自動標「已完成」
   try{
     var r=await db.rpc('my_account');
     if(r.error || !r.data){ ALL_ORDERS=[]; }
