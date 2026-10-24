@@ -168,14 +168,15 @@ function inPeriod(o){
 function orderCard(o){
   var isMoney = o.status!=='已取消';
   return '<div class="ocard">'
-    +'<div class="oc-top"><div class="oc-title">'+esc(o.guide_name||'引路人')+' <span class="svc">'+esc(o.service||'')+'</span></div>'
+    +'<div class="oc-top"><div class="oc-title">'+(isShop(o)?'商品訂單 <span class="svc">'+esc(String(o.service).replace(/^商品：/,''))+'</span>':esc(o.guide_name||'引路人')+' <span class="svc">'+esc(o.service||'')+'</span>')+'</div>'
     +'<div class="oc-right"><span class="oc-amt">'+money(o.amount)+'</span>'+statusBadge(o.status)+'</div></div>'
-    +'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>'
+    +(isShop(o)?'<div class="oc-line"><span class="k">下單</span> '+fmtDay(o.created_at)+'</div>':'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>')
     +'<div class="oc-line"><span class="k">付款</span> '+esc(o.method||'—')+(o.order_ref?'　·　<span class="k">編號</span> '+esc(o.order_ref):'')+'</div>'
     +(canEdit(o)?'<div class="oc-act"><button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button></div>':'')
     +'</div>';
 }
 // 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
+function isShop(o){ return /^商品：/.test(String(o.service||'')); }
 function canEdit(o){ return o.status==='已預約' && o.order_ref && o.appointment_at && cmpKey(o) > new Date(); }
 function p2(n){ return (n<10?'0':'')+n; }
 var RS={ref:'',sel:'',date:''};

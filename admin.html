@@ -110,6 +110,7 @@
   .fgrid label{display:flex;flex-direction:column;font-size:11.5px;color:var(--soft);gap:4px}
   .fgrid .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none}
   .fgrid .in:focus{border-color:#C9A7DE;background:#fff}
+  .sp-add-row .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none;box-sizing:border-box}
   /* 可搜尋下拉（新增交易／儲值的客戶、引路人） */
   .cbx{position:relative;display:block}
   .cbx-input{width:100%;box-sizing:border-box}
@@ -249,6 +250,7 @@
       <button data-tab="guides">引路人管理</button>
       <button data-tab="tx">交易紀錄</button>
       <button data-tab="report">報表</button>
+      <button data-tab="shop">商品管理</button>
       <button data-tab="trash">刪除紀錄</button>
     </div>
   </div>
@@ -346,6 +348,18 @@
     </section>
 
     <!-- 刪除紀錄 -->
+    <section id="tab-shop" style="display:none">
+      <div class="muted" style="font-size:12.5px;margin:4px 2px 10px">商品頁（測試版）顯示「上架中」的商品；價格以這裡為準。訂單會出現在「交易紀錄」，服務欄以「商品：」開頭。</div>
+      <div id="shoplist"></div>
+      <div class="sp-add-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px">
+        <input class="in" id="sp-n" placeholder="商品名稱" style="flex:2;min-width:140px">
+        <input class="in" id="sp-p" type="number" min="0" placeholder="價格" style="width:100px">
+        <input class="in" id="sp-d" placeholder="簡短介紹（選填）" style="flex:3;min-width:180px">
+        <button class="addbtn" id="sp-addbtn" style="margin-top:0">新增商品</button>
+        <span id="sp-msg" style="font-size:12.5px;align-self:center"></span>
+      </div>
+    </section>
+
     <section id="tab-trash" style="display:none">
       <div class="count" id="trash-count"></div>
       <div id="trashlist"></div>
@@ -407,12 +421,13 @@ $('#refresh').onclick=function(){ loadAll(); };
 document.querySelectorAll('.tabbar button').forEach(function(b){
   b.onclick=function(){
     var t=b.getAttribute('data-tab'); activeTab=t;
-    ['customers','guides','tx','report','trash'].forEach(function(x){
+    ['customers','guides','tx','report','shop','trash'].forEach(function(x){
       document.getElementById('tab-'+x).style.display=(x===t?'block':'none');
       document.querySelector('.tabbar [data-tab="'+x+'"]').classList.toggle('on',x===t);
     });
     if(t==='report') renderReport();
     if(t==='trash') renderTrash();
+    if(t==='shop') loadShop();
   };
 });
 
@@ -1144,6 +1159,39 @@ if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.query
 ['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });
 function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
 bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#glist'); bindCollapseAll('tx-collapse','#txlist');
+
+/* ===== 商品管理（測試版商品頁）===== */
+var SHOP=[];
+async function loadShop(){
+  var box=$('#shoplist'); if(!box) return; box.innerHTML='<div class="muted" style="padding:16px">載入中…</div>';
+  var r=await db.from('shop_products').select('*').order('sort').order('created_at');
+  if(r.error){ box.innerHTML='<div class="muted" style="padding:16px">讀取失敗：'+esc(r.error.message)+'（請先在 Supabase 跑商品的 SQL）</div>'; return; }
+  SHOP=(r.data||[]).filter(function(x){ return !x.deleted; });
+  if(!SHOP.length){ box.innerHTML='<div class="muted" style="padding:16px">還沒有商品，用下方新增。</div>'; return; }
+  box.innerHTML='<div class="txtable-wrap"><table class="txt" style="min-width:640px"><thead><tr><th style="width:60px">排序</th><th>商品名稱</th><th style="text-align:right;width:100px">價格</th><th>介紹</th><th style="width:70px">上架</th><th style="width:40px"></th></tr></thead><tbody>'+
+    SHOP.map(function(p){ return '<tr data-id="'+p.id+'"><td><input class="tin" data-f="sort" type="number" value="'+esc(p.sort)+'"></td><td><input class="tin" data-f="name" value="'+esc(p.name)+'"></td><td class="num"><input class="tin amt" data-f="price" type="number" min="0" value="'+esc(p.price)+'"></td><td><input class="tin" data-f="description" value="'+esc(p.description||'')+'"></td><td style="text-align:center"><input type="checkbox" data-f="active"'+(p.active?' checked':'')+'></td><td><button class="txdel" data-del title="刪除">✕</button></td></tr>'; }).join('')+
+    '</tbody></table></div><div class="txsaved" id="sp-saved"></div>';
+  box.querySelectorAll('tr[data-id]').forEach(function(tr){
+    var id=tr.getAttribute('data-id');
+    tr.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',async function(){
+      var f=inp.getAttribute('data-f'), v=inp.type==='checkbox'?inp.checked:inp.value;
+      if(f==='price'||f==='sort') v=Number(v)||0;
+      if(f==='name' && !String(v).trim()){ alert('商品名稱不能空白'); loadShop(); return; }
+      var patch={}; patch[f]=v; var sv=$('#sp-saved'); if(sv){ sv.textContent='儲存中…'; sv.style.color='var(--soft)'; }
+      var x=await db.from('shop_products').update(patch).eq('id',id);
+      if(sv){ if(x.error){ sv.textContent='存檔失敗：'+x.error.message; sv.style.color='#C0506A'; } else { sv.textContent='已儲存'; sv.style.color='#4F8E6E'; setTimeout(function(){ sv.textContent=''; },1200); } }
+    }); });
+    tr.querySelector('[data-del]').onclick=async function(){ if(!confirm('刪除這個商品？（已成立的訂單不受影響）')) return; var x=await db.from('shop_products').update({deleted:true,active:false}).eq('id',id); if(x.error){ alert('刪除失敗：'+x.error.message); return; } loadShop(); };
+  });
+}
+(function(){ var b=document.getElementById('sp-addbtn'); if(!b) return; b.onclick=async function(){
+  var n=$('#sp-n').value.trim(), p=$('#sp-p').value, d=$('#sp-d').value.trim(), m=$('#sp-msg');
+  if(!n){ m.textContent='請填商品名稱'; m.style.color='#C0506A'; return; } if(p===''){ m.textContent='請填價格'; m.style.color='#C0506A'; return; }
+  var mx=SHOP.reduce(function(a,x){ return Math.max(a,Number(x.sort)||0); },0);
+  var r=await db.from('shop_products').insert({name:n,price:Number(p)||0,description:d||null,sort:mx+1});
+  if(r.error){ m.textContent='新增失敗：'+r.error.message; m.style.color='#C0506A'; return; }
+  $('#sp-n').value=''; $('#sp-p').value=''; $('#sp-d').value=''; m.textContent='已新增'; m.style.color='#4F8E6E'; setTimeout(function(){ m.textContent=''; },1400); loadShop();
+}; })();
 
 /* ===== 軟刪除 + 刪除紀錄 ===== */
 function activeArr(tbl){ return tbl==='customers'?ALL:tbl==='guides'?GUIDES:tbl==='transactions'?TX:TOPUPS; }

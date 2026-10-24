@@ -21,6 +21,45 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF4E6">
+<style>
+  .testbar{max-width:560px;margin:12px auto 0;padding:0 18px}
+  .testbar span{display:inline-block;font-size:12px;color:#A5643A;background:#FBE7CC;border-radius:999px;padding:5px 13px}
+  .sp-wrap{max-width:560px;margin:0 auto;padding:10px 18px 110px}
+  .sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sp-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 12px 14px;text-align:center;display:flex;flex-direction:column}
+  .sp-ring{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center}
+  .sp-ring>div{width:46px;height:46px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center}
+  .sp-name{font-size:14.5px;font-weight:500;color:var(--brush);line-height:1.4}
+  .sp-desc{font-size:12px;color:var(--soft);line-height:1.55;margin:6px 0 8px;flex:1}
+  .sp-price{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--ink);margin-bottom:10px}
+  .sp-qty{display:flex;align-items:center;justify-content:center;gap:10px}
+  .sp-qty button{font:inherit;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--brush);font-size:17px;cursor:pointer;line-height:1}
+  .sp-qty .n{min-width:20px;font-weight:600;color:var(--brush)}
+  .sp-add{font:inherit;font-size:13px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:8px 0;cursor:pointer;width:100%}
+  .sp-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,253,248,.97);border-top:1px solid var(--line);padding:10px 18px calc(10px + env(safe-area-inset-bottom));display:none}
+  .sp-bar.on{display:block}
+  .sp-bar-in{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .sp-bar-t{flex:1;font-size:13.5px;color:var(--ink)}
+  .sp-bar-t b{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush)}
+  .sp-bar button{font:inherit;font-size:15px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:11px 22px;cursor:pointer}
+  .sec-title{font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush);margin:24px 4px 12px}
+  .fcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 18px}
+  .field{margin-bottom:14px}
+  .lbl{font-size:13px;font-weight:500;color:var(--brush);margin-bottom:6px}
+  .req{color:#C98A6A}
+  .in{width:100%;box-sizing:border-box;font:inherit;font-size:15px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none}
+  textarea.in{min-height:60px;resize:vertical}
+  .sum-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;color:var(--ink)}
+  .sum-row.t{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:600;color:var(--brush)}
+  .sum-row small{color:var(--soft)}
+  .paym{display:flex;gap:10px}
+  .paym label{flex:1;display:flex;align-items:center;gap:8px;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 12px;font-size:14px;cursor:pointer;background:#FBF6EC}
+  .bank{font-size:13.5px;line-height:1.8;background:#FBF6EC;border-radius:12px;padding:12px 14px;margin-top:12px}
+  .bankwarn{font-size:12px;color:#B07A2E;margin-top:6px}
+  .cta-big{display:block;width:100%;box-sizing:border-box;text-align:center;margin-top:18px;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:16px;padding:14px 0;border-radius:999px;border:0;cursor:pointer;font-family:inherit;text-decoration:none}
+  .ghost-link{display:inline-block;margin-top:12px;font-size:13.5px;color:var(--soft)}
+  .err{font-size:12.5px;color:#C0506A;min-height:1.2em;margin-top:8px}
+</style>
 </head>
 <body>
 
@@ -39,37 +78,52 @@
 </div></nav>
 <script src="nav.js"></script>
 
-<section class="rw-sec rw-center">
+<div class="testbar"><span>測試版本 · 匯款為測試流程，請勿真的匯款</span></div>
+
+<section class="rw-sec rw-center" style="padding-bottom:6px">
   <div class="rw-in">
     <div class="rw-kicker">彩之語 · 商品</div>
-    <h1 class="rw-h1" style="margin-bottom:12px">把陪伴，帶回生活裡</h1>
-    <p class="rw-p" style="margin-bottom:24px">我們正在準備一些溫柔的小物，<br>讓你在日常裡也能好好照顧自己。</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:440px;margin:0 auto">
-      <div style="background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:22px 12px">
-        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 12px;background:conic-gradient(from 160deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center"><div style="width:46px;height:46px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D6B092" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5c.5 4 2.5 6 6.5 6.5-4 .5-6 2.5-6.5 6.5-.5-4-2.5-6-6.5-6.5 4-.5 6-2.5 6.5-6.5Z"/></svg></div></div>
-        <div style="font-size:14.5px;color:var(--brush);font-weight:500">能量水晶</div>
-        <span style="display:inline-block;font-size:12px;padding:4px 12px;border-radius:999px;background:#F4EAD4;color:#8A6A44;margin-top:8px">即將開放</span>
-      </div>
-      <div style="background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:22px 12px">
-        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 12px;background:conic-gradient(from 40deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center"><div style="width:46px;height:46px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D6B092" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 9h6M9 13h6"/></svg></div></div>
-        <div style="font-size:14.5px;color:var(--brush);font-weight:500">療癒牌卡</div>
-        <span style="display:inline-block;font-size:12px;padding:4px 12px;border-radius:999px;background:#F4EAD4;color:#8A6A44;margin-top:8px">即將開放</span>
-      </div>
-      <div style="background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:22px 12px">
-        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 12px;background:conic-gradient(from 90deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center"><div style="width:46px;height:46px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D6B092" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 0 0 10 0C17 9.5 15 7 12 3Z"/></svg></div></div>
-        <div style="font-size:14.5px;color:var(--brush);font-weight:500">香氛精油</div>
-        <span style="display:inline-block;font-size:12px;padding:4px 12px;border-radius:999px;background:#F4EAD4;color:#8A6A44;margin-top:8px">即將開放</span>
-      </div>
-      <div style="background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:22px 12px">
-        <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 12px;background:conic-gradient(from 250deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center"><div style="width:46px;height:46px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D6B092" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M12 8v4l2.5 2.5"/></svg></div></div>
-        <div style="font-size:14.5px;color:var(--brush);font-weight:500">冥想小物</div>
-        <span style="display:inline-block;font-size:12px;padding:4px 12px;border-radius:999px;background:#F4EAD4;color:#8A6A44;margin-top:8px">即將開放</span>
-      </div>
-    </div>
-    <p class="rw-p" style="font-size:13.5px;margin:26px 0 16px">想第一時間知道上架消息？</p>
-    <a class="rw-cta" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE，開賣通知我　→</a>
+    <h1 class="rw-h1" style="margin-bottom:10px">把陪伴，帶回生活裡</h1>
+    <p class="rw-p">溫柔的小物，讓你在日常裡也能好好照顧自己。<br><span style="font-size:12.5px">滿 NT$1,000 免運，未滿運費 NT$60</span></p>
   </div>
 </section>
+
+<div class="sp-wrap">
+  <div id="sp-list"><div class="sp-grid" id="sp-grid"><div class="rw-p" style="grid-column:1/-1;text-align:center;font-size:13px">載入商品中…</div></div></div>
+
+  <div id="sp-checkout" style="display:none">
+    <div class="sec-title">確認購物車</div>
+    <div class="fcard"><div id="ck-items"></div></div>
+    <div class="sec-title">收件資料</div>
+    <div class="fcard">
+      <div class="field"><div class="lbl">收件人姓名 <span class="req">*</span></div><input class="in" id="ck-name" maxlength="30"></div>
+      <div class="field"><div class="lbl">手機 <span class="req">*</span></div><input class="in" id="ck-phone" inputmode="tel" maxlength="12" placeholder="09xxxxxxxx"></div>
+      <div class="field"><div class="lbl">收件地址 <span class="req">*</span></div><input class="in" id="ck-addr" maxlength="120" placeholder="縣市＋區＋路名門牌"></div>
+      <div class="field" style="margin-bottom:4px"><div class="lbl">備註</div><textarea class="in" id="ck-note" maxlength="200" placeholder="想說的話、包裝需求…"></textarea></div>
+    </div>
+    <div class="sec-title">付款方式</div>
+    <div class="fcard">
+      <div class="paym"><label><input type="radio" name="ck-pay" value="匯款" checked> 匯款</label><label><input type="radio" name="ck-pay" value="刷卡"> 刷卡</label></div>
+      <div id="ck-paybox"></div>
+    </div>
+    <div class="err" id="ck-err"></div>
+    <button class="cta-big" id="ck-go" type="button">確認送出訂單</button>
+    <div style="text-align:center"><a class="ghost-link" href="#" id="ck-back">← 回去繼續逛</a></div>
+  </div>
+
+  <div id="sp-done" style="display:none;text-align:center">
+    <div class="fcard" style="text-align:center">
+      <div style="font-family:'Noto Serif TC',serif;font-size:21px;color:var(--brush);font-weight:600">訂單已送出！</div>
+      <p class="rw-p" style="margin:10px 0 4px">訂單編號 <b id="dn-ref"></b></p>
+      <div id="dn-sum" style="text-align:left;margin-top:10px"></div>
+      <p class="rw-p" style="font-size:13px;margin-top:12px">我們確認款項後會盡快出貨，出貨時會再通知你。<br>可以在「會員中心 → 我的訂單」查看。</p>
+      <a class="cta-big" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE，有問題問我們　→</a>
+      <a class="ghost-link" href="orders.html">查看我的訂單</a>
+    </div>
+  </div>
+</div>
+
+<div class="sp-bar" id="sp-bar"><div class="sp-bar-in"><span class="sp-bar-t">購物車 <span id="bar-n">0</span> 件　<b id="bar-t">$0</b></span><button type="button" id="bar-go">去結帳</button></div></div>
 
 <footer class="rw-footer">
   <div class="rw-brand2 rw-serif">彩之語</div>
@@ -78,5 +132,92 @@
   <div class="rw-foot-links"><a href="policies.html#privacy">隱私權政策</a>·<a href="booking.html">預約引路人</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
+function $(s){return document.querySelector(s);}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
+function money(n){return '$'+Number(n||0).toLocaleString();}
+var ICONS=['<path d="M12 5.5c.5 4 2.5 6 6.5 6.5-4 .5-6 2.5-6.5 6.5-.5-4-2.5-6-6.5-6.5 4-.5 6-2.5 6.5-6.5Z"/>','<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 9h6M9 13h6"/>','<path d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 0 0 10 0C17 9.5 15 7 12 3Z"/>','<circle cx="12" cy="12" r="7"/><path d="M12 8v4l2.5 2.5"/>'];
+var DEGS=[160,40,90,250];
+var PRODUCTS=[], CART={}, MEMBER=null, MEMBER_NAME='', MEMBER_PHONE='', PAY='匯款';
+function loadCart(){ try{ CART=JSON.parse(localStorage.getItem('rw_cart')||'{}')||{}; }catch(e){ CART={}; } }
+function saveCart(){ try{ localStorage.setItem('rw_cart',JSON.stringify(CART)); }catch(e){} }
+function cartItems(){ return PRODUCTS.filter(function(p){ return CART[p.id]>0; }).map(function(p){ return {p:p,q:CART[p.id]}; }); }
+function totals(){ var sub=cartItems().reduce(function(a,x){ return a+x.p.price*x.q; },0); var ship=(sub>0&&sub<1000)?60:0; return {sub:sub,ship:ship,total:sub+ship,n:cartItems().reduce(function(a,x){return a+x.q;},0)}; }
+function renderList(){
+  var g=$('#sp-grid');
+  if(!PRODUCTS.length){ g.innerHTML='<div class="rw-p" style="grid-column:1/-1;text-align:center;font-size:13.5px">商品準備中，敬請期待。</div>'; return; }
+  g.innerHTML=PRODUCTS.map(function(p,i){
+    var q=CART[p.id]||0;
+    return '<div class="sp-card"><div class="sp-ring" style="background:conic-gradient(from '+DEGS[i%4]+'deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9)"><div><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D6B092" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+ICONS[i%4]+'</svg></div></div>'
+      +'<div class="sp-name">'+esc(p.name)+'</div><div class="sp-desc">'+esc(p.description||'')+'</div><div class="sp-price">'+money(p.price)+'</div>'
+      +(q>0?'<div class="sp-qty"><button type="button" data-dec="'+p.id+'">−</button><span class="n">'+q+'</span><button type="button" data-inc="'+p.id+'">＋</button></div>':'<button type="button" class="sp-add" data-inc="'+p.id+'">加入購物車</button>')
+      +'</div>';
+  }).join('');
+  g.querySelectorAll('[data-inc]').forEach(function(b){ b.onclick=function(){ var id=b.getAttribute('data-inc'); CART[id]=Math.min(20,(CART[id]||0)+1); saveCart(); renderList(); }; });
+  g.querySelectorAll('[data-dec]').forEach(function(b){ b.onclick=function(){ var id=b.getAttribute('data-dec'); CART[id]=Math.max(0,(CART[id]||0)-1); if(!CART[id]) delete CART[id]; saveCart(); renderList(); }; });
+  renderBar();
+}
+function renderBar(){ var t=totals(); $('#bar-n').textContent=t.n; $('#bar-t').textContent=money(t.total); $('#sp-bar').classList.toggle('on',t.n>0 && $('#sp-list').style.display!=='none'); $('#bar-go').textContent=MEMBER?'去結帳':'登入後結帳'; }
+function renderCheckoutItems(){
+  var t=totals();
+  $('#ck-items').innerHTML=cartItems().map(function(x){ return '<div class="sum-row"><span>'+esc(x.p.name)+' <small>×'+x.q+'</small></span><span>'+money(x.p.price*x.q)+'</span></div>'; }).join('')
+    +'<div class="sum-row"><span>運費 <small>'+(t.ship?'（滿 $1,000 免運）':'')+'</small></span><span>'+(t.ship?money(t.ship):'免運')+'</span></div>'
+    +'<div class="sum-row t"><span>合計</span><span>'+money(t.total)+'</span></div>';
+}
+function renderPay(){
+  PAY=(document.querySelector('input[name="ck-pay"]:checked')||{}).value||'匯款';
+  $('#ck-paybox').innerHTML = PAY==='匯款'
+    ? '<div class="bank"><b style="color:var(--brush)">匯款資訊（測試）</b><br>銀行：玉山銀行（808）<br>戶名：彩之語 Rainbow Whisper<br>帳號：0000-0000-0000-0000<div class="bankwarn">⚠️ 這是測試流程，請勿真的匯款。</div></div><div class="field" style="margin:12px 0 0"><div class="lbl">轉帳帳號末 5 碼</div><input class="in" id="ck-last5" inputmode="numeric" maxlength="5" placeholder="匯款完成後填上，方便對帳（可之後再補）"></div>'
+    : '<div class="bank"><b style="color:var(--brush)">刷卡（信用卡）</b><br>刷卡付款即將開放。你可以先送出訂單，我們會與你聯繫完成刷卡；或改用匯款。<div class="bankwarn">⚠️ 目前刷卡尚未開通，此為測試流程。</div></div>';
+}
+function showView(v){ $('#sp-list').style.display=v==='list'?'block':'none'; $('#sp-checkout').style.display=v==='checkout'?'block':'none'; $('#sp-done').style.display=v==='done'?'block':'none'; renderBar(); window.scrollTo({top:0,behavior:'smooth'}); }
+$('#bar-go').onclick=function(){
+  if(!MEMBER){ location.href='account.html?next='+encodeURIComponent('shop.html'); return; }
+  if(!totals().n) return;
+  renderCheckoutItems(); renderPay();
+  if(!$('#ck-name').value) $('#ck-name').value=MEMBER_NAME||'';
+  if(!$('#ck-phone').value) $('#ck-phone').value=MEMBER_PHONE||'';
+  showView('checkout');
+};
+$('#ck-back').onclick=function(e){ e.preventDefault(); showView('list'); };
+document.querySelectorAll('input[name="ck-pay"]').forEach(function(r){ r.onchange=renderPay; });
+$('#ck-go').onclick=async function(){
+  var err=$('#ck-err'); err.textContent='';
+  var nm=$('#ck-name').value.trim(), ph=$('#ck-phone').value.replace(/[\s-]/g,''), ad=$('#ck-addr').value.trim(), note=$('#ck-note').value.trim();
+  if(!nm||!ad){ err.textContent='請填寫收件人姓名與地址'; return; }
+  if(!/^09\d{8}$/.test(ph)){ err.textContent='請填寫正確的手機號碼（09 開頭共 10 碼）'; return; }
+  var l5=(($('#ck-last5')||{}).value||'').trim(); if(l5 && !/^\d{5}$/.test(l5)){ err.textContent='末 5 碼請填 5 位數字（或先留空）'; return; }
+  var items=cartItems().map(function(x){ return {id:x.p.id,qty:x.q}; }); if(!items.length){ err.textContent='購物車是空的'; return; }
+  var b=this; b.disabled=true; b.textContent='送出中…';
+  try{
+    var r=await db.rpc('place_shop_order',{p_items:items,p_name:nm,p_phone:ph,p_address:ad,p_method:PAY,p_last5:l5||null,p_note:note||null});
+    if(r.error) throw new Error(r.error.message);
+    var d=r.data||{};
+    $('#dn-ref').textContent=d.order_ref||'';
+    $('#dn-sum').innerHTML=$('#ck-items').innerHTML;
+    sendOrderEmail(d,nm,ph,ad,note);
+    CART={}; saveCart(); showView('done');
+  }catch(e){ err.textContent='送出失敗：'+String(e.message||'請稍後再試').slice(0,140); }
+  b.disabled=false; b.textContent='確認送出訂單';
+};
+// 訂單明細寄到會員信箱，也通知官方
+function sendOrderEmail(d,nm,ph,ad,note){
+  var email=MEMBER&&MEMBER.email; if(!email) return;
+  try{ fetch('https://formsubmit.co/ajax/koarashi456@gmail.com',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({
+    _subject:'彩之語 · 新商品訂單 '+(d.order_ref||''), _template:'table', name:nm, email:email, 電話:ph, 地址:ad, 商品:d.items||'', 運費:(d.shipping?('$'+d.shipping):'免運'), 合計:money(d.total), 付款方式:PAY, 訂單編號:d.order_ref||'', 備註:note||'',
+    _autoresponse:'你好 '+nm+'，\n\n你在彩之語的商品訂單已收到：\n\n商品：'+(d.items||'')+'\n運費：'+(d.shipping?('$'+d.shipping):'免運')+'\n合計：'+money(d.total)+'\n付款方式：'+PAY+'\n訂單編號：'+(d.order_ref||'')+'\n收件：'+nm+'／'+ph+'／'+ad+'\n\n我們確認款項後會盡快出貨。\n（此為測試流程，尚未真的收款）\n\n— 彩之語 Rainbow Whisper' })}).catch(function(){}); }catch(e){}
+}
+(async function init(){
+  loadCart();
+  try{ var s=await db.auth.getSession(); MEMBER=(s.data&&s.data.session)?s.data.session.user:null; }catch(e){ MEMBER=null; }
+  if(MEMBER){ try{ var a=await db.rpc('my_account'); if(!a.error&&a.data){ MEMBER_NAME=a.data.name||''; MEMBER_PHONE=a.data.phone||''; } }catch(e){} }
+  try{ var r=await db.from('shop_products').select('id,name,price,description,sort').order('sort').order('created_at'); PRODUCTS=(!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){ PRODUCTS=[]; }
+  Object.keys(CART).forEach(function(id){ if(!PRODUCTS.some(function(p){return p.id===id;})) delete CART[id]; });
+  renderList();
+})();
+</script>
 </body>
 </html>
