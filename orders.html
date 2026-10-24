@@ -43,6 +43,7 @@
   .status-badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px}
   .st-book{background:#FBE7CC;color:#A5643A}
   .st-noshow{background:#F6DDE3;color:#B4566E}
+  .st-ship{background:#DCEAF2;color:#4E7A94}
   .oc-act{margin-top:10px;display:flex;justify-content:flex-end}
   .oc-btn{font:inherit;font-size:13px;color:var(--brush);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
   .rs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:80}
@@ -151,7 +152,7 @@ function money(n){ return '$'+Number(n||0).toLocaleString(); }
 function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
 function fmtDT(s){ if(!s) return '待確認'; var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
 function fmtDay(s){ if(!s) return ''; var d=new Date(s); return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }
-function statusBadge(st){ var c=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':st==='未出席'?'st-noshow':'st-book'; return '<span class="status-badge '+c+'">'+esc(st||'—')+'</span>'; }
+function statusBadge(st){ var c=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':st==='未出席'?'st-noshow':st==='已出貨'?'st-ship':'st-book'; return '<span class="status-badge '+c+'">'+esc(st||'—')+'</span>'; }
 function odate(o){ return o.appointment_at || o.created_at; }
 function cmpKey(o){ if(o.appointment_at){ var p=wpart(o.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); } return new Date(o.created_at||o.appointment_at||0); }
 
@@ -169,7 +170,7 @@ function orderCard(o){
   var isMoney = o.status!=='已取消';
   return '<div class="ocard">'
     +'<div class="oc-top"><div class="oc-title">'+(isShop(o)?'商品訂單 <span class="svc">'+esc(String(o.service).replace(/^商品：/,''))+'</span>':esc(o.guide_name||'引路人')+' <span class="svc">'+esc(o.service||'')+'</span>')+'</div>'
-    +'<div class="oc-right"><span class="oc-amt">'+money(o.amount)+'</span>'+statusBadge(o.status)+'</div></div>'
+    +'<div class="oc-right"><span class="oc-amt">'+money(o.amount)+'</span>'+statusBadge(isShop(o)&&o.status==='已預約'?'待出貨':o.status)+'</div></div>'
     +(isShop(o)?'<div class="oc-line"><span class="k">下單</span> '+fmtDay(o.created_at)+'</div>':'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>')
     +'<div class="oc-line"><span class="k">付款</span> '+esc(o.method||'—')+(o.order_ref?'　·　<span class="k">編號</span> '+esc(o.order_ref):'')+'</div>'
     +(canEdit(o)?'<div class="oc-act"><button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button></div>':'')
