@@ -95,10 +95,10 @@ function esc(t){return (t==null?'':String(t)).replace(/[&<>"]/g,function(m){retu
 function lifePath(ymd){ var s=ymd.replace(/\D/g,''), n=0; for(var i=0;i<s.length;i++) n+=+s[i]; var master=(n===11||n===22||n===33)?n:0; while(n>9){ var t=0; String(n).split('').forEach(function(c){t+=+c;}); n=t; } return {n:n,sum:master}; }
 var CUR=null, saved=false;
 function saveTestResult(topic,result,ref){
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客'})});}catch(e){} }
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['生命靈數']={result:result,topic:topic}; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
-  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref})}).then(function(r){ if(!r.ok) anon(); }).catch(anon);
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'生命靈數'})}).then(function(r){ if(!r.ok) anon(); }).catch(anon);
 }
 function saveLead(){ if(saved||!CUR||!window.SUPA) return; saved=true; saveTestResult('生命靈數',CUR.n+' 號人',CUR.ref); }
 async function loadRec(){

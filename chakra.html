@@ -212,10 +212,10 @@ function renderResult(){
 }
 function saveTestResult(topic,result,ref){
   // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客'})});}catch(e){} }
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['七大脈輪測驗']={result:result,topic:topic}; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
-  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref})})
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'七大脈輪測驗'})})
     .then(function(r){ if(!r.ok) anon(); }).catch(anon);
 }
 function saveLead(){
