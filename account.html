@@ -154,6 +154,20 @@
   .cal-st{flex:none;font-size:11px;padding:2px 8px;border-radius:999px;background:#FBE7CC;color:#A5643A}
   .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#8A7659}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
   .cal-open{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .gx-sum{font:inherit;display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:2px 0;cursor:pointer;text-align:left;color:var(--ink)}
+  .gx-main{flex:1;min-width:0;font-size:14px}
+  .gx-main b{color:var(--brush);font-weight:600}
+  .gx-main small{display:block;font-size:12px;color:var(--soft);margin-top:3px}
+  .gx-right{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .gx-amt{font-size:14px;font-weight:600;color:var(--brush)}
+  .gx-go{flex:none;color:#C2A878;font-size:20px}
+  .gx-note-dot{font-size:11px;color:#B5713F}
+  .gx-det{display:none}
+  .gx.open .gx-sum{display:none}
+  .gx.open .gx-det{display:block}
+  .gx-mode .gx:not(.open){display:none!important}
+  .gx-mode .g-noresult{display:none}
+  .gx-back{font:inherit;font-size:13px;color:var(--soft);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;margin-bottom:10px}
   .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;margin:0 0 10px;outline:none}
   .g-search:focus{border-color:#C9A7DE}
   .g-noresult{font-size:13px;color:var(--soft);text-align:center;padding:14px 0}
@@ -601,10 +615,14 @@ async function loadGuideOrders(){
   var r; try{ r=await db.rpc('my_guide_orders'); }catch(e){ return; }
   if(!r || r.error || !Array.isArray(r.data)) return;
   var tx=r.data;
+  var stc=function(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st==='已取消'||st==='已退費')?'cancel':''; };
   bx.innerHTML= tx.length ? tx.map(function(o){
     var can=o.past && (o.status==='已預約'||o.status==='已完成');
-    return txRowG(o).replace(/<\/div>$/, (can?'<div style="margin-top:8px;text-align:right"><button type="button" class="g-noshow" data-id="'+escA(o.id)+'" style="font:inherit;font-size:12.5px;color:#B4566E;background:#fff;border:1.5px solid #F0D5DC;border-radius:999px;padding:5px 12px;cursor:pointer">客戶沒來？標記未出席</button></div>':'')+'</div>');
+    var sum='<span class="gx-main"><b>'+escA(o.customer_name||'客戶')+'</b>　'+escA(o.service||'')+'<small>'+(o.appointment_at?fmtDT(o.appointment_at):'未定時間')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(o.amount)+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="gx-go">›</span>';
+    var det=txRowG(o).replace(/^<div class="grow">/,'<div>')+(can?'<div style="margin-top:10px;text-align:right"><button type="button" class="g-noshow" data-id="'+escA(o.id)+'" style="font:inherit;font-size:12.5px;color:#B4566E;background:#fff;border:1.5px solid #F0D5DC;border-radius:999px;padding:6px 14px;cursor:pointer">客戶沒來？標記未出席</button></div>':'');
+    return gxRow(sum,det,[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' '));
   }).join('') : '<p class="gempty">還沒有交易。</p>';
+  bindGx(bx);
   bx.querySelectorAll('.g-noshow').forEach(function(b){ b.onclick=async function(){
     if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
     b.disabled=true; b.textContent='處理中…';
@@ -613,11 +631,23 @@ async function loadGuideOrders(){
   }; });
 }
 // 客戶管理（新版）：每位客人的預約明細＋引路人自己的備註；需 SQL my_guide_customers / set_my_customer_note，沒有時維持舊列表
+// 列表只顯示摘要，點進去看明細；「‹ 回列表」返回
+function gxRow(sum,det,search){
+  return '<div class="grow gx" data-search="'+escA(String(search||'').toLowerCase())+'"><button type="button" class="gx-sum">'+sum+'</button><div class="gx-det"><button type="button" class="gx-back">‹ 回列表</button>'+det+'</div></div>';
+}
+function bindGx(box){
+  var inp=document.querySelector('.g-search[data-target="'+box.id+'"]');
+  box.classList.remove('gx-mode'); if(inp) inp.style.display='';  // 列表重新載入後回到列表狀態
+  box.querySelectorAll('.gx').forEach(function(row){
+    row.querySelector('.gx-sum').onclick=function(){ box.classList.add('gx-mode'); row.classList.add('open'); if(inp) inp.style.display='none'; window.scrollTo({top:0}); };
+    row.querySelector('.gx-back').onclick=function(){ box.classList.remove('gx-mode'); row.classList.remove('open'); if(inp) inp.style.display=''; };
+  });
+}
 // 交易紀錄／客戶管理搜尋：即時篩選列表（含備註文字），列表重新載入後自動套用
 function applyGuideSearch(id){
   var inp=document.querySelector('.g-search[data-target="'+id+'"]'), box=document.getElementById(id); if(!inp||!box) return;
   var q=inp.value.trim().toLowerCase(), rows=box.querySelectorAll('.grow'), shown=0;
-  rows.forEach(function(r){ var ta=r.querySelector('textarea'); var hay=(r.textContent+' '+(ta?ta.value:'')).toLowerCase(); var ok=!q||hay.indexOf(q)>=0; r.style.display=ok?'':'none'; if(ok) shown++; });
+  rows.forEach(function(r){ var ta=r.querySelector('textarea'); var hay=(r.getAttribute('data-search')||'')+' '+(r.textContent+' '+(ta?ta.value:'')).toLowerCase(); var ok=!q||hay.indexOf(q)>=0; r.style.display=ok?'':'none'; if(ok) shown++; });
   var nr=box.querySelector('.g-noresult');
   if(q && rows.length && !shown){ if(!nr){ nr=document.createElement('div'); nr.className='g-noresult'; box.appendChild(nr); } nr.textContent='沒有符合「'+inp.value.trim()+'」的結果'; }
   else if(nr) nr.remove();
@@ -642,14 +672,18 @@ async function loadGuideCustomers(){
     var orders=(m.orders||[]).map(function(o){
       return '<div class="gc-o"><span class="gc-dt">'+(o.appointment_at?fmtDT(o.appointment_at):'未定時間')+'</span><span class="gc-sv">'+escA(o.service||'—')+'</span><span class="gc-am">'+money(o.amount)+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></div>';
     }).join('');
-    return '<div class="grow gc-card" data-cid="'+escA(m.id)+'">'
+    var lastO=(m.orders||[])[0];
+    var sum='<span class="gx-main"><b>'+escA(m.name||'客戶')+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
+    var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
       +'<div class="grow-top"><span class="grow-name">'+escA(m.name||'客戶')+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
       +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
       +'<div class="gc-orders">'+orders+'</div>'
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div></div>';
+    return gxRow(sum,det,[m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
+  bindGx(mx);
   mx.querySelectorAll('.gc-card').forEach(function(card){
     var ta=card.querySelector('.gc-note'), sv=card.querySelector('.gc-saved'), last=ta.value;
     ta.addEventListener('blur',async function(){
