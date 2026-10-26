@@ -177,6 +177,9 @@
   .gc-sv{flex:1;min-width:0;color:var(--ink);overflow-wrap:anywhere}
   .gc-am{flex:none;color:var(--ink)}
   .gc-note-l{font-size:12px;color:var(--soft);margin:10px 0 5px}
+  .gc-alias{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;outline:none}
+  .gc-alias:focus{border-color:#C9A7DE;background:#fff}
+  .gc-orig{font-weight:400;color:var(--soft);font-size:.88em}
   .gc-note{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:13.5px;line-height:1.6;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;min-height:56px;resize:vertical;outline:none}
   .gc-note:focus{border-color:#C9A7DE;background:#fff}
   .gc-saved{font-size:11.5px;min-height:1.1em;margin-top:3px;text-align:right}
@@ -632,6 +635,8 @@ async function loadGuideOrders(){
 }
 // 客戶管理（新版）：每位客人的預約明細＋引路人自己的備註；需 SQL my_guide_customers / set_my_customer_note，沒有時維持舊列表
 // 列表只顯示摘要，點進去看明細；「‹ 回列表」返回
+// 客人顯示名稱：有自訂稱呼時「稱呼（原本名字）」
+function gcName(alias,name){ alias=String(alias||'').trim(); name=String(name||'').trim()||'客戶'; return alias&&alias!==name ? escA(alias)+'<span class="gc-orig">（'+escA(name)+'）</span>' : escA(name); }
 function gxRow(sum,det,search){
   return '<div class="grow gx" data-search="'+escA(String(search||'').toLowerCase())+'"><button type="button" class="gx-sum">'+sum+'</button><div class="gx-det"><button type="button" class="gx-back">‹ 回列表</button>'+det+'</div></div>';
 }
@@ -673,18 +678,30 @@ async function loadGuideCustomers(){
       return '<div class="gc-o"><span class="gc-dt">'+(o.appointment_at?fmtDT(o.appointment_at):'未定時間')+'</span><span class="gc-sv">'+escA(o.service||'—')+'</span><span class="gc-am">'+money(o.amount)+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></div>';
     }).join('');
     var lastO=(m.orders||[])[0];
-    var sum='<span class="gx-main"><b>'+escA(m.name||'客戶')+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
+    var sum='<span class="gx-main"><b class="gc-dname">'+gcName(m.alias,m.name)+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
-      +'<div class="grow-top"><span class="grow-name">'+escA(m.name||'客戶')+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
+      +'<div class="grow-top"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
       +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
+      +'<div class="gc-note-l">我的稱呼（只有你看得到，原本名字會顯示在括號裡）</div>'
+      +'<input class="gc-alias" maxlength="30" value="'+escA(m.alias||'')+'" placeholder="例：小瑄（留空＝用原本名字「'+escA(m.name||'')+'」）" data-orig="'+escA(m.name||'')+'">'
       +'<div class="gc-orders">'+orders+'</div>'
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div></div>';
-    return gxRow(sum,det,[m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
+    return gxRow(sum,det,[m.alias,m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
   bindGx(mx);
   mx.querySelectorAll('.gc-card').forEach(function(card){
+    var al=card.querySelector('.gc-alias'), alLast=al?al.value:'';
+    if(al) al.addEventListener('blur',async function(){
+      if(al.value.trim()===alLast.trim()) return;
+      var sv2=card.querySelector('.gc-saved'); sv2.textContent='儲存中…'; sv2.style.color='var(--soft)';
+      try{ var x=await db.rpc('set_my_customer_alias',{p_customer_id:card.getAttribute('data-cid'),p_alias:al.value}); if(x.error) throw new Error(x.error.message);
+        alLast=al.value; var nm=gcName(al.value.trim(),al.getAttribute('data-orig'));
+        var row=card.closest('.gx'); if(row) row.querySelectorAll('.gc-dname').forEach(function(e){ e.innerHTML=nm; });
+        sv2.textContent='稱呼已儲存'; sv2.style.color='#4F8E6E'; setTimeout(function(){ if(sv2.textContent==='稱呼已儲存') sv2.textContent=''; },1500);
+      }catch(e){ sv2.textContent='儲存失敗：'+(e.message||''); sv2.style.color='#C0506A'; }
+    });
     var ta=card.querySelector('.gc-note'), sv=card.querySelector('.gc-saved'), last=ta.value;
     ta.addEventListener('blur',async function(){
       if(ta.value===last) return;
