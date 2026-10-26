@@ -154,6 +154,9 @@
   .cal-st{flex:none;font-size:11px;padding:2px 8px;border-radius:999px;background:#FBE7CC;color:#A5643A}
   .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#8A7659}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
   .cal-open{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;margin:0 0 10px;outline:none}
+  .g-search:focus{border-color:#C9A7DE}
+  .g-noresult{font-size:13px;color:var(--soft);text-align:center;padding:14px 0}
   .gc-orders{margin-top:8px;border-top:1px dashed #EFE3CE}
   .gc-o{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed #EFE3CE}
   .gc-dt{flex:none;width:118px;color:var(--brush);font-weight:500}
@@ -368,9 +371,11 @@
   <div class="gstats" id="g-report"></div>
 
   <div class="gsec-lab">交易紀錄</div>
+  <input class="g-search" data-target="g-bookings" type="search" placeholder="搜尋 客戶／項目／日期／訂單編號／狀態…">
   <div class="gbox" id="g-bookings"></div>
 
   <div class="gsec-lab">客戶管理</div>
+  <input class="g-search" data-target="g-members" type="search" placeholder="搜尋 姓名／電話／信箱／地區／備註…">
   <div class="gbox" id="g-members"></div>
 
   <button class="lo" id="g-logout" style="margin-top:22px">登出</button>
@@ -608,6 +613,23 @@ async function loadGuideOrders(){
   }; });
 }
 // 客戶管理（新版）：每位客人的預約明細＋引路人自己的備註；需 SQL my_guide_customers / set_my_customer_note，沒有時維持舊列表
+// 交易紀錄／客戶管理搜尋：即時篩選列表（含備註文字），列表重新載入後自動套用
+function applyGuideSearch(id){
+  var inp=document.querySelector('.g-search[data-target="'+id+'"]'), box=document.getElementById(id); if(!inp||!box) return;
+  var q=inp.value.trim().toLowerCase(), rows=box.querySelectorAll('.grow'), shown=0;
+  rows.forEach(function(r){ var ta=r.querySelector('textarea'); var hay=(r.textContent+' '+(ta?ta.value:'')).toLowerCase(); var ok=!q||hay.indexOf(q)>=0; r.style.display=ok?'':'none'; if(ok) shown++; });
+  var nr=box.querySelector('.g-noresult');
+  if(q && rows.length && !shown){ if(!nr){ nr=document.createElement('div'); nr.className='g-noresult'; box.appendChild(nr); } nr.textContent='沒有符合「'+inp.value.trim()+'」的結果'; }
+  else if(nr) nr.remove();
+}
+(function(){
+  document.querySelectorAll('.g-search').forEach(function(inp){
+    var id=inp.getAttribute('data-target');
+    inp.addEventListener('input',function(){ applyGuideSearch(id); });
+    var box=document.getElementById(id);
+    if(box && window.MutationObserver) new MutationObserver(function(){ if(inp.value) applyGuideSearch(id); }).observe(box,{childList:true});
+  });
+})();
 async function loadGuideCustomers(){
   var mx=$('#g-members'); if(!mx) return;
   var r; try{ r=await db.rpc('my_guide_customers'); }catch(e){ return; }
