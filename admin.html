@@ -101,6 +101,10 @@
   .gblock.collapsed .caret{transform:rotate(-90deg)}
   .gblock.collapsed .gitems{display:none}
   .chead{cursor:pointer}
+  .a-edit{border:0;background:none;color:#B49AC8;font-size:14px;line-height:1;padding:3px 5px;margin:-3px 0;border-radius:7px;cursor:pointer;vertical-align:baseline}
+  .a-edit:hover{background:#F4ECF9}
+  .a-orig{font-weight:400;color:var(--soft);font-size:.9em}
+  .a-alias{font:inherit;font-weight:600;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #C9A7DE;border-radius:7px;padding:3px 7px;outline:none;width:9em;max-width:60vw}
   .cust.collapsed .caret{transform:rotate(-90deg)}
   .cust.collapsed .cbody{display:none}
 
@@ -409,6 +413,8 @@ function testResultsHtml(c){
   if(!keys.length) return '測驗 '+esc(c.result_type||'—')+(c.topic?'（'+esc(c.topic)+'）':'');
   return keys.map(function(k){ var x=tr[k]||{}; var extra=(k==='心靈導航測驗'&&x.topic)?'（'+esc(x.topic)+'）':''; return esc(k.replace('測驗',''))+' <b style="color:var(--brush);font-weight:500">'+esc(x.result||'—')+'</b>'+extra+(x.at?' <span style="font-size:11px">'+esc(x.at)+'</span>':''); }).join('　·　');
 }
+// 後台自訂稱呼（只有後台看得到）：顯示「稱呼（客人本人填的名字）」，客人改名字括號會跟著變
+function adName(c){ var al=String(c.admin_alias||'').trim(), nm=String(c.name||'').trim(); return al&&al!==nm ? esc(al)+'<span class="a-orig">（'+(nm?esc(nm):'未填姓名')+'）</span>' : (nm?esc(nm):'(未填姓名)'); }
 function custLabel(c){return c.name || c.contact || (c.ref_code?('代碼'+c.ref_code):'') || '(無名客戶)';}
 function guideLabel(g){return g.name || '(未命名引路人)';}
 function custById(id){return ALL.find(function(x){return x.id===id;});}
@@ -494,7 +500,7 @@ function render(){
     if(fs && c.status!==fs) return false;
     if(ft){ var nav=((c.test_results||{})['心靈導航測驗']||{}).result; if(nav!==ft && c.result_type!==ft) return false; }
     if(fsrc && (c.source||'測驗')!==fsrc) return false;
-    if(q){ var hay=[c.ref_code,c.name,c.contact,c.phone,c.area,c.notes,c.topic,c.result_type,JSON.stringify(c.test_results||{}),(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
+    if(q){ var hay=[c.ref_code,c.admin_alias,c.name,c.contact,c.phone,c.area,c.notes,c.topic,c.result_type,JSON.stringify(c.test_results||{}),(c.tags||[]).join(' ')].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
     return true;
   });
   $('#count').textContent='共 '+ALL.length+' 位，顯示 '+rows.length+' 位';
@@ -515,7 +521,7 @@ function card(c){
   var a=custAgg(c.id);
   return '<div class="cust collapsed" data-id="'+c.id+'">'+
     '<div class="cust-top chead">'+
-      '<div><span class="caret">▾</span> <b>'+esc(c.name||'(未填姓名)')+'</b> <span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+(c.source==='會員'?'會員':'非會員')+'</span> <small style="color:var(--soft)">'+esc(c.contact||'')+'</small></div>'+
+      '<div><span class="caret">▾</span> <b class="a-dname">'+adName(c)+'</b><button type="button" class="a-edit" data-aedit title="修改稱呼（只有後台看得到）" aria-label="修改稱呼">✎</button> <span class="src-badge '+(c.source==='會員'?'src-m':'src-q')+'">'+(c.source==='會員'?'會員':'非會員')+'</span> <small style="color:var(--soft)">'+esc(c.contact||'')+'</small></div>'+
       '<div class="meta">'+fmtDate(c.created_at)+'</div>'+
     '</div>'+
     '<div class="cbody">'+
@@ -523,7 +529,7 @@ function card(c){
     '<div class="summary"><span>餘額 <b>'+money(a.balance)+'</b></span><span>累積消費 <b>'+money(a.spent)+'</b></span><span>儲值 <b>'+money(a.topup)+'</b></span><button class="rlink" data-rec>查看紀錄</button></div>'+
     '<div class="records" data-recbox style="display:none">'+customerRecords(c.id)+'</div>'+
     '<div class="cust-grid">'+
-      '<label>稱呼<input class="in" data-f="name" value="'+esc(c.name)+'" placeholder="—"></label>'+
+      '<label>姓名（客人本人資料）<input class="in" data-f="name" value=""'+esc(c.name)+'" placeholder="—"></label>'+
       '<label>聯絡（LINE／電話）<input class="in" data-f="contact" value="'+esc(c.contact)+'" placeholder="—"></label>'+
       '<label>狀態<select class="in" data-f="status">'+STATUSES.map(function(s){return '<option'+(c.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></label>'+
       '<label>標籤（逗號分隔）<input class="in" data-f="tags" value="'+esc((c.tags||[]).join(', '))+'" placeholder="例：高意願, 感情"></label>'+
@@ -549,9 +555,33 @@ function bindCards(){
         var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
         var r=await db.from('customers').update(patch).eq('id',id);
         if(r.error){ s.textContent='存檔失敗'; s.style.color='#C0506A'; }
-        else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var c=custById(id); if(c)c[f]=val; setTimeout(function(){s.textContent='';},1400); }
+        else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var c=custById(id); if(c)c[f]=val; if(f==='name'&&c){ var dn=el.querySelector('.a-dname'); if(dn) dn.innerHTML=adName(c); } setTimeout(function(){s.textContent='';},1400); }
       });
     });
+    var eb=el.querySelector('[data-aedit]');
+    if(eb) eb.onclick=function(e){
+      e.stopPropagation(); if(el.querySelector('.a-alias')) return;
+      var c=custById(id); if(!c) return;
+      var dn=el.querySelector('.a-dname'), old=String(c.admin_alias||''), orig=String(c.name||'');
+      var al=document.createElement('input'); al.className='a-alias'; al.maxLength=30; al.value=old||orig; al.placeholder=orig||'稱呼';
+      dn.style.display='none'; eb.style.display='none'; dn.parentNode.insertBefore(al,dn); al.focus(); al.select();
+      var done=false;
+      var close=function(){ al.remove(); dn.style.display=''; eb.style.display=''; };
+      al.addEventListener('keydown',function(ev){
+        if(ev.key==='Enter'&&!ev.isComposing){ ev.preventDefault(); al.blur(); }
+        else if(ev.key==='Escape'){ done=true; close(); }
+      });
+      al.addEventListener('blur',async function(){
+        if(done) return; done=true;
+        var v=al.value.trim().slice(0,30); if(v===orig.trim()) v='';
+        if(v===old){ close(); return; }
+        var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
+        var r=await db.from('customers').update({admin_alias:v||null}).eq('id',id);
+        if(r.error){ s.textContent='存檔失敗'+(/admin_alias/.test(r.error.message||'')?'（請先執行 SQL）':''); s.style.color='#C0506A'; }
+        else{ c.admin_alias=v||null; dn.innerHTML=adName(c); s.textContent='稱呼已儲存'; s.style.color='#4F8E6E'; setTimeout(function(){s.textContent='';},1400); }
+        close();
+      });
+    };
     el.querySelector('[data-del]').onclick=async function(){
       if(!confirm('刪除這位客戶？會移到「刪除紀錄」，可還原。'))return;
       if(await softDelete('customers',id,ALL)){ render(); renderTrash(); }
@@ -1175,7 +1205,7 @@ var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
 if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); RP_OPEN[b.getAttribute('data-k')]=!rpAllCollapsed; }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
-['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });
+['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ if(e.target.closest('.a-edit,.a-alias')) return; var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(card) card.classList.toggle('collapsed'); } }); });
 function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
 bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#glist'); bindCollapseAll('tx-collapse','#txlist');
 
