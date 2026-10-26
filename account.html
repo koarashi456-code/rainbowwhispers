@@ -177,8 +177,10 @@
   .gc-sv{flex:1;min-width:0;color:var(--ink);overflow-wrap:anywhere}
   .gc-am{flex:none;color:var(--ink)}
   .gc-note-l{font-size:12px;color:var(--soft);margin:10px 0 5px}
-  .gc-alias{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;outline:none}
-  .gc-alias:focus{border-color:#C9A7DE;background:#fff}
+  .gc-nm{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+  .gc-edit{border:0;background:none;color:#B49AC8;font-size:15px;line-height:1;padding:4px 6px;margin:-4px 0;border-radius:8px;cursor:pointer}
+  .gc-edit:hover{background:#F4ECF9}
+  .gc-alias{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #C9A7DE;border-radius:8px;padding:4px 8px;outline:none;width:9em;max-width:100%}
   .gc-orig{font-weight:400;color:var(--soft);font-size:.88em}
   .gc-note{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:13.5px;line-height:1.6;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;min-height:56px;resize:vertical;outline:none}
   .gc-note:focus{border-color:#C9A7DE;background:#fff}
@@ -680,27 +682,41 @@ async function loadGuideCustomers(){
     var lastO=(m.orders||[])[0];
     var sum='<span class="gx-main"><b class="gc-dname">'+gcName(m.alias,m.name)+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
-      +'<div class="grow-top"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
+      +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span><span class="grow-amt">'+money(m.spend)+'</span></div>'
       +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
-      +'<div class="gc-note-l">我的稱呼（只有你看得到，原本名字會顯示在括號裡）</div>'
-      +'<input class="gc-alias" maxlength="30" value="'+escA(m.alias||'')+'" placeholder="例：小瑄（留空＝用原本名字「'+escA(m.name||'')+'」）" data-orig="'+escA(m.name||'')+'">'
-      +'<div class="gc-orders">'+orders+'</div>'
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
-      +'<div class="gc-saved"></div></div>';
+      +'<div class="gc-saved"></div>'
+      +'<div class="gc-orders">'+orders+'</div></div>';
     return gxRow(sum,det,[m.alias,m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
   bindGx(mx);
   mx.querySelectorAll('.gc-card').forEach(function(card){
-    var al=card.querySelector('.gc-alias'), alLast=al?al.value:'';
-    if(al) al.addEventListener('blur',async function(){
-      if(al.value.trim()===alLast.trim()) return;
-      var sv2=card.querySelector('.gc-saved'); sv2.textContent='儲存中…'; sv2.style.color='var(--soft)';
-      try{ var x=await db.rpc('set_my_customer_alias',{p_customer_id:card.getAttribute('data-cid'),p_alias:al.value}); if(x.error) throw new Error(x.error.message);
-        alLast=al.value; var nm=gcName(al.value.trim(),al.getAttribute('data-orig'));
-        var row=card.closest('.gx'); if(row) row.querySelectorAll('.gc-dname').forEach(function(e){ e.innerHTML=nm; });
-        sv2.textContent='稱呼已儲存'; sv2.style.color='#4F8E6E'; setTimeout(function(){ if(sv2.textContent==='稱呼已儲存') sv2.textContent=''; },1500);
-      }catch(e){ sv2.textContent='儲存失敗：'+(e.message||''); sv2.style.color='#C0506A'; }
+    var eb=card.querySelector('.gc-edit');
+    if(eb) eb.addEventListener('click',function(){
+      if(card.querySelector('.gc-alias')) return;
+      var nmEl=card.querySelector('.grow-name.gc-dname'), orig=eb.getAttribute('data-orig'), old=eb.getAttribute('data-alias');
+      var al=document.createElement('input'); al.className='gc-alias'; al.maxLength=30; al.value=old||orig; al.placeholder=orig;
+      nmEl.style.display='none'; eb.style.display='none'; nmEl.parentNode.insertBefore(al,nmEl); al.focus(); al.select();
+      var done=false;
+      var close=function(){ al.remove(); nmEl.style.display=''; eb.style.display=''; };
+      var save=async function(){
+        if(done) return; done=true;
+        var v=al.value.trim(); if(v===orig) v='';
+        if(v===(old||'')){ close(); return; }
+        var sv2=card.querySelector('.gc-saved'); sv2.textContent='儲存中…'; sv2.style.color='var(--soft)';
+        try{ var x=await db.rpc('set_my_customer_alias',{p_customer_id:card.getAttribute('data-cid'),p_alias:v}); if(x.error) throw new Error(x.error.message);
+          eb.setAttribute('data-alias',v); var nm=gcName(v,orig);
+          var row=card.closest('.gx'); if(row) row.querySelectorAll('.gc-dname').forEach(function(e){ e.innerHTML=nm; });
+          sv2.textContent='稱呼已儲存'; sv2.style.color='#4F8E6E'; setTimeout(function(){ if(sv2.textContent==='稱呼已儲存') sv2.textContent=''; },1500);
+        }catch(e){ sv2.textContent='儲存失敗：'+(e.message||''); sv2.style.color='#C0506A'; }
+        close();
+      };
+      al.addEventListener('keydown',function(e){
+        if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); al.blur(); }
+        else if(e.key==='Escape'){ done=true; close(); }
+      });
+      al.addEventListener('blur',save);
     });
     var ta=card.querySelector('.gc-note'), sv=card.querySelector('.gc-saved'), last=ta.value;
     ta.addEventListener('blur',async function(){
