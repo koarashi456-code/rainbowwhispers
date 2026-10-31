@@ -22,6 +22,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF4E6">
 <style>
+  /* 引路人名單：按「挑選引路人」才打開（#pick），不放在頁面下面 */
+  #v-guides:not(.picking) #pick{display:none}
+  #v-guides.picking > section:not(#pick){display:none}
+  .pick-back{font:inherit;font-size:14px;color:var(--soft);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
   .bk-segbar{position:sticky;top:0;z-index:45;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);padding:10px 16px;text-align:center;border-bottom:1px solid var(--line)}
   .bk-seg{display:inline-flex;background:#F3E9D6;border-radius:999px;padding:4px;gap:2px}
   .bk-seg button{font:inherit;font-size:14.5px;color:var(--soft);background:none;border:0;border-radius:999px;padding:8px 22px;cursor:pointer}
@@ -91,7 +95,7 @@
     <h1 class="rw-h1" style="margin-bottom:12px">真正合得來的引路人，<br>兩種方式都能約。</h1>
     <p class="rw-p" style="margin-bottom:20px">已經有想找的引路人，就直接線上預約；還不知道選誰，讓我們用真人幫你配。</p>
     <div style="display:grid;gap:12px;text-align:left;max-width:520px;margin:0 auto">
-      <div class="rw-card" style="font-size:14px"><b class="rw-strong">① 我知道想找誰</b><br>在下方挑一位 → 選方案和開放時段 → 登入會員、付款完成預約。<div style="margin-top:10px"><a class="rw-cta" href="#pick" style="font-size:14px;padding:10px 22px">挑選引路人　→</a></div></div>
+      <div class="rw-card" style="font-size:14px"><b class="rw-strong">① 我知道想找誰</b><br>點下面的按鈕挑一位 → 選方案和開放時段 → 登入會員、付款完成預約。<div style="margin-top:10px"><a class="rw-cta" href="#pick" style="font-size:14px;padding:10px 22px">挑選引路人　→</a></div></div>
       <div class="rw-card" style="font-size:14px"><b class="rw-strong">② 我不知道選誰</b><br>先選一份測驗做做看，測完會推薦適合你的引路人；或加官方 LINE，我們照你的結果幫你配一位、把時間約好。<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a class="rw-cta" href="tests.html" style="font-size:14px;padding:10px 22px">選一份測驗　→</a><a class="rw-ghost" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="font-size:14px;padding:10px 22px">加官方 LINE 幫我配</a></div></div>
     </div>
   </div>
@@ -99,6 +103,7 @@
 
 <section class="rw-sec rw-center" id="pick" style="scroll-margin-top:70px">
   <div class="rw-in">
+    <div style="text-align:left;margin:-18px 0 14px"><button type="button" class="pick-back" id="pick-back">‹ 返回</button></div>
     <h2 class="rw-h2">挑一位引路人</h2>
     <p class="rw-p" id="pick-intro" style="margin:8px auto 20px">點一位引路人，看看介紹並直接預約。</p>
     <div id="live-guides" style="max-width:460px;margin:0 auto"><div class="rw-p" style="font-size:13px">載入引路人中…</div></div>
@@ -251,8 +256,10 @@ function setView(v){
   function stick(){ if(nav&&bar) bar.style.top=nav.offsetHeight+'px'; }
   stick(); window.addEventListener('resize',stick);
   bar.addEventListener('click',function(e){ var b=e.target.closest('[data-v]'); if(!b) return; var v=b.getAttribute('data-v');
-    if(setView(v)){ try{ history.replaceState(null,'',v==='shop'?'#shop':location.pathname+location.search); }catch(x){} window.scrollTo(0,0); } });
-  function fromHash(){ var h=location.hash; setView(h==='#shop'?'shop':'guides'); if(h==='#pick'){ var p=document.getElementById('pick'); if(p) setTimeout(function(){ p.scrollIntoView(); },0); } }
+    if(setView(v)){ try{ history.replaceState(null,'',v==='shop'?'#shop':location.pathname+location.search); }catch(x){} var vg=document.getElementById('v-guides'); if(vg) vg.classList.remove('picking'); window.scrollTo(0,0); } });
+  function fromHash(){ var h=location.hash; setView(h==='#shop'?'shop':'guides');
+    var vg=document.getElementById('v-guides'), on=(h==='#pick'); if(vg && vg.classList.contains('picking')!==on){ vg.classList.toggle('picking',on); window.scrollTo(0,0); } }
+  var pb=document.getElementById('pick-back'); if(pb) pb.onclick=function(){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(x){} fromHash(); };
   window.addEventListener('hashchange',fromHash);
   fromHash();
 })();
