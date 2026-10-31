@@ -99,6 +99,7 @@
 </footer>
 
 <script src="supabase-config.js"></script>
+<script src="area.js"></script>
 <script>
 var CONFIG={ lineOaId:'@518xokyr', lineUrl:'https://lin.ee/t0NBjud0' };
 var SUPA=window.SUPA;
@@ -156,6 +157,7 @@ function compute(){
 function render(){
   if(S.step===0) return renderIntro();
   if(S.step>=1 && S.step<=QUESTIONS.length) return renderQ();
+  if(S.step===QUESTIONS.length+1) return renderPrefs();
   return renderResult();
 }
 function renderIntro(){
@@ -173,14 +175,31 @@ function renderIntro(){
 function renderQ(){
   var i=S.step-1, q=QUESTIONS[i];
   app.innerHTML='<div class="ck-card">'+
-    '<div class="ck-qnum">第 '+S.step+' / '+QUESTIONS.length+' 題</div>'+
-    '<div class="ck-qbar"><i style="width:'+Math.round(S.step/QUESTIONS.length*100)+'%"></i></div>'+
+    '<div class="ck-qnum">第 '+S.step+' / '+(QUESTIONS.length+1)+' 題</div>'+
+    '<div class="ck-qbar"><i style="width:'+Math.round(S.step/(QUESTIONS.length+1)*100)+'%"></i></div>'+
     '<div class="ck-q">'+esc(q.t)+'</div>'+
     '<div>'+OPTS.map(function(o,oi){return '<div class="ck-opt" data-v="'+o.v+'"><span class="rd"></span><span>'+o.t+'</span></div>';}).join('')+'</div>'+
     (S.step>1?'<button class="ck-back" id="ck-back">‹ 上一題</button>':'')+
   '</div>';
   app.querySelectorAll('.ck-opt').forEach(function(el){ el.onclick=function(){ S.answers[i]=parseInt(el.getAttribute('data-v'),10); S.step++; render(); window.scrollTo({top:0,behavior:'smooth'}); }; });
   var bk=document.getElementById('ck-back'); if(bk) bk.onclick=function(){ S.step--; render(); window.scrollTo({top:0,behavior:'smooth'}); };
+}
+// 最後一題：地區／預算／方式（配對引路人用）
+function renderPrefs(){
+  var n=QUESTIONS.length+1;
+  app.innerHTML='<div class="ck-card">'+
+    '<div class="ck-qnum">最後一題 · 第 '+n+' / '+n+' 題</div>'+
+    '<div class="ck-qbar"><i style="width:100%"></i></div>'+
+    '<div class="ck-q" style="min-height:0">最後一題：讓我們幫你配得更準</div>'+
+    '<div class="ck-p" style="font-size:13px">選好之後，推薦的引路人會符合你的地區、預算和方式。</div>'+
+    RWMatch.formHTML()+'<div class="pf-err" id="pf-err"></div>'+
+    '<button class="ck-cta" id="pf-go">看我的結果</button>'+
+    '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div>'+
+    '<button class="ck-back" id="ck-back">‹ 上一題</button>'+
+  '</div>';
+  var pf=RWMatch.mount(app.querySelector('.ck-card'),document.getElementById('pf-err'));
+  document.getElementById('pf-go').onclick=function(){ var p=pf.check(); if(!p) return; S.prefs=p; S.step++; render(); };
+  document.getElementById('ck-back').onclick=function(){ S.step--; render(); window.scrollTo({top:0,behavior:'smooth'}); };
 }
 function renderResult(){
   var R=compute(), f=CKMAP[R.focus];
@@ -191,7 +210,7 @@ function renderResult(){
   var ref=genRef();
   curLead={ref:ref,type:f.name+'（'+f.sub+'）'}; leadSaved=false;
   if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：一出結果就記到會員資料
-  var msg='我做完彩之語的七大脈輪測驗了！此刻最需要關注的是「'+f.name+'·'+f.sub+'」。（代碼 '+ref+'）';
+  var msg='我做完彩之語的七大脈輪測驗了！此刻最需要關注的是「'+f.name+'·'+f.sub+'」。'+(S.prefs?'配對條件：'+RWMatch.label(S.prefs)+'。':'')+'（代碼 '+ref+'）';
   var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg);
   app.innerHTML='<div class="ck-card">'+
     '<div class="ck-rsub">你的脈輪能量圖</div>'+
@@ -204,17 +223,18 @@ function renderResult(){
     '<button class="ck-back" id="ck-restart" style="display:block;margin:16px auto 0">重新測一次</button>'+
     '<div class="ck-note">此結果僅供自我覺察與參考，不作為醫療或心理診斷。</div>'+
   '</div>';
-  loadRec(R.focus);
+  LINE_HREF=lineHref; loadRec(R.focus);
   var lg=document.getElementById('ck-line'); if(lg) lg.onclick=function(){ saveLead(); };
   var rs=document.getElementById('ck-restart'); if(rs) rs.onclick=function(){ S={step:0,answers:[]}; curLead=null; leadSaved=false; render(); window.scrollTo({top:0,behavior:'smooth'}); };
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function saveTestResult(topic,result,ref){
   // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['七大脈輪測驗']={result:result,topic:topic}; return o; })()})});}catch(e){} }
+  var prefs=RWMatch.forDb(S.prefs);
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['七大脈輪測驗']={result:result,topic:topic}; if(prefs) o['七大脈輪測驗'].prefs=prefs; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
-  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'七大脈輪測驗'})})
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'七大脈輪測驗',p_prefs:prefs})})
     .then(function(r){ if(!r.ok) anon(); }).catch(anon);
 }
 function saveLead(){
@@ -222,32 +242,38 @@ function saveLead(){
   saveTestResult('七大脈輪測驗',curLead.type,curLead.ref);
 }
 // 依焦點脈輪推薦適合的能量引路人（撈 public_guides、用關鍵字比對服務）
-var GUIDES_CACHE=null;
+var GUIDES_CACHE=null, LINE_HREF='https://lin.ee/t0NBjud0';
 async function loadRec(ckKey){
   if(!GUIDES_CACHE){
     try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region,service_mode,price',{headers:{apikey:SUPA.key}}); GUIDES_CACHE=r.ok?(await r.json()):[]; }catch(e){ GUIDES_CACHE=[]; }
   }
+  PRICES=await RWMatch.loadPrices();
   renderRec(ckKey);
 }
+var PRICES={};
 function renderRec(ckKey){
   var box=document.getElementById('ck-rec'); if(!box) return;
   var ck=CKMAP[ckKey], rec=(ck&&ck.rec)||{dir:'',kw:[]}, kw=rec.kw||[];
   var guides=GUIDES_CACHE||[];
   function score(g){ var hay=((g.services||[]).join(' ')+' '+(g.name||'')+' '+(g.service_mode||'')).toLowerCase(); var s=0; kw.forEach(function(k){ if(hay.indexOf(String(k).toLowerCase())>=0) s++; }); return s; }
-  var scored=guides.map(function(g){return {g:g,s:score(g)};}).sort(function(a,b){return b.s-a.s;});
-  var picks=scored.filter(function(x){return x.s>0;}).slice(0,2).map(function(x){return x.g;});
-  if(!picks.length) picks=guides.slice(0,2);
+  // 先挑這個方向的人，再依地區／預算／方式排；沒有這個方向的人就從全部挑
+  var ranked=RWMatch.rank(guides,S.prefs,PRICES,score);
+  if(!ranked.length) ranked=RWMatch.rank(guides,S.prefs,PRICES,null);
+  var picks=ranked.slice(0,2);
   var h='<div class="ck-reclab">為你推薦的能量引路人</div>';
   if(rec.dir) h+='<div class="ck-recdir">'+esc(rec.dir)+'</div>';
+  if(S.prefs) h+='<div class="pf-line">依你選的：<b>'+esc(RWMatch.label(S.prefs))+'</b></div>';
   if(picks.length){
-    h+=picks.map(function(g){
-      var svc=(g.services||[]).slice(0,3).map(function(s){return '<span class="ck-chip">'+esc(s)+'</span>';}).join('');
-      return '<a class="ck-reccard" href="guide.html?id='+encodeURIComponent(g.id)+'"><div class="ck-recname">'+esc(g.name||'引路人')+(g.region?'<span class="ck-recreg">'+esc(g.region)+'</span>':'')+'</div>'+(svc?'<div class="ck-recchips">'+svc+'</div>':'')+'<span class="ck-recgo">預約 ›</span></a>';
+    h+=picks.map(function(x){
+      var g=x.g, svc=(g.services||[]).slice(0,3).map(function(s){return '<span class="ck-chip">'+esc(s)+'</span>';}).join('');
+      return '<a class="ck-reccard" href="guide.html?id='+encodeURIComponent(g.id)+'"><div class="ck-recname">'+esc(g.name||'引路人')+(g.region?'<span class="ck-recreg">'+esc(g.region)+'</span>':'')+'</div>'+(svc?'<div class="ck-recchips">'+svc+'</div>':'')+RWMatch.tagsHTML(x.f)+'<span class="ck-recgo">預約 ›</span></a>';
     }).join('');
   } else {
     h+='<div class="ck-recempty">引路人陸續加入中，先逛逛看看。</div>';
   }
+  h+=RWMatch.helpHTML(!picks.length || picks[0].f.bad>0, LINE_HREF);
   box.innerHTML=h;
+  var ha=box.querySelector('.mt-help a,.mt-soft a'); if(ha) ha.addEventListener('click',function(){ saveLead(); });
 }
 render();
 </script>

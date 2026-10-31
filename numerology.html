@@ -46,9 +46,10 @@
     <div style="max-width:340px;margin:0 auto;text-align:left">
       <label style="display:block;font-size:12.5px;color:var(--soft);margin-bottom:6px">出生日期（西元）</label>
       <input id="nm-bd" type="date" min="1900-01-01" style="display:block;width:100%;box-sizing:border-box;font:inherit;font-size:16px;color:var(--ink);background:#FFFDF8;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 12px;outline:none">
-      <div id="nm-err" style="font-size:12.5px;color:#C0506A;min-height:1.2em;margin:6px 2px"></div>
+      <div id="nm-pf"></div>
+      <div id="nm-err" style="font-size:12.5px;color:#C0506A;min-height:1.2em;margin:10px 2px 6px;text-align:center"></div>
       <button class="rw-cta" id="nm-go" type="button" style="display:block;width:100%;border:0;cursor:pointer;font:inherit;font-size:15px">看我的生命靈數　→</button>
-      <p class="rw-p" style="font-size:12px;margin-top:10px;text-align:center">生日只用來計算，不會被儲存。</p>
+      <p class="rw-p" style="font-size:12px;margin-top:10px;text-align:center">生日只用來計算，不會被儲存；地區、預算和方式只用來幫你配對引路人。</p>
     </div>
   </div>
 </section>
@@ -77,6 +78,7 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 <script src="supabase-config.js"></script>
+<script src="area.js"></script>
 <script>
 var NUM={
  1:{kw:'開創 · 獨立',t:'1 號人｜開路先鋒',d:'你有很強的主見和行動力，喜歡自己做決定、走在前面。你天生帶著領導氣質，遇到新的挑戰反而會興奮。',tip:'偶爾放慢腳步聽聽身邊的人，你會發現一起走更輕鬆。'},
@@ -93,28 +95,41 @@ function esc(t){return (t==null?'':String(t)).replace(/[&<>"]/g,function(m){retu
 // 生命靈數：西元生日每一位數字加總，反覆相加到個位數
 function lifePath(ymd){ var s=ymd.replace(/\D/g,''), n=0; for(var i=0;i<s.length;i++) n+=+s[i]; var master=(n===11||n===22||n===33)?n:0; while(n>9){ var t=0; String(n).split('').forEach(function(c){t+=+c;}); n=t; } return {n:n,sum:master}; }
 var CUR=null, saved=false;
+// 生日下面一起選：地區／預算／方式（配對引路人用）
+var PF=null, PREFS=null;
+(function(){ var box=document.getElementById('nm-pf'); if(!box||!window.RWMatch) return; box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-top:14px">幫你配對引路人，再多選三個：</div>'+RWMatch.formHTML(); PF=RWMatch.mount(box,document.getElementById('nm-err')); })();
 function saveTestResult(topic,result,ref){
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['生命靈數']={result:result,topic:topic}; return o; })()})});}catch(e){} }
+  var prefs=RWMatch.forDb(PREFS);
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['生命靈數']={result:result,topic:topic}; if(prefs) o['生命靈數'].prefs=prefs; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
-  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'生命靈數'})}).then(function(r){ if(!r.ok) anon(); }).catch(anon);
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'生命靈數',p_prefs:prefs})}).then(function(r){ if(!r.ok) anon(); }).catch(anon);
 }
 function saveLead(){ if(saved||!CUR||!window.SUPA) return; saved=true; saveTestResult('生命靈數',CUR.n+' 號人',CUR.ref); }
 async function loadRec(){
   var box=document.getElementById('nm-rec'); var guides=[];
-  try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}); guides=r.ok?(await r.json()):[]; }catch(e){}
+  try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region,service_mode',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}); guides=r.ok?(await r.json()):[]; }catch(e){}
+  var prices=await RWMatch.loadPrices();
   var kw=['生命靈數','靈數','數字','命理','易經','占星','紫微','八字'];
-  var picks=(guides||[]).map(function(g){ var hay=((g.services||[]).join(' ')+' '+(g.name||'')).toLowerCase(); var s=0; kw.forEach(function(k){ if(hay.indexOf(k.toLowerCase())>=0) s++; }); return {g:g,s:s}; }).filter(function(x){return x.s>0;}).sort(function(a,b){return b.s-a.s;}).slice(0,2).map(function(x){return x.g;});
-  if(!picks.length){ box.innerHTML='<a class="rw-card" href="booking.html#pick" style="display:block;text-decoration:none;font-size:14px;color:var(--ink)"><b class="rw-strong">看看所有引路人 ›</b><br><span style="font-size:12.5px;color:var(--soft)">擅長生命靈數的引路人陸續加入中</span></a>'; return; }
-  box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px;text-align:left">適合陪你深入解讀的引路人</div>'+picks.map(function(g){
-    return '<a href="guide.html?id='+encodeURIComponent(g.id)+'" style="display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:12px 14px;margin-bottom:10px;color:var(--ink)"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(g.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'avatar.svg\'" style="flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;background:#F4EAD4"><span style="flex:1;min-width:0"><b style="color:var(--brush)">'+esc(g.name||'引路人')+'</b><span style="display:block;font-size:12px;color:var(--soft);margin-top:2px">'+esc([(g.services||[]).slice(0,3).join('、'),g.region||''].filter(Boolean).join(' · '))+'</span></span><span style="flex:none;color:#B5713F;font-size:13px">看介紹・預約 ›</span></a>';
-  }).join('');
+  var kwScore=function(g){ var hay=((g.services||[]).join(' ')+' '+(g.name||'')).toLowerCase(); var s=0; kw.forEach(function(k){ if(hay.indexOf(k.toLowerCase())>=0) s++; }); return s; };
+  var picks=RWMatch.rank(guides,PREFS,prices,kwScore).slice(0,2);
+  var lineHref='https://lin.ee/t0NBjud0';
+  var line=PREFS?'<div class="pf-line" style="text-align:left">依你選的：<b>'+esc(RWMatch.label(PREFS))+'</b></div>':'';
+  var help=RWMatch.helpHTML(!picks.length || picks[0].f.bad>0, lineHref);
+  if(!picks.length){ box.innerHTML=line+'<a class="rw-card" href="booking.html#pick" style="display:block;text-decoration:none;font-size:14px;color:var(--ink)"><b class="rw-strong">看看所有引路人 ›</b><br><span style="font-size:12.5px;color:var(--soft)">擅長生命靈數的引路人陸續加入中</span></a>'+help; bindHelp(); return; }
+  box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-bottom:4px;text-align:left">適合陪你深入解讀的引路人</div>'+line+picks.map(function(x){
+    var g=x.g;
+    return '<a href="guide.html?id='+encodeURIComponent(g.id)+'" style="display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;background:#FFFDF8;border:1px solid #ECDFC6;border-radius:16px;padding:12px 14px;margin-bottom:10px;color:var(--ink)"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(g.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'avatar.svg\'" style="flex:none;width:44px;height:44px;border-radius:50%;object-fit:cover;background:#F4EAD4"><span style="flex:1;min-width:0"><b style="color:var(--brush)">'+esc(g.name||'引路人')+'</b><span style="display:block;font-size:12px;color:var(--soft);margin-top:2px">'+esc([(g.services||[]).slice(0,3).join('、'),g.region||''].filter(Boolean).join(' · '))+'</span>'+RWMatch.tagsHTML(x.f)+'</span><span style="flex:none;color:#B5713F;font-size:13px">看介紹・預約 ›</span></a>';
+  }).join('')+help;
+  bindHelp();
+  function bindHelp(){ var ha=box.querySelector('.mt-help a,.mt-soft a'); if(ha) ha.addEventListener('click',function(){ saveLead(); }); }
 }
 document.getElementById('nm-go').onclick=function(){
   var v=document.getElementById('nm-bd').value, err=document.getElementById('nm-err');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(v)){ err.textContent='請選擇你的出生日期'; return; }
   var y=+v.slice(0,4); if(y<1900 || new Date(v)>new Date()){ err.textContent='請確認出生日期是否正確'; return; }
   err.textContent='';
+  if(PF){ var p=PF.check(); if(!p) return; PREFS=p; }
   var r=lifePath(v), a=NUM[r.n];
   CUR={n:r.n, ref:'NUM'+Date.now().toString(36).toUpperCase().slice(-6)}; saved=false;
   document.getElementById('nm-num').textContent=r.n;

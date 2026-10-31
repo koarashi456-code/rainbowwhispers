@@ -509,6 +509,7 @@
 </div>
 
 <script src="supabase-config.js"></script>
+<script src="area.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -531,6 +532,13 @@ function testResultsHtml(c){
   Object.keys(tr).forEach(function(k){ if(keys.indexOf(k)<0) keys.push(k); });
   if(!keys.length) return '測驗 '+esc(c.result_type||'—')+(c.topic?'（'+esc(c.topic)+'）':'');
   return keys.map(function(k){ var x=tr[k]||{}; var extra=(k==='心靈導航測驗'&&x.topic)?'（'+esc(x.topic)+'）':''; return esc(k.replace('測驗',''))+' <b style="color:var(--brush);font-weight:500">'+esc(x.result||'—')+'</b>'+extra+(x.at?' <span style="font-size:11px">'+esc(x.at)+'</span>':''); }).join('　·　');
+}
+// 客人做測驗時選的配對條件（地區／預算／方式），取最近一次
+function prefsHtml(c){
+  var tr=c.test_results||{}, best=null;
+  Object.keys(tr).forEach(function(k){ var x=tr[k]||{}; if(x.prefs && (!best || String(x.at||'')>=String(best.at||''))) best=x; });
+  if(!best) return '';
+  var p=best.prefs; return '<div style="font-size:12.5px;color:var(--soft);margin:-4px 0 8px">配對條件：<b style="color:var(--brush);font-weight:500">'+esc([p.area,p.budget,p.mode].filter(Boolean).join('・'))+'</b></div>';
 }
 // 後台自訂稱呼（只有後台看得到）：顯示「稱呼（客人本人填的名字）」，客人改名字括號會跟著變
 function adName(c){ var al=String(c.admin_alias||'').trim(), nm=String(c.name||'').trim(); return al&&al!==nm ? esc(al)+'<span class="a-orig">（'+(nm?esc(nm):'未填姓名')+'）</span>' : (nm?esc(nm):'(未填姓名)'); }
@@ -649,7 +657,7 @@ function card(c){
       '<div class="meta">'+fmtDate(c.created_at)+'</div>'+
     '</div>'+
     '<div class="cbody">'+
-    '<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px;line-height:1.8">'+testResultsHtml(c)+'　·　代碼 '+esc(c.ref_code||'—')+'</div>'+
+    '<div style="font-size:12.5px;color:var(--soft);margin-bottom:8px;line-height:1.8">'+testResultsHtml(c)+'　·　代碼 '+esc(c.ref_code||'—')+'</div>'+prefsHtml(c)+
     '<div class="summary"><span>餘額 <b>'+money(a.balance)+'</b></span><span>累積消費 <b>'+money(a.spent)+'</b></span><span>儲值 <b>'+money(a.topup)+'</b></span><button class="rlink" data-rec>查看紀錄</button></div>'+
     '<div class="records" data-recbox style="display:none">'+customerRecords(c.id)+'</div>'+
     '<div class="cust-grid">'+
@@ -751,7 +759,7 @@ function guideCard(g){
       '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
-    '<label class="notes-l">服務區域（公開顯示）<input class="in" data-f="region" value="'+esc(g.region)+'" placeholder="例：台北市大安區／線上"></label>'+
+    '<div class="notes-l" style="font-size:11.5px;color:var(--soft)">服務區域（公開顯示；實體服務的地區，可以選好幾個）<div data-garea style="margin-top:5px"></div><input type="hidden" data-f="region" value="'+esc(g.region)+'"></div>'+
     '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">自我介紹／經歷（公開顯示在引路人頁）<textarea class="in" data-f="notes" rows="5" placeholder="例：我是 XUAN，接觸彩虹卡 5 年，擅長陪你把卡住的感受說清楚…">'+esc(g.notes)+'</textarea></label>'+
@@ -971,6 +979,8 @@ function bindGuides(){
     bindGuideLegacy(el,id);
     bindGuidePhoto(el,id);
     ensureGuideSlots(el);
+    var ga=el.querySelector('[data-garea]'), gh=el.querySelector('input[data-f="region"]');
+    if(ga && gh && window.RWArea) RWArea.multi(ga,{cls:'in',value:gh.value,onChange:function(v){ gh.value=v; gh.dispatchEvent(new Event('change')); }});
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
