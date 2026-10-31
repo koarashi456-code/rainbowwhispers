@@ -42,6 +42,15 @@
   .paybox .dot{width:16px;height:16px;border-radius:50%;border:2px solid #C9B79A;flex:none;box-sizing:border-box}
   .paybox.sel{border-color:#C9A7DE;background:#fff}
   .paybox.sel .dot{border:5px solid #B5713F}
+  .paybox.dis{opacity:.6;cursor:default}
+  .paybox small{display:block;font-size:12px;color:var(--soft);margin-top:2px}
+  .paybox small a{color:#B5713F}
+  .cp{display:flex;gap:8px}.cp .in{flex:1;min-width:0;text-transform:uppercase}
+  .cp button{font:inherit;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:12px;padding:0 18px;cursor:pointer}
+  .cpok{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#3F7A5E;background:#E4F2E7;border-radius:10px;padding:8px 12px;margin-top:8px}
+  .cpok button{font:inherit;font-size:12px;color:var(--soft);background:none;border:0;text-decoration:underline;cursor:pointer;padding:0}
+  .cperr{font-size:13px;color:#C0506A;background:#FBEDEF;border-radius:10px;padding:8px 12px;margin-top:8px}
+  .sumline .neg{color:#3F7A5E}
 
   .sumline{display:flex;justify-content:space-between;gap:16px;font-size:14.5px;line-height:1.5;color:var(--ink);padding:4px 0}
   .sumline span:first-child{color:var(--soft)}
@@ -130,6 +139,10 @@
         <div class="field"><div class="lbl">電話 <span class="req">*</span></div><input class="in" id="f-phone" inputmode="tel" placeholder="方便聯繫的電話"></div>
         <div class="field"><div class="lbl">信箱</div><input class="in" id="f-email" type="email" placeholder="你的 Email" readonly style="background:#F4EAD4;color:var(--soft)"></div>
         <div class="field"><div class="lbl">想聊的主題／備註</div><textarea class="in" id="f-note" placeholder="選填，例如：感情、工作方向…"></textarea></div>
+        <div class="field"><div class="lbl">優惠編號</div>
+          <div class="cp"><input class="in" id="f-coupon" placeholder="有優惠編號請輸入（選填）" autocomplete="off" maxlength="30"><button type="button" id="cp-apply">套用</button></div>
+          <div id="cp-msg"></div>
+        </div>
         <div class="field" style="margin-bottom:0"><div class="lbl">付款方式 <span class="req">*</span></div>
           <div id="pay-options"></div>
         </div>
@@ -290,15 +303,44 @@ function planLabelFull(p){ return p ? (esc(p.label)+(p.unit?(' · '+esc(p.unit))
 function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(); sel.innerHTML='<option value="">— 請選擇方案 —</option>'+L.map(function(p,i){return '<option value="'+i+'">'+planLabelFull(p)+'｜'+money(p.price)+'</option>';}).join(''); }
 function selectedPlan(){ var sel=$('#f-plan'); if(!sel||sel.value==='') return null; return planList()[Number(sel.value)]||null; }
 function renderPayOptions(){
-  var svcAmt=serviceAmount();
+  var svcAmt=serviceAmount(), canStore=!!(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt);
   var opts='';
-  if(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt){
-    opts+='<label class="paybox" data-pay="儲值"><span class="dot"></span> 用儲值付款（餘額 '+money(MEMBER_BALANCE)+'，免媒合費）</label>';
+  if(MEMBER){
+    opts+='<label class="paybox'+(canStore?'':' dis')+'" data-pay="儲值"'+(canStore?'':' data-dis="1"')+'><span class="dot"></span><span>儲值餘額（餘額 '+money(MEMBER_BALANCE)+(canStore?'，免媒合費':'')+'）'+
+      (canStore?'':(svcAmt>0?'<small>餘額不足這次的 '+money(svcAmt)+'，<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE 儲值 ›</a></small>':'<small>選好方案後，餘額夠就能用儲值付款</small>'))+'</span></label>';
   }
-  opts+='<label class="paybox sel" data-pay="刷卡"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 刷卡（信用卡）</label>';
-  var po=$('#pay-options'); if(!po) return; po.innerHTML=opts; PAY_METHOD='刷卡';
-  po.querySelectorAll('.paybox').forEach(function(el){ el.onclick=function(){ PAY_METHOD=el.getAttribute('data-pay'); po.querySelectorAll('.paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); }; });
+  opts+='<label class="paybox" data-pay="刷卡"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 刷卡（信用卡）</label>';
+  var po=$('#pay-options'); if(!po) return; po.innerHTML=opts;
+  PAY_METHOD=canStore?'儲值':'刷卡';
+  po.querySelectorAll('.paybox').forEach(function(el){ el.classList.toggle('sel', el.getAttribute('data-pay')===PAY_METHOD);
+    el.onclick=function(e){ if(el.getAttribute('data-dis')){ return; } PAY_METHOD=el.getAttribute('data-pay'); po.querySelectorAll('.paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); }; });
+  renderCoupon();
 }
+// 優惠編號：只折引路人服務費（會員才能用；送出後由資料庫再確認一次）
+var COUPON=null;
+function couponDiscount(amt){ if(!COUPON) return 0; var d=COUPON.kind==='percent'?Math.round(amt*(100-Math.min(COUPON.value,100))/100):COUPON.value; return Math.max(0,Math.min(d,amt)); }
+function renderCoupon(msg){
+  var box=$('#cp-msg'); if(!box) return;
+  if(msg){ box.innerHTML='<div class="cperr">'+esc(msg)+'</div>'; return; }
+  if(!COUPON){ box.innerHTML=''; return; }
+  var amt=serviceAmount(), d=couponDiscount(amt);
+  box.innerHTML='<div class="cpok"><span>✓ 已套用 '+esc(COUPON.code)+'：'+esc(COUPON.label)+(amt>0&&COUPON.kind==='percent'?'（折 '+money(d)+'）':'')+'</span><button type="button" id="cp-cancel">取消</button></div>';
+  $('#cp-cancel').onclick=function(){ COUPON=null; var ci=$('#f-coupon'); if(ci) ci.value=''; renderCoupon(); };
+}
+async function applyCoupon(){
+  var ci=$('#f-coupon'), code=((ci&&ci.value)||'').trim().toUpperCase(), btn=$('#cp-apply');
+  if(!code){ COUPON=null; renderCoupon('請輸入優惠編號'); return; }
+  if(!MEMBER){ renderCoupon('請先登入會員才能使用優惠編號'); return; }
+  btn.disabled=true; btn.textContent='確認中…';
+  try{ var r=await db.rpc('check_coupon',{p_code:code,p_amount:serviceAmount()});
+    if(r.error) throw new Error(r.error.message);
+    if(r.data && r.data.ok){ COUPON={code:r.data.code,kind:r.data.kind,value:Number(r.data.value)||0,label:r.data.label}; renderCoupon(); }
+    else { COUPON=null; renderCoupon((r.data&&r.data.msg)||'這組優惠編號無效或已過期'); }
+  }catch(e){ COUPON=null; renderCoupon('暫時無法確認優惠編號，請稍後再試'); }
+  btn.disabled=false; btn.textContent='套用';
+}
+(function(){ document.addEventListener('click',function(e){ if(e.target && e.target.id==='cp-apply') applyCoupon(); });
+  document.addEventListener('keydown',function(e){ if(e.target && e.target.id==='f-coupon' && e.key==='Enter'){ e.preventDefault(); applyCoupon(); } }); })();
 
 function serviceAmount(){ var p=selectedPlan(); if(p) return Number(p.price)||0; return (guide && guide.price!=null) ? Number(guide.price) : 0; }
 
@@ -315,7 +357,8 @@ $('#to-pay').onclick=function(){
   // 訂單摘要
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
-  var total=isStore?amt:(amt+FEE);
+  var disc=couponDiscount(amt);
+  var total=(isStore?amt:(amt+FEE))-disc;
   var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
@@ -328,6 +371,7 @@ $('#to-pay').onclick=function(){
   h+='<div class="sumline"><span>付款方式</span><span>'+esc(PAY_METHOD)+'</span></div>';
   h+='<div class="sumline"><span>引路人服務費</span><span>'+money(amt)+'</span></div>';
   h+='<div class="sumline"><span>彩之語媒合費</span><span>'+(isStore?'免收':money(FEE))+'</span></div>';
+  if(disc) h+='<div class="sumline"><span>優惠折抵（'+esc(COUPON.code)+'）</span><span class="neg">−'+money(disc)+'</span></div>';
   h+='<div class="sumline total"><span>'+totalLabel+'</span><span>'+money(total)+'</span></div>';
   $('#pay-summary').innerHTML=h;
   // 付款方式對應內容
@@ -362,11 +406,15 @@ $('#do-submit').onclick=async function(){
   }
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
-  var total=isStore?amt:(amt+FEE);
+  var disc=couponDiscount(amt);
+  var total=(isStore?amt:(amt+FEE))-disc;
   var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var nm=(($('#f-name')||{}).value||'').trim(), ph=(($('#f-phone')||{}).value||'').trim();
   btn.disabled=true; btn.textContent='送出中…';
   try{
+    // 優惠編號：送出前再確認一次，失效就先不送出
+    if(COUPON){ var ck=await db.rpc('check_coupon',{p_code:COUPON.code,p_amount:amt});
+      if(ck.error || !ck.data || !ck.data.ok){ var cm=(ck.data&&ck.data.msg)||'優惠編號暫時無法使用'; COUPON=null; renderCoupon(cm); throw new Error(cm+'，請回上一步重新確認金額'); } }
     if(nm||ph){ try{ await db.rpc('update_my_profile',{p_name:nm, p_phone:ph, p_area:MEMBER_AREA||''}); MEMBER_NAME=nm; MEMBER_PHONE=ph; }catch(e){} }
     var res=await db.rpc('book_appointment',{
       p_guide_id:guide.id, p_service:svcFull, p_appointment_at:(when||null), p_amount:amt,
@@ -374,13 +422,16 @@ $('#do-submit').onclick=async function(){
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
+    // 套用優惠到這筆訂單（儲值付款會把折抵加回餘額）
+    var cpWarn='';
+    if(COUPON){ try{ var ap=await db.rpc('apply_coupon',{p_code:COUPON.code,p_ref:ref}); if(ap.error || !ap.data || !ap.data.ok) cpWarn=(ap.data&&ap.data.msg)||'優惠編號沒有套用成功'; }catch(e){ cpWarn='優惠編號沒有套用成功'; } }
     // 刷卡／儲值：預約成功直接給地址或視訊連結（SQL：my_booking_access）
     var acc=window.RWAccess?await RWAccess.load(db,ref):null;
-    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(planTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total), access:(window.RWAccess?RWAccess.text(acc):'')});
+    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(planTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)+(disc&&!cpWarn?'（已折抵 '+COUPON.code+' −'+money(disc)+'）':''), access:(window.RWAccess?RWAccess.text(acc):'')});
     $('#done-ref').textContent='訂單編號 '+ref;
     var da=$('#done-access'); if(da){ da.innerHTML=window.RWAccess?RWAccess.html(acc):''; if(window.RWAccess) RWAccess.bind(da); }
     if(da && !da.innerHTML){ da.innerHTML='<p class="muted" style="font-size:13.5px;line-height:1.7;margin-top:12px">服務地址或視訊連結會用 Email 寄給你，也可以在「我的訂單」查看。</p>'; }
-    $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
+    $('#done-summary').innerHTML=$('#pay-summary').innerHTML+(cpWarn?'<div class="cperr" style="margin-top:8px">'+esc(cpWarn)+'，這筆先以原價計算，請聯絡官方 LINE 協助。</div>':'');
     $('#book-pay').style.display='none';
     $('#book-done').style.display='block';
     $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
