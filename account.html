@@ -238,7 +238,8 @@
   <h1>彩之語</h1>
   <div class="sub" id="acc-sub">登入後就能預約引路人、查看訂單和儲值紀錄</div>
 
-  <div class="tabs" style="margin-bottom:16px">
+  <!-- 用戶帳號／引路人帳號 切換：先關閉，只開放用戶登入。要開放引路人登入說明時，把下一行的 display:none 拿掉即可（已開通的引路人一樣用 Email 登入，登入後看得到引路人後台）。 -->
+  <div class="tabs" id="atype-tabs" style="margin-bottom:16px;display:none">
     <button id="at-user" class="on" type="button">用戶帳號</button>
     <button id="at-guide" type="button">引路人帳號</button>
   </div>
