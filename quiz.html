@@ -293,16 +293,16 @@ function render(){
     var Q=QUESTIONS[S.step-1], pct=Math.round(S.step/21*100);
     html='<div class="bar"><i style="width:'+pct+'%"></i></div><div class="step-no">第 '+S.step+' / 21 步</div>'+
       '<div class="card fade"><div class="q">'+esc(Q.q)+'</div>'+
-      Q.o.map(function(o,i){return '<button class="opt'+(S.answers[S.step-1]===o?' prev':'')+'" data-ans="'+i+'">'+esc(o.t)+'</button>';}).join('')+'</div>'+
-      '<button class="rw-back" id="q-back">‹ 上一頁</button>';
+      Q.o.map(function(o,i){return '<button class="opt'+(S.answers[S.step-1]===o?' prev':'')+'" data-ans="'+i+'">'+esc(o.t)+'</button>';}).join('')+
+      '<button class="rw-back" id="q-back">‹ 上一頁</button></div>';
   } else if(S.step===21){  // 最後一題：地區／預算／方式（配對引路人用）
     html='<div class="bar"><i style="width:100%"></i></div><div class="step-no">最後一題 · 第 21 / 21 步</div>'+
       '<div class="card fade"><div class="q">最後一題：讓我們幫你配得更準</div>'+
       '<div style="font-size:13px;color:var(--soft)">選好之後，推薦的引路人會符合你的地區、預算和方式。</div>'+
       RWMatch.formHTML()+'<div class="pf-err" id="pf-err"></div>'+
       '<button class="opt" id="pf-go" style="text-align:center;background:var(--rainbow);border:0;color:#4A3A2A;font-weight:500;margin-top:14px">看我的結果　→</button>'+
-      '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div></div>'+
-      '<button class="rw-back" id="q-back">‹ 上一頁</button>';
+      '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div>'+
+      '<button class="rw-back" id="q-back">‹ 上一頁</button></div>';
   } else {
     html=resultHTML(compute());
   }
