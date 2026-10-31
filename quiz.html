@@ -123,6 +123,7 @@
 
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
+<script src="share-card.js"></script>
 <script>
 var CONFIG = {
   lineOaId: '@518xokyr',
@@ -396,10 +397,10 @@ function bind(){
     fillQuizRec(R,lineHref).then(function(){ var a=app.querySelector('#match-help a'); if(a) a.addEventListener('click',function(){ saveLead(); }); });
     lg.onclick=function(){saveLead();};
   }
-  var sh=app.querySelector('#share'); if(sh)sh.onclick=function(){
-    var R=compute(); var u=CONFIG.shareUrl||location.href;
-    var m='我剛測完彩之語，我是「'+R.type.name+'」型！你也來找找你的心靈方向 → '+u;
-    window.open('https://line.me/R/msg/text/?'+encodeURIComponent(m),'_blank');
+  var sh=app.querySelector('#share'); if(sh)sh.onclick=function(){  // 分享圖卡（LINE・IG）
+    var R=compute(), t=R.type;
+    RWShare.open({test:'心靈導航測驗',kicker:'心靈導航測驗｜我的探索類型',title:t.name,sub:t.en,desc:t.desc,pill:'方向：'+t.dir,
+      url:location.origin+location.pathname,text:'我剛測完彩之語，我是「'+t.name+'」型！你也來找找你的心靈方向'});
   };
 }
 render();

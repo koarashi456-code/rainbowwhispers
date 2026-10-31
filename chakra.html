@@ -100,6 +100,7 @@
 
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
+<script src="share-card.js"></script>
 <script>
 var CONFIG={ lineOaId:'@518xokyr', lineUrl:'https://lin.ee/t0NBjud0' };
 var SUPA=window.SUPA;
@@ -220,11 +221,17 @@ function renderResult(){
     '<div id="ck-rec"></div>'+
     '<a class="ck-cta" href="booking.html#pick" style="text-decoration:none">瀏覽全部引路人</a>'+
     '<a class="ck-ghost" id="ck-line" href="'+lineHref+'" target="_blank" rel="noopener">加 LINE 收結果</a>'+
+    '<button class="ck-ghost" id="ck-share" type="button">分享給朋友</button>'+
     '<button class="ck-back" id="ck-restart" style="display:block;margin:16px auto 0">重新測一次</button>'+
     '<div class="ck-note">此結果僅供自我覺察與參考，不作為醫療或心理診斷。</div>'+
   '</div>';
   LINE_HREF=lineHref; loadRec(R.focus);
   var lg=document.getElementById('ck-line'); if(lg) lg.onclick=function(){ saveLead(); };
+  var shb=document.getElementById('ck-share'); if(shb) shb.onclick=function(){  // 分享圖卡（LINE・IG）
+    var col=String(f.color||''), m=/var\((--[\w-]+)\)/.exec(col); if(m) col=getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim()||'#B5713F';
+    RWShare.open({test:'七大脈輪測驗',kicker:'七大脈輪測驗｜此刻最需要關注',title:f.name,sub:f.sub,subColor:col,accent:col,desc:f.blurb,
+      url:location.origin+location.pathname,text:'我做了彩之語的七大脈輪測驗，此刻最需要關注的是「'+f.name+'·'+f.sub+'」！你也來看看你的脈輪能量'});
+  };
   var rs=document.getElementById('ck-restart'); if(rs) rs.onclick=function(){ S={step:0,answers:[]}; curLead=null; leadSaved=false; render(); window.scrollTo({top:0,behavior:'smooth'}); };
   window.scrollTo({top:0,behavior:'smooth'});
 }

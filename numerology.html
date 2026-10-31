@@ -65,6 +65,7 @@
     <div id="nm-rec" style="max-width:460px;margin:16px auto 0"></div>
     <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <a class="rw-cta" id="nm-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE，請引路人幫我解讀　→</a>
+      <button class="rw-ghost" id="nm-share" type="button">分享給朋友</button>
     </div>
     <div style="margin-top:14px"><a class="rw-textlink" href="tests.html">再做一份測驗</a></div>
   </div>
@@ -79,6 +80,7 @@
 </footer>
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
+<script src="share-card.js"></script>
 <script>
 var NUM={
  1:{kw:'開創 · 獨立',t:'1 號人｜開路先鋒',d:'你有很強的主見和行動力，喜歡自己做決定、走在前面。你天生帶著領導氣質，遇到新的挑戰反而會興奮。',tip:'偶爾放慢腳步聽聽身邊的人，你會發現一起走更輕鬆。'},
@@ -142,6 +144,11 @@ document.getElementById('nm-go').onclick=function(){
   loadRec();
 };
 document.getElementById('nm-line').onclick=function(){ saveLead(); };
+document.getElementById('nm-share').onclick=function(){  // 分享圖卡（LINE・IG）
+  if(!CUR) return; var a=NUM[CUR.n], t=String(a.t).split('｜');
+  RWShare.open({test:'生命靈數',kicker:'生命靈數｜我的天賦數字',big:CUR.n,title:t[0],sub:t[1]||'',desc:a.d,pill:a.kw,
+    url:location.origin+location.pathname,text:'我的生命靈數是 '+CUR.n+' 號！'+(t[1]?'「'+t[1]+'」':'')+'你也來算算你的天賦數字'});
+};
 </script>
 <script src="date-ph.js"></script>
 </body>
