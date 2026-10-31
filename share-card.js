@@ -33,7 +33,7 @@ function star(ctx,cx,cy,s,color){
   ctx.restore();
 }
 async function draw(o){
-  var all=[o.test,o.kicker,o.title,o.sub,o.desc,o.pill,o.big,'彩之語RAINBOW WHISPER你也來測測看測驗結果分享'].join('');
+  var all=[o.test,o.kicker,o.title,o.sub,o.desc,o.pill,o.big,'彩之語RAINBOW WHISPER測驗結果分享'].join('');
   try{ await Promise.all([document.fonts.load('600 96px "Noto Serif TC"',all),document.fonts.load('400 34px "Noto Sans TC"',all),document.fonts.load('500 30px "Noto Sans TC"',all)]); }catch(e){}
   var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
   // 背景：奶油色＋淡淡的彩虹光暈
@@ -70,8 +70,7 @@ async function draw(o){
     rr(ctx,540-pw/2,py-50,pw,74,37); ctx.fillStyle='#F4EAD4'; ctx.fill(); ctx.fillStyle='#6B4A33'; ctx.fillText(o.pill,540,py);
   }
   // 底部
-  ctx.fillStyle='#8A7659'; ctx.font='500 30px '+SANS; ctx.fillText('你也來測測看 →',540,1196);
-  ctx.fillStyle='#B09A7C'; ctx.font='400 22px '+SANS; ctx.fillText(String(o.url||'').replace(/^https?:\/\//,'').replace(/\/$/,''),540,1236);
+  ctx.fillStyle='#B09A7C'; ctx.font='400 22px '+SANS; ctx.fillText(String(o.url||'').replace(/^https?:\/\//,'').replace(/\/$/,''),540,1222);
   return cv;
 }
 var CSS='.rws-mask{position:fixed;inset:0;z-index:300;background:rgba(60,45,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}'+
