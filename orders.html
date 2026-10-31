@@ -143,6 +143,7 @@
 </div></div>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="booking-access.js"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 function $(s){ return document.querySelector(s); }
@@ -172,11 +173,22 @@ function orderCard(o){
     +'<div class="oc-right"><span class="oc-amt">'+money(o.amount)+'</span>'+statusBadge(isShop(o)&&o.status==='已預約'?'待出貨':o.status)+'</div></div>'
     +(isShop(o)?'<div class="oc-line"><span class="k">下單</span> '+fmtDay(o.created_at)+'</div>':'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>')
     +'<div class="oc-line"><span class="k">付款</span> '+esc(o.method||'—')+(o.order_ref?'　·　<span class="k">編號</span> '+esc(o.order_ref):'')+'</div>'
+    +(hasAccess(o)?'<div data-acc="'+esc(o.order_ref)+'"></div>':'')
     +(canEdit(o)?'<div class="oc-act"><button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button></div>':'')
     +'</div>';
 }
 // 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
 function isShop(o){ return /^商品：/.test(String(o.service||'')); }
+// 刷卡／儲值、還沒結束的預約：顯示服務地址或視訊連結（SQL：my_booking_access）
+function hasAccess(o){ return !isShop(o) && o.status==='已預約' && o.order_ref && (o.method==='刷卡'||o.method==='儲值'); }
+var ACC={};
+async function fillAccess(){
+  if(!window.RWAccess) return;
+  var boxes=document.querySelectorAll('#o-list [data-acc]');
+  for(var i=0;i<boxes.length;i++){ var el=boxes[i], ref=el.getAttribute('data-acc');
+    if(!(ref in ACC)) ACC[ref]=await RWAccess.load(db,ref);
+    el.innerHTML=RWAccess.html(ACC[ref]); RWAccess.bind(el); }
+}
 function canEdit(o){ return o.status==='已預約' && o.order_ref && o.appointment_at && cmpKey(o) > new Date(); }
 function p2(n){ return (n<10?'0':'')+n; }
 var RS={ref:'',sel:'',date:''};
@@ -236,6 +248,7 @@ function render(){
   list.sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   $('#o-list').innerHTML=list.map(orderCard).join('');
   $('#o-list').querySelectorAll('[data-rs]').forEach(function(b){ b.onclick=function(){ openReschedule(b.getAttribute('data-rs')); }; });
+  fillAccess();
 }
 
 // 期間 chips
