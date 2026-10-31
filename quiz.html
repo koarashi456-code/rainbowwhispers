@@ -122,6 +122,7 @@
 </footer>
 
 <script src="supabase-config.js"></script>
+<script src="area.js"></script>
 <script>
 var CONFIG = {
   lineOaId: '@518xokyr',
@@ -287,14 +288,22 @@ function render(){
       '<p style="margin-top:12px;font-size:13px">沒有標準答案，第一直覺就是你的答案。</p>'+
       '<button class="go" id="start">開始探索　→</button></div>';
   } else if(S.step>=1 && S.step<=20){
-    var Q=QUESTIONS[S.step-1], pct=Math.round(S.step/20*100);
-    html='<div class="bar"><i style="width:'+pct+'%"></i></div><div class="step-no">第 '+S.step+' / 20 步</div>'+
+    var Q=QUESTIONS[S.step-1], pct=Math.round(S.step/21*100);
+    html='<div class="bar"><i style="width:'+pct+'%"></i></div><div class="step-no">第 '+S.step+' / 21 步</div>'+
       '<div class="card fade"><div class="q">'+esc(Q.q)+'</div>'+
       Q.o.map(function(o,i){return '<button class="opt" data-ans="'+i+'">'+esc(o.t)+'</button>';}).join('')+'</div>';
+  } else if(S.step===21){  // 最後一題：地區／預算／方式（配對引路人用）
+    html='<div class="bar"><i style="width:100%"></i></div><div class="step-no">最後一題 · 第 21 / 21 步</div>'+
+      '<div class="card fade"><div class="q">最後一題：讓我們幫你配得更準</div>'+
+      '<div style="font-size:13px;color:var(--soft)">選好之後，推薦的引路人會符合你的地區、預算和方式。</div>'+
+      RWMatch.formHTML()+'<div class="pf-err" id="pf-err"></div>'+
+      '<button class="opt" id="pf-go" style="text-align:center;background:var(--rainbow);border:0;color:#4A3A2A;font-weight:500;margin-top:14px">看我的結果　→</button>'+
+      '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div></div>';
   } else {
     html=resultHTML(compute());
   }
   app.innerHTML=html; bind();
+  if(S.step===21){ var pf=RWMatch.mount(app.querySelector('.card'),app.querySelector('#pf-err')); app.querySelector('#pf-go').onclick=function(){ var p=pf.check(); if(!p) return; S.prefs=p; S.step=22; render(); window.scrollTo({top:0,behavior:'smooth'}); }; }
 }
 
 function resultHTML(R){
@@ -320,7 +329,8 @@ function resultHTML(R){
     '<div class="rsec"><div class="rh2" style="margin-bottom:14px">你的內在傾向</div>'+dims+
       '<div class="rp" style="text-align:left;margin-top:10px;font-size:12.5px">＊系統依你的作答，算出這 5 個方向的傾向，再幫你配對最合的引路人。</div></div>'+
     '<div class="rsec"><div class="rh2" style="margin-bottom:2px">彩之語為你推薦</div>'+
-      '<div class="rp" style="font-size:12.5px;margin-bottom:4px">依你的傾向，這些方向最適合你</div>'+arch+'</div>'+
+      '<div class="rp" style="font-size:12.5px;margin-bottom:4px">依你的傾向，這些方向最適合你</div>'+
+      (S.prefs?'<div class="pf-line">依你選的：<b>'+esc(RWMatch.label(S.prefs))+'</b></div>':'')+arch+'<div id="match-help"></div></div>'+
     '<div class="rsec"><div class="rh2" style="margin-bottom:2px">你現在，適合找引路人嗎？</div>'+
       '<div class="rp" style="font-size:12.5px">我們不急著推引路人，先看你現在的狀態</div>'+
       '<div class="states">'+
@@ -336,30 +346,33 @@ function resultHTML(R){
 
 // 依推薦的探索方式，撈 public_guides 用服務關鍵字比對，每個推薦配一位真的引路人（不重複）
 var QUIZ_GUIDES=null;
-async function fillQuizRec(R){
+async function fillQuizRec(R,lineHref){
   if(!window.SUPA) return;
   if(!QUIZ_GUIDES){ try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region,service_mode',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}); QUIZ_GUIDES=r.ok?(await r.json()):[]; }catch(e){ QUIZ_GUIDES=[]; } }
-  var used={};
+  var prices=await RWMatch.loadPrices(), used={}, firstBad=false;
   R.matches.forEach(function(m,i){
     var box=document.querySelector('.trec[data-rec="'+i+'"]'); if(!box) return;
     var kw=m.a.kw||[];
-    var best=null, bestS=0;
-    (QUIZ_GUIDES||[]).forEach(function(g){ if(used[g.id]) return; var hay=((g.services||[]).join(' ')+' '+(g.name||'')).toLowerCase(); var sc=0; kw.forEach(function(k){ if(hay.indexOf(String(k).toLowerCase())>=0) sc++; }); if(sc>bestS){ bestS=sc; best=g; } });
-    if(best){
-      used[best.id]=true;
+    var kwScore=function(g){ var hay=((g.services||[]).join(' ')+' '+(g.name||'')).toLowerCase(); var sc=0; kw.forEach(function(k){ if(hay.indexOf(String(k).toLowerCase())>=0) sc++; }); return sc; };
+    var top=RWMatch.rank(QUIZ_GUIDES,S.prefs,prices,kwScore,used)[0];
+    if(top){
+      var best=top.g; used[best.id]=true; if(i===0 && top.f.bad) firstBad=true;
       var sub=[(best.services||[]).slice(0,3).join('、'), best.region||''].filter(Boolean).join(' · ');
-      box.innerHTML='<a href="guide.html?id='+encodeURIComponent(best.id)+'"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(best.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'avatar.svg\'"><span class="trn">'+esc(best.name||'引路人')+'<span class="trs">'+esc(sub)+'</span></span><span class="trgo">看介紹・預約 ›</span></a>';
+      box.innerHTML='<a href="guide.html?id='+encodeURIComponent(best.id)+'" style="flex-wrap:wrap;align-items:flex-start"><img alt="" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(best.id)+'.jpg')+'" onerror="this.onerror=null;this.src=\'avatar.svg\'"><span class="trn">'+esc(best.name||'引路人')+'<span class="trs">'+esc(sub)+'</span>'+RWMatch.tagsHTML(top.f)+'</span><span class="trgo">看介紹・預約 ›</span></a>';
     } else {
+      if(i===0) firstBad=true;
       box.innerHTML='<a href="booking.html#pick"><span class="trn">看看所有引路人<span class="trs">這個方向的引路人陸續加入中</span></span><span class="trgo">›</span></a>';
     }
   });
+  var hb=document.getElementById('match-help'); if(hb) hb.innerHTML=RWMatch.helpHTML(firstBad,lineHref);
 }
 function saveTestResult(topic,result,ref){
   // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['心靈導航測驗']={result:result,topic:topic}; return o; })()})});}catch(e){} }
+  var prefs=RWMatch.forDb(S.prefs);
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['心靈導航測驗']={result:result,topic:topic}; if(prefs) o['心靈導航測驗'].prefs=prefs; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
-  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'心靈導航測驗'})})
+  fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'心靈導航測驗',p_prefs:prefs})})
     .then(function(r){ if(!r.ok) anon(); }).catch(anon);
 }
 function saveLead(){
@@ -377,9 +390,10 @@ function bind(){
     var R=compute(); var ref=genRef();
     curLead={ref:ref,topic:R.type.dir,type:R.type.name}; leadSaved=false;
     if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：一出結果就記到會員資料
-    fillQuizRec(R);
-    var msg='我做完彩之語測驗了！我的類型是「'+R.type.name+'」，方向是「'+R.type.dir+'」。（代碼 '+ref+'）';
-    lg.setAttribute('href','https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg));
+    var msg='我做完彩之語測驗了！我的類型是「'+R.type.name+'」，方向是「'+R.type.dir+'」。'+(S.prefs?'配對條件：'+RWMatch.label(S.prefs)+'。':'')+'（代碼 '+ref+'）';
+    var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg);
+    lg.setAttribute('href',lineHref);
+    fillQuizRec(R,lineHref).then(function(){ var a=app.querySelector('#match-help a'); if(a) a.addEventListener('click',function(){ saveLead(); }); });
     lg.onclick=function(){saveLead();};
   }
   var sh=app.querySelector('#share'); if(sh)sh.onclick=function(){

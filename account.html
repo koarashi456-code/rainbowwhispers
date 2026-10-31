@@ -124,6 +124,9 @@
   .ob-box label{display:block;font-size:12.5px;color:var(--soft);margin-bottom:10px}
   .ob-box label i{color:#C0506A;font-style:normal}
   .ob-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ob-area2{display:flex;gap:8px}.ob-area2 .ob-in{flex:1;min-width:0}
+  .mc-area2{display:flex;gap:6px;justify-content:flex-end;flex:1;min-width:0}
+  .mc-area2 select{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:5px 6px;outline:none;min-width:0;max-width:48%}
   .ob-in{display:block;width:100%;box-sizing:border-box;margin-top:5px;font:inherit;font-size:15px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;outline:none}
   .ob-msg{font-size:12.5px;min-height:1.2em;margin:4px 0 8px}
   .ob-go{display:block;width:100%;font:inherit;font-size:15px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:12px;cursor:pointer}
@@ -298,7 +301,7 @@
     <div class="irow"><span class="il">姓名</span><input class="iv" id="mc-f-name" placeholder="—"></div>
     <div class="irow"><span class="il">信箱</span><span class="iv" id="mc-f-mail"></span></div>
     <div class="irow"><span class="il">手機</span><input class="iv" id="mc-f-phone" placeholder="—" inputmode="tel"></div>
-    <div class="irow"><span class="il">地區</span><input class="iv" id="mc-f-area" placeholder="—"></div>
+    <div class="irow"><span class="il">地區</span><span class="iv mc-area2" id="mc-f-area-box"></span><input type="hidden" id="mc-f-area"></div>
   </div>
   <div class="msaved" id="mc-saved"></div>
   <div class="sec-lab">帳號</div>
@@ -413,11 +416,12 @@
   <div class="ob-row"><label>姓氏 <i>*</i><input id="ob-last" class="ob-in" maxlength="10" autocomplete="family-name"></label><label>名字 <i>*</i><input id="ob-first" class="ob-in" maxlength="20" autocomplete="given-name"></label></div>
   <label>手機 <i>*</i><input id="ob-phone" class="ob-in" inputmode="tel" maxlength="12" placeholder="09xxxxxxxx" autocomplete="tel"></label>
   <label>信箱<input id="ob-mail" class="ob-in" readonly style="opacity:.7"></label>
-  <label>居住地區 <i>*</i><select id="ob-area" class="ob-in"><option value="">請選擇</option><option>臺北市</option><option>新北市</option><option>基隆市</option><option>桃園市</option><option>新竹市</option><option>新竹縣</option><option>苗栗縣</option><option>臺中市</option><option>彰化縣</option><option>南投縣</option><option>雲林縣</option><option>嘉義市</option><option>嘉義縣</option><option>臺南市</option><option>高雄市</option><option>屏東縣</option><option>宜蘭縣</option><option>花蓮縣</option><option>臺東縣</option><option>澎湖縣</option><option>金門縣</option><option>連江縣</option><option>海外</option></select></label>
+  <label>居住地區 <i>*</i></label><div class="ob-area2" id="ob-area-box"></div><input type="hidden" id="ob-area">
   <div class="ob-msg" id="ob-msg"></div>
   <button type="button" class="ob-go" id="ob-go">完成，開始探索</button>
 </div></div>
 <script src="supabase-config.js"></script>
+<script src="area.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -477,7 +481,7 @@ function openOnboard(d){
   var nm=String(d&&d.name||'').trim();
   if(nm && !$('#ob-last').value && !$('#ob-first').value){ if(/^[\u4e00-\u9fff]{2,4}$/.test(nm)){ $('#ob-last').value=nm.slice(0,1); $('#ob-first').value=nm.slice(1); } else { $('#ob-first').value=nm; } }
   if(d && d.phone) $('#ob-phone').value=d.phone;
-  if(d && d.area) $('#ob-area').value=d.area;
+  if(d && d.area){ $('#ob-area').value=d.area; if(OB_AREA) OB_AREA.set(d.area); }
   $('#ob-mail').value=(CURRENT_USER&&CURRENT_USER.email)||'';
   m.classList.add('on');
 }
@@ -487,6 +491,7 @@ async function saveOnboard(){
   if(!last || !first){ msg.textContent='請填寫姓氏和名字'; return; }
   if(!/^09\d{8}$/.test(ph)){ msg.textContent='請填寫正確的手機號碼（09 開頭共 10 碼）'; return; }
   if(!area){ msg.textContent='請選擇居住地區'; return; }
+  if(OB_AREA && !OB_AREA.complete()){ msg.textContent='請選擇居住的區（鄉鎮市）'; return; }
   var name=/^[\u4e00-\u9fff]+$/.test(last+first)?(last+first):(first+' '+last);
   var b=$('#ob-go'); b.disabled=true; b.textContent='儲存中…'; msg.style.color='var(--soft)'; msg.textContent='';
   try{
@@ -504,7 +509,7 @@ async function loadMyAccount(){
     if(r.data.disabled){ $('#mc-order-count').textContent='—'; return; }
     $('#mc-balance').textContent=money(r.data.balance);
     if(r.data.name) $('#mc-name').textContent=r.data.name;
-    $('#mc-f-name').value=r.data.name||''; $('#mc-f-phone').value=r.data.phone||''; $('#mc-f-area').value=r.data.area||'';
+    $('#mc-f-name').value=r.data.name||''; $('#mc-f-phone').value=r.data.phone||''; $('#mc-f-area').value=r.data.area||''; if(MC_AREA) MC_AREA.set(r.data.area||'');
     if(!r.data.name || !r.data.phone || !r.data.area) openOnboard(r.data);  // 第一次（或資料不完整）：先填基本資料
     var orders=r.data.orders||[];
     $('#mc-order-count').textContent=orders.length;
@@ -967,6 +972,15 @@ $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
 // 儲存基本資料（姓名／手機／地區）
+// 地區：縣市＋區兩個下拉（存成「新北市三重區」）
+var OB_AREA=null, MC_AREA=null;
+(function(){
+  if(!window.RWArea) return;
+  var ob=document.getElementById('ob-area-box');
+  if(ob) OB_AREA=RWArea.picker(ob,{cls:'ob-in',cPh:'請選擇縣市',onChange:function(v){ $('#ob-area').value=v; }});
+  var mc=document.getElementById('mc-f-area-box');
+  if(mc) MC_AREA=RWArea.picker(mc,{cPh:'縣市',anyDistrict:'區',onChange:function(v,done){ var h=$('#mc-f-area'); h.value=v; if(done || !v) h.dispatchEvent(new Event('change')); }});
+})();
 ['mc-f-name','mc-f-phone','mc-f-area'].forEach(function(id){ var el=document.getElementById(id); if(!el) return; el.addEventListener('change',async function(){ var sv=$('#mc-saved'); sv.textContent='儲存中…'; sv.style.color='var(--soft)'; try{ var r=await db.rpc('update_my_profile',{p_name:$('#mc-f-name').value.trim(),p_phone:$('#mc-f-phone').value.trim(),p_area:$('#mc-f-area').value.trim()}); if(r.error) throw new Error(r.error.message); $('#mc-name').textContent=$('#mc-f-name').value.trim()||'會員'; try{ db.auth.updateUser({data:{name:$('#mc-f-name').value.trim()}}); }catch(e){} sv.textContent='已儲存'; sv.style.color='#4F8E6E'; setTimeout(function(){sv.textContent='';},1400); }catch(e){ sv.textContent='存檔失敗'; sv.style.color='#C0506A'; } }); });
 // 改密碼
 $('#mc-pw').onclick=function(){ var b=$('#mc-pwbox'); b.style.display=(b.style.display==='none'?'block':'none'); if(b.style.display==='block'){ b.scrollIntoView({behavior:'smooth',block:'center'}); $('#mc-pw1').focus(); } };
