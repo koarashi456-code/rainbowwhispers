@@ -3,7 +3,7 @@
    - big：圓圈中間要放的大字（生命靈數的數字）；沒給就畫星星
    - url：分享出去的測驗網址；text：傳 LINE 的文字 */
 (function(){
-var W=1080, H=1350;
+var W=1080, H=1350, OG_VER=2;
 var SERIF='"Noto Serif TC","Songti TC","PMingLiU",serif', SANS='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
 function rr(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
@@ -91,7 +91,9 @@ function download(url,name){ var a=document.createElement('a'); a.href=url; a.do
 
 async function open(o){
   css();
-  var url=o.url||location.href, text=o.text||('我做了彩之語的'+(o.test||'測驗')+'！'), name='彩之語-'+(o.test||'測驗結果')+'.png';
+  // 網址加版本號：換了預覽圖（og.png）後，LINE 會當成新網址重新抓預覽
+  var url=String(o.url||location.href); if(url.indexOf('?')<0) url+='?v='+OG_VER;
+  var text=o.text||('我做了彩之語的'+(o.test||'測驗')+'！'), name='彩之語-'+(o.test||'測驗結果')+'.png';
   var mask=document.createElement('div'); mask.className='rws-mask';
   mask.innerHTML='<div class="rws-box" role="dialog" aria-label="分享測驗結果"><div class="rws-h">分享我的測驗結果</div><img class="rws-img" alt="測驗結果圖卡"><div class="rws-tip">圖卡製作中…</div><div data-btns></div><button type="button" class="rws-close">關閉</button></div>';
   document.body.appendChild(mask);
