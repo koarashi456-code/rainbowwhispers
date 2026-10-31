@@ -760,7 +760,12 @@ function guideCard(g){
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
     '<div class="notes-l" style="font-size:11.5px;color:var(--soft)">服務區域（公開顯示；實體服務的地區，可以選好幾個）<div data-garea style="margin-top:5px"></div><input type="hidden" data-f="region" value="'+esc(g.region)+'"></div>'+
-    '<label class="notes-l">完整地址（不公開，預約成功後才給客戶）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
+    '<label class="notes-l">完整地址（不公開，刷卡／儲值預約成功後直接給客人）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
+    '<label class="notes-l">報到提醒（跟地址一起給客人）<input class="in" data-f="checkin_note" value="'+esc(g.checkin_note)+'" placeholder="例：到了按 5 樓電鈴，說「彩之語預約」"></label>'+
+    '<div class="cust-grid" style="margin-top:10px">'+
+      '<label>視訊軟體（線上服務）<select class="in" data-f="video_app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(x){ return '<option'+(g.video_app===x?' selected':'')+'>'+x+'</option>'; }).join('')+'</select></label>'+
+      '<label>視訊連結（不公開，預約成功後給客人）<input class="in" data-f="video_link" value="'+esc(g.video_link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"></label>'+
+    '</div>'+
     '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
     '<label class="notes-l">自我介紹／經歷（公開顯示在引路人頁）<textarea class="in" data-f="notes" rows="5" placeholder="例：我是 XUAN，接觸彩虹卡 5 年，擅長陪你把卡住的感受說清楚…">'+esc(g.notes)+'</textarea></label>'+
     '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+

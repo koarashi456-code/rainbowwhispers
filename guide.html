@@ -154,13 +154,13 @@
     <div id="book-done" style="display:none">
       <div class="fcard done">
         <div class="ic"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3E9E86" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <h2>預約已送出！</h2>
+        <h2 id="done-title">預約成功！</h2>
         <div class="ordref" id="done-ref"></div>
+        <div id="done-access"></div>
         <div id="done-summary" style="margin:14px auto 6px"></div>
-        <p class="muted" style="font-size:14px;line-height:1.7">請加 LINE 好友，把<b>訂單編號</b>傳給我們，確認後提供<b>完整地址</b>與報到細節。</p>
-        <a class="cta-big" id="done-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE 好友領取地址</a>
-        <button class="ghost-link" id="copy-ref" type="button" style="background:none;border:none;cursor:pointer;font:inherit">複製訂單編號</button>
-        <div style="margin-top:6px"><a class="ghost-link" href="booking.html#pick">← 回預約引路人</a></div>
+        <p class="muted" id="done-tip" style="font-size:13px;line-height:1.7">預約明細也寄到你的信箱了，之後在「會員中心 → 我的訂單」也看得到。</p>
+        <a class="cta-big" href="orders.html">查看我的訂單</a>
+        <div style="margin-top:10px"><a class="ghost-link" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="text-decoration:underline">有問題？聯絡官方 LINE</a></div>
       </div>
     </div>
 
@@ -177,10 +177,11 @@
 
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="booking-access.js"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
 var FEE=39;
-var guide=null, MEMBER=null, PAY_METHOD='匯款', MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
+var guide=null, MEMBER=null, PAY_METHOD='刷卡', MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function money(n){return '$'+Number(n||0).toLocaleString();}
@@ -294,9 +295,8 @@ function renderPayOptions(){
   if(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt){
     opts+='<label class="paybox" data-pay="儲值"><span class="dot"></span> 用儲值付款（餘額 '+money(MEMBER_BALANCE)+'，免媒合費）</label>';
   }
-  opts+='<label class="paybox sel" data-pay="匯款"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 匯款（ATM／網銀轉帳）</label>';
-  opts+='<label class="paybox" data-pay="刷卡" style="margin-top:8px"><span class="dot"></span> 刷卡（信用卡）</label>';
-  var po=$('#pay-options'); if(!po) return; po.innerHTML=opts; PAY_METHOD='匯款';
+  opts+='<label class="paybox sel" data-pay="刷卡"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 刷卡（信用卡）</label>';
+  var po=$('#pay-options'); if(!po) return; po.innerHTML=opts; PAY_METHOD='刷卡';
   po.querySelectorAll('.paybox').forEach(function(el){ el.onclick=function(){ PAY_METHOD=el.getAttribute('data-pay'); po.querySelectorAll('.paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); }; });
 }
 
@@ -374,9 +374,12 @@ $('#do-submit').onclick=async function(){
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
-    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(planTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)});
+    // 刷卡／儲值：預約成功直接給地址或視訊連結（SQL：my_booking_access）
+    var acc=window.RWAccess?await RWAccess.load(db,ref):null;
+    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), service:svc, plan:(planTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total), access:(window.RWAccess?RWAccess.text(acc):'')});
     $('#done-ref').textContent='訂單編號 '+ref;
-    var cr=$('#copy-ref'); if(cr){ cr.onclick=function(){ try{ navigator.clipboard.writeText(ref); cr.textContent='已複製：'+ref; setTimeout(function(){ cr.textContent='複製訂單編號'; },1800); }catch(e){ cr.textContent='訂單編號 '+ref; } }; }
+    var da=$('#done-access'); if(da){ da.innerHTML=window.RWAccess?RWAccess.html(acc):''; if(window.RWAccess) RWAccess.bind(da); }
+    if(da && !da.innerHTML){ da.innerHTML='<p class="muted" style="font-size:13.5px;line-height:1.7;margin-top:12px">服務地址或視訊連結會用 Email 寄給你，也可以在「我的訂單」查看。</p>'; }
     $('#done-summary').innerHTML=$('#pay-summary').innerHTML;
     $('#book-pay').style.display='none';
     $('#book-done').style.display='block';
@@ -406,7 +409,7 @@ async function sendBookingEmail(info){
         _subject:'彩之語 · 新預約 '+info.ref+(info.guide?'（'+info.guide+'）':''), _template:'table',
         name:info.name||'', email:info.email, 電話:info.phone||'', 引路人:info.guide||'',
         服務項目:info.service||'', 方案:info.plan||'', 預約時間:info.when||'', 付款方式:info.method||'', 金額:info.total||'', 訂單編號:info.ref||'',
-        _autoresponse:'你好 '+(info.name||'')+'，\n\n你在彩之語的預約已收到，以下是預約明細：\n\n引路人：'+(info.guide||'')+'\n服務項目：'+(info.service||'')+'\n方案：'+(info.plan||'')+'\n預約時間：'+(info.when||'')+'\n付款方式：'+(info.method||'')+'\n金額：'+(info.total||'')+'\n訂單編號：'+(info.ref||'')+'\n\n我們會盡快與你確認時間與後續，並提供完整地址。\n（此為測試流程，尚未真的收款）\n\n— 彩之語 Rainbow Whisper'
+        _autoresponse:'你好 '+(info.name||'')+'，\n\n你在彩之語的預約已收到，以下是預約明細：\n\n引路人：'+(info.guide||'')+'\n服務項目：'+(info.service||'')+'\n方案：'+(info.plan||'')+'\n預約時間：'+(info.when||'')+'\n付款方式：'+(info.method||'')+'\n金額：'+(info.total||'')+'\n訂單編號：'+(info.ref||'')+'\n\n'+(info.access?info.access+'\n':'服務地址或視訊連結會再另外通知你。\n')+'（此為測試流程，尚未真的收款）\n\n— 彩之語 Rainbow Whisper'
       }))
     }).catch(function(){});
   }catch(e){}
