@@ -181,7 +181,7 @@ function renderQ(){
     '<div class="ck-qbar"><i style="width:'+Math.round(S.step/(QUESTIONS.length+1)*100)+'%"></i></div>'+
     '<div class="ck-q">'+esc(q.t)+'</div>'+
     '<div>'+OPTS.map(function(o,oi){return '<div class="ck-opt'+(S.answers[i]===o.v?' was':'')+'" data-v="'+o.v+'"><span class="rd"></span><span>'+o.t+'</span></div>';}).join('')+'</div>'+
-    '<button class="ck-back" id="ck-back">‹ '+(S.step>1?'上一題':'上一頁')+'</button>'+
+    '<button class="rw-back" id="ck-back">‹ 上一頁</button>'+
   '</div>';
   app.querySelectorAll('.ck-opt').forEach(function(el){ el.onclick=function(){ S.answers[i]=parseInt(el.getAttribute('data-v'),10); S.step++; render(); window.scrollTo({top:0,behavior:'smooth'}); }; });
   var bk=document.getElementById('ck-back'); if(bk) bk.onclick=function(){ S.step--; render(); window.scrollTo({top:0,behavior:'smooth'}); };
@@ -197,7 +197,7 @@ function renderPrefs(){
     RWMatch.formHTML()+'<div class="pf-err" id="pf-err"></div>'+
     '<button class="ck-cta" id="pf-go">看我的結果</button>'+
     '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div>'+
-    '<button class="ck-back" id="ck-back">‹ 上一題</button>'+
+    '<button class="rw-back" id="ck-back">‹ 上一頁</button>'+
   '</div>';
   var pf=RWMatch.mount(app.querySelector('.ck-card'),document.getElementById('pf-err'));
   document.getElementById('pf-go').onclick=function(){ var p=pf.check(); if(!p) return; S.prefs=p; S.step++; render(); };
@@ -223,7 +223,7 @@ function renderResult(){
     '<a class="ck-cta" href="booking.html#pick" style="text-decoration:none">瀏覽全部引路人</a>'+
     '<a class="ck-ghost" id="ck-line" href="'+lineHref+'" target="_blank" rel="noopener">加 LINE 收結果</a>'+
     '<button class="ck-ghost" id="ck-share" type="button">分享給朋友</button>'+
-    '<button class="ck-back" id="ck-prev" style="display:block;margin:16px auto 0">‹ 上一頁（修改配對條件）</button>'+
+    '<button class="rw-back" id="ck-prev">‹ 上一頁（修改配對條件）</button>'+
     '<button class="ck-back" id="ck-restart" style="display:block;margin:6px auto 0">重新測一次</button>'+
     '<div class="ck-note">此結果僅供自我覺察與參考，不作為醫療或心理診斷。</div>'+
   '</div>';

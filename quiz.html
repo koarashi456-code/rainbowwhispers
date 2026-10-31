@@ -30,7 +30,6 @@
   .opt:hover{border-color:var(--brush);background:var(--tint)}
   .opt.sel{border-color:var(--brush);background:var(--brush);color:#fff}
   .opt.prev{border-color:var(--brush);background:var(--tint)}
-  .qback{display:block;margin:14px auto 0;font:inherit;font-size:13.5px;color:var(--soft);background:none;border:none;cursor:pointer;padding:6px 10px}
   .fade{animation:fade .4s ease}
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   /* 結果 */
@@ -295,7 +294,7 @@ function render(){
     html='<div class="bar"><i style="width:'+pct+'%"></i></div><div class="step-no">第 '+S.step+' / 21 步</div>'+
       '<div class="card fade"><div class="q">'+esc(Q.q)+'</div>'+
       Q.o.map(function(o,i){return '<button class="opt'+(S.answers[S.step-1]===o?' prev':'')+'" data-ans="'+i+'">'+esc(o.t)+'</button>';}).join('')+'</div>'+
-      '<button class="qback" id="q-back">‹ 上一頁</button>';
+      '<button class="rw-back" id="q-back">‹ 上一頁</button>';
   } else if(S.step===21){  // 最後一題：地區／預算／方式（配對引路人用）
     html='<div class="bar"><i style="width:100%"></i></div><div class="step-no">最後一題 · 第 21 / 21 步</div>'+
       '<div class="card fade"><div class="q">最後一題：讓我們幫你配得更準</div>'+
@@ -303,7 +302,7 @@ function render(){
       RWMatch.formHTML()+'<div class="pf-err" id="pf-err"></div>'+
       '<button class="opt" id="pf-go" style="text-align:center;background:var(--rainbow);border:0;color:#4A3A2A;font-weight:500;margin-top:14px">看我的結果　→</button>'+
       '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div></div>'+
-      '<button class="qback" id="q-back">‹ 上一題</button>';
+      '<button class="rw-back" id="q-back">‹ 上一頁</button>';
   } else {
     html=resultHTML(compute());
   }
@@ -324,7 +323,6 @@ function resultHTML(R){
   var dims=DIMS.map(function(d){ return '<div class="dim"><span class="name">'+d.label+'</span><span class="dbar"><i style="width:'+R.dim[d.k]+'%"></i></span><span class="val">'+R.dim[d.k]+'</span></div>'; }).join('');
   var ctaText=R.green?'加 LINE，認識適合你的引路人　→':'加 LINE，讓彩之語先陪你　→';
   return '<div class="fade">'+
-    '<button class="qback" id="q-back" style="margin:0 0 8px">‹ 上一頁（修改配對條件）</button>'+
     '<div class="bar"><i style="width:100%"></i></div>'+
     '<div class="rhero"><div class="kicker">你的探索類型</div>'+
       '<div class="rring"><div><svg viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.5 4.5 2 6 6.5 6.5C14 10 12.5 11.5 12 16c-.5-4.5-2-6-6.5-6.5C10 9 11.5 7.5 12 3Z"/></svg></div></div>'+
@@ -347,6 +345,7 @@ function resultHTML(R){
     '<div class="rmini">送出後我們會收到你的類型與方向，為你配對最適合的引路人。查看<span class="policy-link" id="ptoggle">《個資使用告知》</span></div>'+
     '<div class="policy" id="policy">'+policyMarkup()+'</div>'+
     '<div class="ractions"><button class="btn-ghost" id="restart">重新測驗</button><button class="btn-line" id="share">分享給朋友</button></div>'+
+    '<button class="rw-back" id="q-back">‹ 上一頁（修改配對條件）</button>'+
   '</div>';
 }
 
