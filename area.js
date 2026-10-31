@@ -131,9 +131,9 @@ function formHTML(){
 function mount(box,errEl){
   injectCss();
   var p=loadLocal(), cur={area:p.area||'', budget:p.budget||'', mode:p.mode||''};
-  var pk=picker(box.querySelector('[data-pf-area]'),{cls:'pf-sel',value:cur.area,onChange:function(v){ cur.area=v; if(errEl) errEl.textContent=''; }});
+  var pk=picker(box.querySelector('[data-pf-area]'),{cls:'pf-sel',value:cur.area,onChange:function(v){ cur.area=v; saveLocal(cur); if(errEl) errEl.textContent=''; }});
   function drawChips(){ box.querySelectorAll('[data-pf-g]').forEach(function(g){ var f=g.getAttribute('data-pf-g'); g.querySelectorAll('.pf-chip').forEach(function(c){ c.classList.toggle('on',c.getAttribute('data-k')===cur[f]); }); }); }
-  box.querySelectorAll('[data-pf-g]').forEach(function(g){ g.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; cur[g.getAttribute('data-pf-g')]=c.getAttribute('data-k'); drawChips(); if(errEl) errEl.textContent=''; }); });
+  box.querySelectorAll('[data-pf-g]').forEach(function(g){ g.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; cur[g.getAttribute('data-pf-g')]=c.getAttribute('data-k'); saveLocal(cur); drawChips(); if(errEl) errEl.textContent=''; }); });
   drawChips();
   // 會員登入中、還沒選過地區 → 帶入會員資料的地區
   if(!cur.area && window.SUPA && window.rwMemberToken && window.rwMemberToken()){
