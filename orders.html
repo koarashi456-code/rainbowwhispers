@@ -44,7 +44,18 @@
   .st-book{background:#FBE7CC;color:#A5643A}
   .st-noshow{background:#F6DDE3;color:#B4566E}
   .st-ship{background:#DCEAF2;color:#4E7A94}
-  .oc-act{margin-top:10px;display:flex;justify-content:flex-end}
+  .oc-act{margin-top:10px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+  .oc-btn.cx{color:#C0506A;border-color:#F0D3D9}
+  .oc-btn:disabled{opacity:.5;cursor:not-allowed}
+  .cx-box{background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:14px;padding:12px 14px;margin-top:4px}
+  .cx-line{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;color:var(--ink)}
+  .cx-line.t{border-top:1px dashed #E2D6C2;margin-top:6px;padding-top:8px;font-weight:600;color:var(--brush)}
+  .cx-line .neg{color:#C0506A}
+  .cx-rules{list-style:none;padding:0;margin:12px 0 0;font-size:12.5px;line-height:1.7;color:var(--soft)}
+  .cx-rules li{padding:4px 8px;border-radius:8px}
+  .cx-rules li.on{background:#FBEDEF;color:#8E3E52;font-weight:500}
+  .rs-acts .dang{background:#C0506A;border-color:#C0506A;color:#fff;font-weight:500}
+  .cx-alt{display:block;width:100%;font:inherit;font-size:13px;color:var(--brush);background:none;border:0;text-decoration:underline;margin-top:10px;cursor:pointer}
   .oc-btn{font:inherit;font-size:13px;color:var(--brush);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
   .rs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:80}
   .rs-mask.on{display:flex}
@@ -134,6 +145,13 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 
+<div class="rs-mask" id="cx-mask"><div class="rs-box">
+  <div class="rs-h">取消預約</div>
+  <div class="rs-sub" id="cx-sub"></div>
+  <div id="cx-body"></div>
+  <div class="rs-msg" id="cx-msg"></div>
+  <div class="rs-acts" id="cx-acts"><button type="button" id="cx-close">先不要</button><button type="button" class="dang" id="cx-go" disabled>確認取消預約</button></div>
+</div></div>
 <div class="rs-mask" id="rs-mask"><div class="rs-box">
   <div class="rs-h">修改訂單（改期）</div>
   <div class="rs-sub" id="rs-sub"></div>
@@ -174,7 +192,8 @@ function orderCard(o){
     +(isShop(o)?'<div class="oc-line"><span class="k">下單</span> '+fmtDay(o.created_at)+'</div>':'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>')
     +'<div class="oc-line"><span class="k">付款</span> '+esc(o.method||'—')+(o.order_ref?'　·　<span class="k">編號</span> '+esc(o.order_ref):'')+'</div>'
     +(hasAccess(o)?'<div data-acc="'+esc(o.order_ref)+'"></div>':'')
-    +(canEdit(o)?'<div class="oc-act"><button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button></div>':'')
+    +((canEdit(o)||canCancel(o))?'<div class="oc-act">'+(canEdit(o)?'<button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button>':'')+
+      (canCancel(o)?(started(o)?'<button class="oc-btn cx" type="button" disabled>服務已開始，無法取消</button>':'<button class="oc-btn cx" type="button" data-cx="'+esc(o.order_ref)+'">取消預約</button>'):'')+'</div>':'')
     +'</div>';
 }
 // 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
@@ -189,6 +208,43 @@ async function fillAccess(){
     if(!(ref in ACC)) ACC[ref]=await RWAccess.load(db,ref);
     el.innerHTML=RWAccess.html(ACC[ref]); RWAccess.bind(el); }
 }
+// 取消預約（依取消與退費條款；退費金額由資料庫 cancel_my_order 計算）
+function canCancel(o){ return o.status==='已預約' && !isShop(o) && o.order_ref && !/-C$/.test(o.order_ref); }
+function started(o){ return !!(o.appointment_at && cmpKey(o) <= new Date()); }
+var CX={ref:''};
+function cxClose(){ $('#cx-mask').classList.remove('on'); }
+async function openCancel(ref){
+  var o=ALL_ORDERS.find(function(x){ return x.order_ref===ref; }); if(!o) return;
+  CX.ref=ref; $('#cx-msg').textContent=''; $('#cx-go').disabled=true; $('#cx-go').style.display=''; $('#cx-close').textContent='先不要';
+  $('#cx-sub').textContent=(o.guide_name||'引路人')+'　'+(o.service||'')+'　·　'+fmtDT(o.appointment_at);
+  $('#cx-body').innerHTML='<div class="rs-sub">計算退費中…</div>';
+  $('#cx-mask').classList.add('on');
+  var q; try{ var r=await db.rpc('cancel_my_order',{p_ref:ref,p_confirm:false}); if(r.error) throw new Error(r.error.message); q=r.data; }
+  catch(e){ $('#cx-body').innerHTML='<div class="rs-sub" style="color:#C0506A">'+esc(e.message||'暫時無法取消')+'</div><a class="oc-btn" style="display:inline-block;text-decoration:none" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加官方 LINE 詢問</a>'; $('#cx-go').style.display='none'; $('#cx-close').textContent='關閉'; return; }
+  var h='<div class="rs-sub" style="margin-bottom:8px">距離預約時間還有 <b style="color:var(--brush)">'+(q.hours>=9999?'—':(q.hours>=48?Math.floor(q.hours/24)+' 天':q.hours+' 小時'))+'</b>，依條款'+(q.full?'可以<b style="color:#3F7A5E">全額退費</b>':'<b style="color:#C0506A">酌收服務費 50%，媒合費不退</b>')+'：</div>';
+  h+='<div class="cx-box">'+
+    '<div class="cx-line"><span>實付服務費</span><span>'+money(q.paid)+'</span></div>'+
+    (q.fee?'<div class="cx-line"><span>彩之語媒合費</span><span>'+money(q.fee)+(q.full?'':'（不退）')+'</span></div>':'')+
+    (q.kept?'<div class="cx-line"><span>酌收服務費 50%</span><span class="neg">−'+money(q.kept)+'</span></div>':'')+
+    '<div class="cx-line t"><span>可退金額</span><span>'+money(q.refund)+'</span></div>'+
+    '<div style="font-size:12px;color:var(--soft);margin-top:4px">'+esc(q.return_to)+(q.method==='儲值'?'（取消後馬上退回）':'，確認後 7 個工作天內完成')+'</div></div>';
+  h+='<ul class="cx-rules"><li'+(q.full?' class="on"':'')+'>1. 服務開始前 24 小時（含）以上取消：服務費與媒合費全額退費，或免費改期一次。</li><li'+(q.full?'':' class="on"')+'>2. 服務開始前未滿 24 小時取消：服務費酌收 50%，其餘退還，媒合費不退；或改期一次（限一次）。</li><li>3. 服務開始後取消、或未於預約時間出席（NO-SHOW）：恕不退費。</li></ul>';
+  if(canEdit(o)) h+='<button type="button" class="cx-alt" id="cx-rs">不想取消？改成改期一次 ›</button>';
+  $('#cx-body').innerHTML=h; $('#cx-go').disabled=false;
+  var rb=$('#cx-rs'); if(rb) rb.onclick=function(){ cxClose(); openReschedule(ref); };
+}
+async function doCancel(){
+  var btn=$('#cx-go'); if(!CX.ref) return; btn.disabled=true; btn.textContent='取消中…';
+  try{ var r=await db.rpc('cancel_my_order',{p_ref:CX.ref,p_confirm:true}); if(r.error) throw new Error(r.error.message); var q=r.data||{};
+    var o=ALL_ORDERS.find(function(x){ return x.order_ref===CX.ref; }); if(o) o.status='已取消';
+    try{ fetch('https://formsubmit.co/ajax/koarashi456@gmail.com',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({_subject:'彩之語 · 會員取消預約 '+CX.ref,_template:'table',訂單編號:CX.ref,引路人:(o&&o.guide_name)||'',服務項目:(o&&o.service)||'',預約時間:o?fmtDT(o.appointment_at):'',付款方式:q.method||'',可退金額:money(q.refund),酌收服務費:money(q.kept||0),退款方式:q.return_to||''})}).catch(function(){}); }catch(e){}
+    $('#cx-body').innerHTML='<div class="cx-box" style="text-align:center"><div style="font-size:16px;font-weight:600;color:var(--brush)">已取消預約</div><div style="margin-top:6px;font-size:13.5px">可退金額 <b>'+money(q.refund)+'</b>，'+esc(q.return_to||'')+'</div></div>';
+    $('#cx-msg').textContent=''; btn.style.display='none'; $('#cx-close').textContent='關閉';
+    reloadOrders();
+  }catch(e){ $('#cx-msg').style.color='#C0506A'; $('#cx-msg').textContent='取消失敗：'+(e.message||'請稍後再試'); btn.disabled=false; }
+  btn.textContent='確認取消預約';
+}
+async function reloadOrders(){ try{ var r=await db.rpc('my_account'); if(!r.error && r.data && !r.data.disabled) ALL_ORDERS=r.data.orders||[]; }catch(e){} render(); }
 function canEdit(o){ return o.status==='已預約' && o.order_ref && o.appointment_at && cmpKey(o) > new Date(); }
 function p2(n){ return (n<10?'0':'')+n; }
 var RS={ref:'',sel:'',date:''};
@@ -248,6 +304,7 @@ function render(){
   list.sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   $('#o-list').innerHTML=list.map(orderCard).join('');
   $('#o-list').querySelectorAll('[data-rs]').forEach(function(b){ b.onclick=function(){ openReschedule(b.getAttribute('data-rs')); }; });
+  $('#o-list').querySelectorAll('[data-cx]').forEach(function(b){ b.onclick=function(){ openCancel(b.getAttribute('data-cx')); }; });
   fillAccess();
 }
 
@@ -274,6 +331,8 @@ $('#o-clear').onclick=function(){
 };
 
 $('#rs-cancel').onclick=rsClose; $('#rs-go').onclick=doReschedule;
+$('#cx-close').onclick=cxClose; $('#cx-go').onclick=doCancel;
+$('#cx-mask').addEventListener('click',function(e){ if(e.target===this) cxClose(); });
 $('#rs-mask').addEventListener('click',function(e){ if(e.target===this) rsClose(); });
 (async function init(){
   var s;
