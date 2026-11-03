@@ -26,6 +26,9 @@
   .orange .rdates{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
   .orange .in-sm{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;outline:none;flex:1;min-width:0}
   .orange .in-sm:focus{border-color:#C9A7DE}
+  .orange .in-sm{-webkit-appearance:none;appearance:none;width:100%;box-sizing:border-box}
+  /* 手機：自訂＋清除一行，日期自己一整行，不會擠到清除鍵 */
+  @media(max-width:560px){ .orange .rdates{order:3;flex:1 1 100%} .orange .oclear{margin-left:auto} }
   .oclear{font:inherit;font-size:13px;color:var(--brush);background:none;border:1.5px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer}
 
   .osum{font-size:13.5px;color:var(--soft);margin:2px 2px 10px}
@@ -134,7 +137,7 @@
     <button class="oclear" id="o-clear" type="button">清除</button>
   </div>
 
-  <div class="osum" id="o-sum"></div>
+  <div class="osum" id="o-sum" hidden></div>
   <div id="o-list"></div>
 </main>
 
@@ -299,7 +302,7 @@ function render(){
   var list=ALL_ORDERS.filter(inPeriod);
   var valid=list.filter(function(o){ return o.status!=='已取消' && o.status!=='已退費'; });
   var total=valid.reduce(function(a,o){ return a+Number(o.amount||0); },0);
-  $('#o-sum').innerHTML='共 <b>'+list.length+'</b> 筆'+(valid.length?'　·　有效合計 <b>'+money(total)+'</b>':'');
+  $('#o-sum').innerHTML='';  // 不顯示筆數與有效合計
   if(!list.length){ $('#o-list').innerHTML='<div class="oempty">這個期間沒有訂單。<br>換個期間，或到「預約引路人」開始你的第一次。</div>'; return; }
   list.sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   $('#o-list').innerHTML=list.map(orderCard).join('');
