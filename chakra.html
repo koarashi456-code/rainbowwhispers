@@ -248,7 +248,7 @@ function renderResult(){
   var ref=genRef();
   curLead={ref:ref,type:R.balanced?'七個脈輪平衡':R.low.map(function(k){ return CKMAP[k].name+'（'+CKMAP[k].sub+'）'; }).join('、')}; leadSaved=false;
   if(window.rwMemberToken&&window.rwMemberToken()) saveLead();  // 會員登入中：一出結果就記到會員資料
-  var msg='我做完彩之語的七大脈輪測驗了！'+(R.balanced?'我的七個脈輪很平衡。':'此刻最需要關注的是「'+R.low.map(function(k){ return CKMAP[k].name+'·'+CKMAP[k].sub; }).join('、')+'」。')+(S.prefs?'配對條件：'+RWMatch.label(S.prefs)+'。':'')+'（代碼 '+ref+'）';
+  var msg=(S.prefs&&S.prefs.nick?'我是'+S.prefs.nick+'，':'')+'我做完彩之語的七大脈輪測驗了！'+(R.balanced?'我的七個脈輪很平衡。':'此刻最需要關注的是「'+R.low.map(function(k){ return CKMAP[k].name+'·'+CKMAP[k].sub; }).join('、')+'」。')+(S.prefs?'配對條件：'+RWMatch.label(S.prefs)+'。':'')+'（代碼 '+ref+'）';
   var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg);
   app.innerHTML='<div class="ck-card">'+
     '<div class="ck-rsub">你的脈輪能量圖</div>'+
@@ -277,7 +277,7 @@ function renderResult(){
 function saveTestResult(topic,result,ref){
   // 會員登入中 → 記到會員本人的客戶檔；沒登入或失敗 → 照舊新增一筆匿名名單
   var prefs=RWMatch.forDb(S.prefs);
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['七大脈輪測驗']={result:result,topic:topic}; if(prefs) o['七大脈輪測驗'].prefs=prefs; return o; })()})});}catch(e){} }
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:(prefs&&prefs.nick)||null,ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['七大脈輪測驗']={result:result,topic:topic}; if(prefs) o['七大脈輪測驗'].prefs=prefs; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
   fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'七大脈輪測驗',p_prefs:prefs})})

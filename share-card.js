@@ -70,7 +70,7 @@ async function draw(o){
     rr(ctx,540-pw/2,py-50,pw,74,37); ctx.fillStyle='#F4EAD4'; ctx.fill(); ctx.fillStyle='#6B4A33'; ctx.fillText(o.pill,540,py);
   }
   // 底部
-  ctx.fillStyle='#B09A7C'; ctx.font='400 22px '+SANS; ctx.fillText(String(o.url||'').replace(/^https?:\/\//,'').replace(/\/$/,''),540,1222);
+  ctx.fillStyle='#B09A7C'; ctx.font='500 26px '+SANS; spaced(ctx,'@rainbowwhispers',540,1222,2);
   return cv;
 }
 var CSS='.rws-mask{position:fixed;inset:0;z-index:300;background:rgba(60,45,30,.45);display:flex;align-items:center;justify-content:center;padding:16px}'+

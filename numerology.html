@@ -102,7 +102,7 @@ var PF=null, PREFS=null;
 (function(){ var box=document.getElementById('nm-pf'); if(!box||!window.RWMatch) return; box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-top:14px">幫你配對引路人，再多選三個：</div>'+RWMatch.formHTML(); PF=RWMatch.mount(box,document.getElementById('nm-err')); })();
 function saveTestResult(topic,result,ref){
   var prefs=RWMatch.forDb(PREFS);
-  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['生命靈數']={result:result,topic:topic}; if(prefs) o['生命靈數'].prefs=prefs; return o; })()})});}catch(e){} }
+  function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:(prefs&&prefs.nick)||null,ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['生命靈數']={result:result,topic:topic}; if(prefs) o['生命靈數'].prefs=prefs; return o; })()})});}catch(e){} }
   var tk=window.rwMemberToken&&window.rwMemberToken();
   if(!tk){ anon(); return; }
   fetch(SUPA.url+'/rest/v1/rpc/save_my_test_result',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({p_topic:topic,p_result:result,p_ref:ref,p_test:'生命靈數',p_prefs:prefs})}).then(function(r){ if(!r.ok) anon(); }).catch(anon);

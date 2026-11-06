@@ -108,7 +108,7 @@ function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS)||'null')||
 function saveLocal(p){ try{ localStorage.setItem(LS,JSON.stringify(p)); }catch(e){} }
 function label(p){ if(!p) return ''; var b=bOf(p.budget), m=mOf(p.mode); return [p.area||'', b?b.t:'', m?m.s:''].filter(Boolean).join('・'); }
 // 存進客戶資料用（後台看得懂的文字）
-function forDb(p){ if(!p) return null; var b=bOf(p.budget), m=mOf(p.mode); return {area:p.area||'', budget:b?b.t:'', mode:m?m.s:''}; }
+function forDb(p){ if(!p) return null; var b=bOf(p.budget), m=mOf(p.mode), o={area:p.area||'', budget:b?b.t:'', mode:m?m.s:''}; if(p.nick) o.nick=p.nick; return o; }
 
 var CSS='.pf-q{font-size:14.5px;font-weight:500;color:var(--brush);margin:18px 0 8px;text-align:left}.pf-q small{font-weight:400;color:var(--soft);font-size:12px;margin-left:4px}'+
   '.pf-area{display:flex;gap:8px}.pf-sel{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:11px 10px;outline:none}.pf-sel:disabled{opacity:.55}'+
@@ -123,14 +123,17 @@ var CSS='.pf-q{font-size:14.5px;font-weight:500;color:var(--brush);margin:18px 0
 function injectCss(){ if(document.getElementById('rw-match-css')) return; var s=document.createElement('style'); s.id='rw-match-css'; s.textContent=CSS; document.head.appendChild(s); }
 
 function formHTML(){
-  return '<div class="pf-q">① 你住在哪裡？<small data-pf-from></small></div><div class="pf-area" data-pf-area></div><div class="pf-hint">先選縣市，再選區（鄉鎮市）；住國外選「海外」</div>'+
+  // 沒登入會員的人，先填暱稱（必填）
+  var nick=(window.rwMemberToken && window.rwMemberToken())?'':'<div class="pf-q">你的暱稱 <small style="color:#C98A6A">必填</small></div><input class="pf-sel" data-pf-nick maxlength="20" placeholder="想讓我們怎麼稱呼你？" style="width:100%;box-sizing:border-box" autocomplete="nickname">';
+  return nick+'<div class="pf-q">① 你住在哪裡？<small data-pf-from></small></div><div class="pf-area" data-pf-area></div><div class="pf-hint">先選縣市，再選區（鄉鎮市）；住國外選「海外」</div>'+
     '<div class="pf-q">② 一次諮詢，你能接受的預算？</div><div class="pf-chips" data-pf-g="budget">'+BUDGETS.map(function(b){ return '<button type="button" class="pf-chip" data-k="'+b.k+'">'+b.t+'</button>'; }).join('')+'</div>'+
     '<div class="pf-q">③ 想用什麼方式？</div><div class="pf-chips" data-pf-g="mode">'+MODES.map(function(m){ return '<button type="button" class="pf-chip" data-k="'+m.k+'">'+m.t+'</button>'; }).join('')+'</div>';
 }
 // 把三題掛到 box 裡；回傳 {get(), check()}：check() 沒填完會顯示提示並回傳 null
 function mount(box,errEl){
   injectCss();
-  var p=loadLocal(), cur={area:p.area||'', budget:p.budget||'', mode:p.mode||''};
+  var p=loadLocal(), cur={area:p.area||'', budget:p.budget||'', mode:p.mode||'', nick:p.nick||''};
+  var nk=box.querySelector('[data-pf-nick]'); if(nk){ nk.value=cur.nick; nk.addEventListener('input',function(){ cur.nick=nk.value.trim(); saveLocal(cur); if(errEl) errEl.textContent=''; }); }
   var pk=picker(box.querySelector('[data-pf-area]'),{cls:'pf-sel',value:cur.area,onChange:function(v){ cur.area=v; saveLocal(cur); if(errEl) errEl.textContent=''; }});
   function drawChips(){ box.querySelectorAll('[data-pf-g]').forEach(function(g){ var f=g.getAttribute('data-pf-g'); g.querySelectorAll('.pf-chip').forEach(function(c){ c.classList.toggle('on',c.getAttribute('data-k')===cur[f]); }); }); }
   box.querySelectorAll('[data-pf-g]').forEach(function(g){ g.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; cur[g.getAttribute('data-pf-g')]=c.getAttribute('data-k'); saveLocal(cur); drawChips(); if(errEl) errEl.textContent=''; }); });
@@ -141,11 +144,12 @@ function mount(box,errEl){
       .then(function(r){ return r.ok?r.json():null; }).then(function(d){ if(d && d.area && !cur.area){ cur.area=RWArea.split(d.area).c?d.area:''; if(cur.area){ pk.set(cur.area); var f=box.querySelector('[data-pf-from]'); if(f) f.textContent='已帶入會員資料'; } } }).catch(function(){});
   }
   return {
-    get:function(){ return {area:pk.get(), budget:cur.budget, mode:cur.mode}; },
+    get:function(){ return {area:pk.get(), budget:cur.budget, mode:cur.mode, nick:nk?cur.nick:''}; },
     check:function(){
-      var msg=!pk.county()?'請選擇你住的縣市':!pk.complete()?'請選擇你住的區（鄉鎮市）':!cur.budget?'請選擇預算':!cur.mode?'請選擇想要的方式':'';
+      if(nk) cur.nick=nk.value.trim();
+      var msg=(nk && !cur.nick)?'請填寫你的暱稱':!pk.county()?'請選擇你住的縣市':!pk.complete()?'請選擇你住的區（鄉鎮市）':!cur.budget?'請選擇預算':!cur.mode?'請選擇想要的方式':'';
       if(msg){ if(errEl) errEl.textContent=msg; return null; }
-      var out={area:pk.get(), budget:cur.budget, mode:cur.mode}; saveLocal(out); return out;
+      var out={area:pk.get(), budget:cur.budget, mode:cur.mode, nick:nk?cur.nick:''}; saveLocal(out); return out;
     }
   };
 }

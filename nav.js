@@ -48,3 +48,63 @@ window.rwMemberToken=function(){
     link.title=user.email||txt;
   }catch(e){}
 })();
+
+// 等頁面載入完再用 window.SUPA（有些頁面沒放 supabase-config.js，就自己載）
+function rwWithSupa(cb){
+  if(window.SUPA) return cb();
+  var s=document.createElement('script'); s.src='supabase-config.js'; s.onload=function(){ if(window.SUPA) cb(); }; document.head.appendChild(s);
+}
+function rwTokenSub(tk){ try{ var p=JSON.parse(decodeURIComponent(escape(atob(tk.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))))); return p.sub||''; }catch(e){ return ''; } }
+var RW_ADMIN_UID='0c7fd203-07c3-48ac-b94d-76965acfe733';
+
+// 瀏覽統計：每位訪客、每頁、每天記一次（不記管理員；只有後台看得到）
+window.addEventListener('load',function(){
+  try{
+    var tk=window.rwMemberToken&&window.rwMemberToken(); if(tk && rwTokenSub(tk)===RW_ADMIN_UID) return;
+    var vid=''; try{ vid=localStorage.getItem('rw_vid')||''; }catch(e){}
+    if(!/^[A-Za-z0-9]{8,40}$/.test(vid)){ var c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; vid=''; for(var i=0;i<20;i++) vid+=c.charAt(Math.floor(Math.random()*c.length)); try{ localStorage.setItem('rw_vid',vid); }catch(e){} }
+    var path=(location.pathname.split('/').pop()||'index.html').toLowerCase(); if(!/^[a-z0-9_.-]+\.html$/.test(path)) path='index.html';
+    rwWithSupa(function(){ fetch(window.SUPA.url+'/rest/v1/rpc/log_view',{method:'POST',headers:{apikey:window.SUPA.key,Authorization:'Bearer '+(tk||window.SUPA.key),'Content-Type':'application/json'},body:JSON.stringify({p_path:path,p_vid:vid}),keepalive:true}).catch(function(){}); });
+  }catch(e){}
+});
+
+// 會員小鈴鐺：預約成功、改期、取消、完成、儲值入帳…（SQL：member_notices、my_notices）
+window.addEventListener('load',function(){
+  try{
+    var tk=window.rwMemberToken&&window.rwMemberToken(); if(!tk || rwTokenSub(tk)===RW_ADMIN_UID) return;
+    var navIn=document.querySelector('.rw-nav-in'); if(!navIn || document.getElementById('rw-bell')) return;
+    var css=document.createElement('style'); css.textContent=
+      '.rw-bell-wrap{margin-left:auto;position:static}.rw-bell-wrap~.rw-burger{margin-left:2px}'+
+      '.rw-bell{position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:34px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;padding:0}'+
+      '.rw-bell svg{width:18px;height:18px}.rw-bell b{position:absolute;top:-5px;right:-4px;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#D4694E;color:#fff;font-size:11px;line-height:17px;text-align:center;display:none}.rw-bell b.on{display:block}'+
+      '.rw-npanel{position:absolute;top:calc(100% + 6px);right:10px;width:330px;max-width:calc(100vw - 20px);max-height:70vh;overflow-y:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 40px -16px rgba(120,90,60,.4);z-index:70;display:none;text-align:left}.rw-npanel.on{display:block}'+
+      '.rw-nh{position:sticky;top:0;background:#fff;padding:12px 14px 8px;border-bottom:1px solid var(--line);font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:15px}'+
+      '.rw-ni{display:block;text-decoration:none;color:var(--ink);padding:11px 14px;border-bottom:1px solid var(--line)}.rw-ni:last-child{border-bottom:0}.rw-ni.new{background:#FBF1E2}.rw-ni.pin{background:#F1F8F2}'+
+      '.rw-ni .t{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;font-weight:600;color:var(--brush)}.rw-ni .t small{font-weight:400;font-size:11px;color:#A9967E;white-space:nowrap}.rw-ni .b{font-size:12.5px;color:var(--soft);margin-top:2px}'+
+      '.rw-nempty{padding:28px 16px;text-align:center;color:var(--soft);font-size:13.5px}';
+    document.head.appendChild(css);
+    var wrap=document.createElement('div'); wrap.className='rw-bell-wrap';
+    wrap.innerHTML='<button type="button" class="rw-bell" id="rw-bell" aria-label="通知"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><b id="rw-bell-n"></b></button>';
+    var panel=document.createElement('div'); panel.className='rw-npanel'; panel.id='rw-npanel';
+    var cb=navIn.querySelector('.rw-burger-cb'); navIn.insertBefore(wrap, cb||navIn.querySelector('.rw-links')); navIn.appendChild(panel);
+    var KEY='rw_mnotice_seen', LIST=[];
+    function seen(){ try{ return localStorage.getItem(KEY)||''; }catch(e){ return ''; } }
+    function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+    function ago(s){ var d=(Date.now()-new Date(s).getTime())/1000; if(d<60) return '剛剛'; if(d<3600) return Math.floor(d/60)+' 分鐘前'; if(d<86400) return Math.floor(d/3600)+' 小時前'; if(d<86400*7) return Math.floor(d/86400)+' 天前'; var t=new Date(s); return (t.getMonth()+1)+'/'+t.getDate(); }
+    function badge(){ var s=seen(), n=LIST.filter(function(x){ return !s || new Date(x.created_at)>new Date(s); }).length, b=document.getElementById('rw-bell-n'); b.textContent=n>99?'99+':n; b.classList.toggle('on',n>0); }
+    function rpc(name){ return fetch(window.SUPA.url+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:window.SUPA.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:'{}'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }); }
+    // 24 小時內的預約當提醒（放最上面，不算未讀）
+    function reminders(){ return rpc('my_account').then(function(d){ var out=[], now=Date.now(); ((d&&d.orders)||[]).forEach(function(o){ if(o.status!=='已預約' || !o.appointment_at || /^商品：/.test(String(o.service||''))) return; var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(o.appointment_at); if(!m) return; var t=new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime(); if(t>now && t-now<=86400e3) out.push({title:'提醒：'+(new Date(t).getDate()===new Date().getDate()?'今天':'明天')+' '+m[4]+':'+m[5]+' 有預約',body:(o.guide_name||'引路人')+'　'+(o.service||''),link:'orders.html'}); }); return out; }); }
+    function draw(pins,prev){ var h='<div class="rw-nh">我的通知</div>';
+      h+=(pins||[]).map(function(x){ return '<a class="rw-ni pin" href="'+esc(x.link)+'"><div class="t"><span>'+esc(x.title)+'</span></div><div class="b">'+esc(x.body)+'</div></a>'; }).join('');
+      h+=LIST.length?LIST.map(function(x){ var nw=!prev || new Date(x.created_at)>new Date(prev); return '<a class="rw-ni'+(nw?' new':'')+'" href="'+esc(x.link||'orders.html')+'"><div class="t"><span>'+esc(x.title)+'</span><small>'+ago(x.created_at)+'</small></div>'+(x.body?'<div class="b">'+esc(x.body)+'</div>':'')+'</a>'; }).join(''):((pins&&pins.length)?'':'<div class="rw-nempty">目前沒有通知<br>預約、改期、取消、儲值都會在這裡通知你</div>');
+      panel.innerHTML=h; }
+    function load(){ rwWithSupa(function(){ rpc('my_notices').then(function(d){ LIST=Array.isArray(d)?d:[]; badge(); }); }); }
+    document.getElementById('rw-bell').onclick=function(e){ e.stopPropagation();
+      if(panel.classList.toggle('on')){ var prev=seen(); try{ localStorage.setItem(KEY,new Date().toISOString()); }catch(x){} draw([],prev); badge();
+        rwWithSupa(function(){ Promise.all([rpc('my_notices'),reminders()]).then(function(r){ LIST=Array.isArray(r[0])?r[0]:LIST; draw(r[1],prev); badge(); }); }); } };
+    panel.addEventListener('click',function(e){ e.stopPropagation(); });
+    document.addEventListener('click',function(){ panel.classList.remove('on'); });
+    load(); setInterval(load,60000);
+  }catch(e){}
+});
