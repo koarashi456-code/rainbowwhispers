@@ -52,6 +52,16 @@
   .cust .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none}
   .cust .in:focus{border-color:#C9A7DE;background:#fff}
   .notes-l{margin-top:10px}
+  .gloc-box{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#FBF6EC}
+  .gloc-h{font-size:12.5px;color:var(--soft);font-weight:500}.gloc-h span{font-weight:400}
+  .gloc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+  .gloc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.gloc-top b{font-size:13px;color:var(--brush)}
+  .gloc-tag{font-weight:400;color:#3F7A5E;background:#E4F2E7;border-radius:999px;padding:1px 9px;font-size:11.5px;margin-left:8px}.gloc-tag.no{color:#A5643A;background:#FBE7CC}
+  .gloc-l{font-size:11.5px;color:var(--soft);margin-bottom:4px}
+  .gloc-area{display:flex;gap:6px}.gloc-area select{flex:1 1 110px;min-width:0;width:auto}
+  .gloc-add{font:inherit;font-size:13px;margin-top:10px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:7px 16px;cursor:pointer}
+  .gloc-tip{font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.6}
+  .gloc-empty{font-size:12.5px;color:var(--soft);padding:8px 0 2px}
   .notes-l textarea,.notes-l input{width:100%}
   .notes-l textarea{min-height:44px;resize:vertical}
   .cust-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:10px}
@@ -802,9 +812,12 @@ function guideCard(g){
       '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
-    '<div class="notes-l" style="font-size:11.5px;color:var(--soft)">服務區域（公開顯示；實體服務的地區，可以選好幾個）<div data-garea style="margin-top:5px"></div><input type="hidden" data-f="region" value="'+esc(g.region)+'"></div>'+
-    '<label class="notes-l">完整地址（不公開，刷卡／儲值預約成功後直接給客人）<input class="in" data-f="address" value="'+esc(g.address)+'" placeholder="完整地址（線上可留空）"></label>'+
-    '<label class="notes-l">報到提醒（跟地址一起給客人）<input class="in" data-f="checkin_note" value="'+esc(g.checkin_note)+'" placeholder="例：到了按 5 樓電鈴，說「彩之語預約」"></label>'+
+    '<div class="gloc-box">'+
+      '<div class="gloc-h">服務地點（實體）<span>　可以新增好幾個，客人預約時自己選</span></div>'+
+      '<div data-glocs></div>'+
+      '<button type="button" class="gloc-add" data-gloc-add>＋ 新增地點</button>'+
+      '<div class="gloc-tip">・引路人頁面的「服務區域」會自動顯示這些地區<br>・完整地址只有刷卡／儲值預約成功的客人看得到，而且只給客人選的那個地點</div>'+
+    '</div>'+
     '<div class="cust-grid" style="margin-top:10px">'+
       '<label>視訊軟體（線上服務）<select class="in" data-f="video_app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(x){ return '<option'+(g.video_app===x?' selected':'')+'>'+x+'</option>'; }).join('')+'</select></label>'+
       '<label>視訊連結（不公開，預約成功後給客人）<input class="in" data-f="video_link" value="'+esc(g.video_link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"></label>'+
@@ -845,7 +858,7 @@ function guidePlansHtml(g){
     '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:2px">方案審核（核准後才會出現在客戶預約頁）</div>'+
     list+
     '<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;align-items:center">'+
-      '<input class="in gp-nl" placeholder="方案名稱" style="flex:1;min-width:120px">'+
+      '<input class="in gp-nl" placeholder="方案名稱（含項目，例：塔羅 1 小時）" style="flex:1;min-width:150px">'+
       '<input class="in gp-np" type="number" min="0" placeholder="價格" style="width:84px">'+
       '<input class="in gp-nu" placeholder="時數/次數 如2小時" style="width:120px">'+
       '<button class="del gp-add" style="color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 15px">新增並核准</button>'+
@@ -1020,6 +1033,54 @@ function bindGuidePhoto(el,id){
     setMsg('已移除','#4F8E6E'); reload();
   };
 }
+// 引路人服務地點（可以好幾個）：guides.locations = [{area:'新北市三重區', address:'…', note:'報到提醒'}]
+// 存檔時順便把「服務區域」(region) 換成這些地區，第一個地點也同步到舊的 address／checkin_note 欄位
+function guideLocs(g){
+  var L=(g && Array.isArray(g.locations))?g.locations:[];
+  if(!L.length && g && window.RWArea){
+    L=RWArea.parseList(g.region).map(function(a,i){ return {area:a, address:i?'':(g.address||''), note:i?'':(g.checkin_note||'')}; });
+    if(!L.length && String(g.address||'').trim()) L=[{area:'', address:g.address||'', note:g.checkin_note||''}];
+  }
+  return L.map(function(x){ return {area:String((x&&x.area)||''), address:String((x&&x.address)||''), note:String((x&&x.note)||'')}; });
+}
+function bindGuideLocs(el,id){
+  var box=el.querySelector('[data-glocs]'), add=el.querySelector('[data-gloc-add]'); if(!box || !window.RWArea) return;
+  var L=guideLocs(guideById(id));
+  function msg(t,c){ var s=el.querySelector('[data-saved]'); if(!s) return; s.textContent=t; s.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(s.textContent===t) s.textContent=''; },1400); }
+  async function save(){
+    var keep=L.filter(function(x){ return x.area || x.address.trim() || x.note.trim(); }).map(function(x){ return {area:x.area, address:x.address.trim(), note:x.note.trim()}; });
+    var areas=[]; keep.forEach(function(x){ if(x.area && areas.indexOf(x.area)<0) areas.push(x.area); });
+    var first=keep[0]||{};
+    var patch={locations:keep, region:areas.join('、')||null, address:first.address||null, checkin_note:first.note||null};
+    msg('儲存中…');
+    var r=await db.from('guides').update(patch).eq('id',id);
+    if(r.error){ msg('存檔失敗'+(/locations/.test(r.error.message||'')?'（請先執行 SQL）':''),'#C0506A'); return; }
+    var g=guideById(id); if(g) Object.assign(g,patch);
+    msg('已儲存','#4F8E6E');
+  }
+  function draw(){
+    box.innerHTML=L.length?L.map(function(x,i){
+      return '<div class="gloc" data-i="'+i+'">'+
+        '<div class="gloc-top"><b>地點 '+(i+1)+(x.area?'<span class="gloc-tag">'+esc(x.area)+'</span>':'<span class="gloc-tag no">還沒選地區</span>')+'</b><button type="button" class="del" data-gloc-rm>刪除</button></div>'+
+        '<div class="gloc-l">地區（公開顯示）</div><div class="gloc-area" data-gloc-area></div>'+
+        '<label class="notes-l">完整地址（不公開，付款成功後才給客人）<input class="in" data-gloc-f="address" value="'+esc(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓"></label>'+
+        '<label class="notes-l">報到提醒<input class="in" data-gloc-f="note" value="'+esc(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」"></label>'+
+      '</div>';
+    }).join(''):'<div class="gloc-empty">還沒有實體地點（只做線上的話可以不用加）</div>';
+    box.querySelectorAll('.gloc').forEach(function(row){
+      var i=+row.getAttribute('data-i');
+      var pk=RWArea.picker(row.querySelector('[data-gloc-area]'),{cls:'in',value:L[i].area,onChange:function(v,ok){
+        if(!ok) return;
+        if(L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(L[i].area); return; }
+        L[i].area=v; var tg=row.querySelector('.gloc-tag'); if(tg){ tg.textContent=v; tg.classList.remove('no'); } save();
+      }});
+      row.querySelectorAll('[data-gloc-f]').forEach(function(inp){ inp.addEventListener('change',function(){ L[i][inp.getAttribute('data-gloc-f')]=inp.value; save(); }); });
+      row.querySelector('[data-gloc-rm]').onclick=function(){ var x=L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; L.splice(i,1); draw(); save(); };
+    });
+  }
+  if(add) add.onclick=function(){ L.push({area:'',address:'',note:''}); draw(); var last=box.querySelector('.gloc:last-child select'); if(last) last.focus(); };
+  draw();
+}
 function bindGuides(){
   document.querySelectorAll('#glist .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
@@ -1027,8 +1088,7 @@ function bindGuides(){
     bindGuideLegacy(el,id);
     bindGuidePhoto(el,id);
     ensureGuideSlots(el);
-    var ga=el.querySelector('[data-garea]'), gh=el.querySelector('input[data-f="region"]');
-    if(ga && gh && window.RWArea) RWArea.multi(ga,{cls:'in',value:gh.value,onChange:function(v){ gh.value=v; gh.dispatchEvent(new Event('change')); }});
+    bindGuideLocs(el,id);
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
@@ -1963,6 +2023,7 @@ function txDetailHtml(t){
       +mF('金額','<input class="in" data-f="amount" type="number" value="'+esc(t.amount)+'">')
       +mF('付款方式',sel('method',['現金','刷卡','匯款','儲值'],t.method))
       +mF('狀態',sel('status',['已預約','已完成','未出席','已取消','已退費'],t.status))
+      +(t.location?mF('服務地點',esc(t.location==='線上'?'線上視訊':t.location==='實體'?'實體':t.location+'（實體）')):'')
       +mF('訂單編號',esc(t.order_ref||'—'))
       +((t.method==='匯款'&&t.pay_last5)?mF('匯款末五碼',esc(t.pay_last5)):'')
       +(contact?mF('客人聯絡',esc(contact)):'')
