@@ -1,5 +1,6 @@
 /* 彩之語：預約成功後給客人的「服務地址／線上視訊」區塊（預約完成頁、我的訂單共用）
-   資料來自 SQL：my_booking_access(p_ref)，只有刷卡／儲值的訂單、下單會員本人拿得到 */
+   資料來自 SQL：my_booking_access(p_ref)，只有刷卡／儲值的訂單、下單會員本人拿得到；
+   引路人有好幾個地點時，只給客人預約時選的那個（acc.area） */
 (function(){
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
 function safeUrl(u){ u=String(u||'').trim(); return /^https:\/\/[^\s"'<>]+$/i.test(u)?u:''; }
@@ -23,11 +24,11 @@ function html(acc){
   if(acc.offline){
     if(acc.address){
       var map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(acc.address);
-      h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址</div><div class="rwa-a">'+esc(acc.address)+'</div>'+
+      h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-a">'+esc(acc.address)+'</div>'+
         '<div class="rwa-s">'+(acc.checkin_note?esc(acc.checkin_note)+'<br>':'')+'請在預約時間前 10 分鐘抵達。</div>'+
         '<div class="rwa-btns"><a class="go" href="'+esc(map)+'" target="_blank" rel="noopener">在 Google 地圖開啟</a><button type="button" data-rwa-copy="'+esc(acc.address)+'">複製地址</button></div></div>';
     } else if(!acc.online){
-      h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址</div><div class="rwa-s">引路人的地址還在整理中，我們會用 Email 或官方 LINE 通知你。</div></div>';
+      h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-s">引路人的地址還在整理中，我們會用 Email 或官方 LINE 通知你。</div></div>';
     }
   }
   if(acc.online){
@@ -46,7 +47,7 @@ function html(acc){
 function text(acc){
   if(!acc || !acc.paid) return '';
   var L=[];
-  if(acc.offline && acc.address){ L.push('服務地址：'+acc.address); if(acc.checkin_note) L.push('報到提醒：'+acc.checkin_note); L.push('請在預約時間前 10 分鐘抵達。'); }
+  if(acc.offline && acc.address){ L.push('服務地址'+(acc.area?'（'+acc.area+'）':'')+'：'+acc.address); if(acc.checkin_note) L.push('報到提醒：'+acc.checkin_note); L.push('請在預約時間前 10 分鐘抵達。'); }
   var link=safeUrl(acc.video_link);
   if(acc.online && link) L.push('線上視訊（'+appName(acc.video_app)+'）：'+link+'（預約時間到了點連結進入）');
   return L.join('\n');
