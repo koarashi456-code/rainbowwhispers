@@ -70,6 +70,19 @@
   .rec small{color:var(--soft)}
   .recdel{font:inherit;font-size:12px;color:#B87;background:none;border:none;cursor:pointer;margin-left:6px}
   .recdel:hover{color:#C0506A}
+  .vw-days{display:flex;align-items:flex-end;gap:4px;height:90px;background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:10px 10px 0}
+  .vw-day{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+  .vw-day i{display:block;width:100%;max-width:22px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#B0A2E4,#86C9DA)}
+  .vw-day b{font-size:10px;color:var(--soft);font-weight:400;margin-bottom:2px}
+  .vw-lab{display:flex;gap:4px;padding:3px 10px 0;font-size:10px;color:#A9967E}
+  .vw-lab span{flex:1;text-align:center;min-width:0}
+  .vw-pages{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:6px 14px;margin-top:10px}
+  .vw-pg{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px dashed #EFE3CE}
+  .vw-pg:last-child{border-bottom:0}
+  .vw-pg .n{flex:1;min-width:0}
+  .vw-pg .bar{flex:2;height:7px;border-radius:7px;background:#EFE6D4;overflow:hidden}
+  .vw-pg .bar i{display:block;height:100%;background:var(--rainbow)}
+  .vw-pg .c{width:70px;text-align:right;color:var(--soft);font-size:12px;white-space:nowrap}
   .rp-h{font-family:"Noto Serif TC",serif;font-size:15px;color:var(--brush);margin:18px 0 10px}
   .rp-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0 14px}
   .rp-flabel{font-size:13px;color:var(--soft)}
@@ -449,6 +462,9 @@
 
     <!-- 報表 -->
     <section id="tab-report" style="display:none">
+      <h3 class="rp-h" style="margin-top:4px">網站瀏覽人數 <span style="font-family:inherit;font-size:12px;color:var(--soft);font-weight:400">（只有你看得到；不含你自己的瀏覽）</span></h3>
+      <div id="rp-views"><div class="muted" style="font-size:13px">載入中…</div></div>
+      <h3 class="rp-h">營收報表</h3>
       <div class="rp-filter">
         <span class="rp-flabel">日期範圍</span>
         <div class="rp-dates">
@@ -602,7 +618,7 @@ document.querySelectorAll('.tabbar button').forEach(function(b){
       document.getElementById('tab-'+x).style.display=(x===t?'block':'none');
       document.querySelector('.tabbar [data-tab="'+x+'"]').classList.toggle('on',x===t);
     });
-    if(t==='report') renderReport();
+    if(t==='report'){ renderReport(); loadViews(); }
     if(t==='trash') renderTrash();
     if(t==='shop') loadShop();
     if(t==='cal') renderCal(true);
@@ -1585,6 +1601,24 @@ async function loadCoupons(){
   };
 })();
 
+
+/* ===== 網站瀏覽人數（SQL：page_views、admin_view_stats；全站 nav.js 記錄）===== */
+var VW_NAMES={'index.html':'首頁','tests.html':'測驗總覽','quiz.html':'心靈導航測驗','chakra.html':'七大脈輪測驗','numerology.html':'生命靈數','booking.html':'引路人・商品','guide.html':'引路人介紹頁','pricing.html':'方案','account.html':'會員中心','orders.html':'我的訂單','policies.html':'條款','apply.html':'入駐申請','join.html':'加入我們','404.html':'找不到頁面'};
+async function loadViews(){
+  var box=$('#rp-views'); if(!box) return;
+  var r; try{ r=await db.rpc('admin_view_stats'); }catch(e){ r={error:e}; }
+  if(!r || r.error || !r.data){ box.innerHTML='<div class="muted" style="font-size:13px">讀取失敗'+(r&&r.error&&r.error.message?'：'+esc(r.error.message):'')+'（請先在 Supabase 跑瀏覽統計的 SQL）</div>'; return; }
+  var d=r.data, t=d.today||{}, w=d.d7||{}, m=d.d30||{};
+  var h='<div class="stats">'+stat('今天訪客',(t.visitors||0)+' 人<span style="font-size:12px;color:var(--soft)">・'+(t.views||0)+' 頁次</span>')+stat('近 7 天',(w.visitors||0)+' 人<span style="font-size:12px;color:var(--soft)">・'+(w.views||0)+' 頁次</span>')+stat('近 30 天',(m.visitors||0)+' 人<span style="font-size:12px;color:var(--soft)">・'+(m.views||0)+' 頁次</span>')+stat('近 30 天會員',(d.members||0)+' 人')+'</div>';
+  var days=d.daily||[], mx=Math.max.apply(null,[1].concat(days.map(function(x){ return x.visitors; })));
+  h+='<div class="vw-days">'+days.map(function(x){ return '<div class="vw-day" title="'+esc(x.day)+'：'+x.visitors+' 人、'+x.views+' 頁次"><b>'+(x.visitors||'')+'</b><i style="height:'+Math.max(2,Math.round(x.visitors/mx*62))+'px"></i></div>'; }).join('')+'</div>'+
+    '<div class="vw-lab">'+days.map(function(x,i){ var p=String(x.day).split('-'); return '<span>'+((i%2===0||i===days.length-1)?(+p[1])+'/'+(+p[2]):'')+'</span>'; }).join('')+'</div>';
+  var pages=d.pages||[], pm=Math.max.apply(null,[1].concat(pages.map(function(x){ return x.views; })));
+  h+=pages.length?'<div class="vw-pages"><div style="font-size:12px;color:var(--soft);padding:4px 0">近 30 天熱門頁面</div>'+pages.map(function(x){ return '<div class="vw-pg"><span class="n">'+esc(VW_NAMES[x.path]||x.path)+'</span><span class="bar"><i style="width:'+Math.round(x.views/pm*100)+'%"></i></span><span class="c">'+x.visitors+' 人・'+x.views+'</span></div>'; }).join('')+'</div>':'<div class="muted" style="font-size:13px;margin-top:10px">還沒有瀏覽紀錄。</div>';
+  h+='<div class="muted" style="font-size:11.5px;margin-top:6px">＊「人」＝不同的手機／電腦；「頁次」＝每人每頁每天算一次。</div>';
+  box.innerHTML=h;
+}
+
 /* ===== 軟刪除 + 刪除紀錄 ===== */
 function activeArr(tbl){ return tbl==='customers'?ALL:tbl==='guides'?GUIDES:tbl==='transactions'?TX:TOPUPS; }
 async function softDelete(tbl,id,arr,quiet){
@@ -1686,6 +1720,19 @@ function buildNotifs(C,G,T){
     });
   });
   (T||[]).forEach(function(t){
+    // 會員自己取消預約（SQL：transactions.cancelled_at）
+    if(t.status==='已取消' && t.cancelled_at && /會員自行取消/.test(String(t.notes||''))){
+      var cc=(C||[]).find(function(x){return x.id===t.customer_id;}), g2=(G||[]).find(function(x){return x.id===t.guide_id;});
+      var rf=(/應退 \$(\d+)/.exec(String(t.notes||''))||[])[1];
+      n.push({
+        kind:'cancel', cat:'booking', ts:t.cancelled_at,
+        tag:'會員取消預約', color:'#E08A8A', tcolor:'#B4566E',
+        main:(cc?esc(custLabel(cc)):'客戶')+(t.service?'　·　'+esc(t.service):''),
+        sub:(g2?esc(guideLabel(g2)):'未指定引路人')+'　·　'+(t.appointment_at?fmtApptFull(t.appointment_at):'未定時間')+(rf?'　·　應退 '+money(rf):''),
+        tab:'tx', id:t.id
+      });
+      return;
+    }
     if(t.status!=='已預約') return;
     var c=(C||[]).find(function(x){return x.id===t.customer_id;});
     var gg=(G||[]).find(function(x){return x.id===t.guide_id;});
@@ -1711,7 +1758,7 @@ function renderPanel(prevSeen){
   if(!rows.length){ list.innerHTML='<div class="nempty">目前沒有'+(nFilter==='all'?'':'這類')+'通知</div>'; return; }
   list.innerHTML=rows.map(function(x){
     var isNew=prev && x.ts && new Date(x.ts)>new Date(prev);
-    return '<div class="nitem'+(isNew?' unread':'')+'" data-tab="'+x.tab+'" data-kind="'+x.kind+'">'+
+    return '<div class="nitem'+(isNew?' unread':'')+'" data-tab="'+x.tab+'" data-kind="'+x.kind+'" data-id="'+esc(x.id||'')+'">'+
       '<span class="ndot" style="background:'+x.color+'"></span>'+
       '<div class="nbody"><div class="ntop"><span class="ntag" style="color:'+x.tcolor+'">'+x.tag+'</span><span class="ntime">'+relTime(x.ts)+'</span></div>'+
       '<div class="nmain">'+x.main+'</div>'+
@@ -1724,6 +1771,7 @@ function renderPanel(prevSeen){
       closeBell();
       var tb=document.querySelector('.tabbar [data-tab="'+tab+'"]'); if(tb) tb.click();
       if(kind==='guide'){ var gf=$('#g-filter'); if(gf){ gf.value='待申請'; renderGuides(); } }
+      if(kind==='cancel'){ var tid=row.getAttribute('data-id'); if(tid) openTxDetail(tid); }
     };
   });
 }
@@ -1742,10 +1790,12 @@ async function pollNotif(){
     var res=await Promise.all([
       db.from('customers').select('id,name,contact,source,result_type,ref_code,topic,created_at,deleted').order('created_at',{ascending:false}).limit(80),
       db.from('guides').select('id,name,services,pending,created_at,deleted').order('created_at',{ascending:false}).limit(80),
-      db.from('transactions').select('id,customer_id,guide_id,service,appointment_at,amount,status,guest_name,created_at,deleted').order('created_at',{ascending:false}).limit(80)
+      db.from('transactions').select('*').order('created_at',{ascending:false}).limit(80),
+      db.from('transactions').select('*').not('cancelled_at','is',null).order('cancelled_at',{ascending:false}).limit(30)
     ]);
     var nd=function(x){return !x.deleted;};
-    buildNotifs((res[0].data||[]).filter(nd),(res[1].data||[]).filter(nd),(res[2].data||[]).filter(nd));
+    var T=(res[2].data||[]).slice(); ((res[3]&&!res[3].error&&res[3].data)||[]).forEach(function(x){ if(!T.some(function(y){ return y.id===x.id; })) T.push(x); });
+    buildNotifs((res[0].data||[]).filter(nd),(res[1].data||[]).filter(nd),T.filter(nd));
   }catch(e){}
 }
 function startNotifPoll(){ if(notifPollStarted) return; notifPollStarted=true; setInterval(pollNotif,45000); }
