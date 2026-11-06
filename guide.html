@@ -48,6 +48,8 @@
   .paybox .pic{display:flex;flex:none}
   #place-options .paybox{margin-bottom:8px}
   .plhint{font-size:12px;color:var(--soft);margin-top:2px}
+  .plnote{font-size:12.5px;color:var(--soft);background:#FBF6EC;border-radius:10px;padding:8px 12px;margin-top:2px;line-height:1.6}.plnote a{color:#B5713F}
+  .plnote.ok{color:#3F7A5E;background:#E4F2E7;padding:6px 10px}
   .cp{display:flex;gap:8px}.cp .in{flex:1;min-width:0;text-transform:uppercase}
   .cp button{font:inherit;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:12px;padding:0 18px;cursor:pointer}
   .cpok{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#3F7A5E;background:#E4F2E7;border-radius:10px;padding:8px 12px;margin-top:8px}
@@ -205,20 +207,30 @@ function show(id){ ['loading','notfound','content'].forEach(function(x){ $('#'+x
 function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
 function p2(n){ return (n<10?'0':'')+n; }
 function fmtWhen(s){ if(!s) return '未指定'; var p=wpart(s); if(!p) return '未指定'; return p.y+'/'+p.mo+'/'+p.d+' '+p2(p.h)+':'+p2(p.mi); }
-var OPEN_SLOTS=[], SEL_DATE='', SEL_WHEN='';
+var OPEN_SLOTS=[], SLOT_PL={}, SEL_DATE='', SEL_WHEN='';
+// 時段的地點（SQL：guide_slot_places；沒設地點＝全部地點）
+function wkey(s){ var p=wpart(s); return p?p.y+'-'+p2(p.mo)+'-'+p2(p.d)+'T'+p2(p.h)+':'+p2(p.mi):''; }
+function slotFits(s){ if(!PLACE) return true; var pl=SLOT_PL[wkey(s.slot_at)]; return !pl || !pl.length || pl.indexOf(PLACE.v)>=0; }
+async function loadSlotPlaces(){ SLOT_PL={}; try{ var r=await db.rpc('guide_slot_places',{p_guide_id:guide.id}); if(!r.error && Array.isArray(r.data)) r.data.forEach(function(x){ if(x && Array.isArray(x.places) && x.places.length) SLOT_PL[wkey(x.slot_at)]=x.places; }); }catch(e){} }
 function slotMode(){ var host=$('#slotpick'); return !!(host && host.style.display!=='none'); }
 function chosenWhen(){ if(slotMode()) return SEL_WHEN||''; var dt=($('#f-date')||{}).value||'', tm=($('#f-time')||{}).value||''; return (dt&&tm)?dt+'T'+tm:''; }
 function renderSlotPicker(){
   var host=$('#slotpick'), ft=$('#freetime'); if(!host) return;
-  var fut=OPEN_SLOTS||[];
-  if(!fut.length){ host.style.display='none'; host.innerHTML=''; if(ft) ft.style.display='flex'; return; }
+  var all=OPEN_SLOTS||[];
+  if(!all.length){ host.style.display='none'; host.innerHTML=''; if(ft) ft.style.display='flex'; return; }
   if(ft) ft.style.display='none'; host.style.display='block';
+  // 有分地點：先選地點，只顯示引路人在那個地點的時段
+  if(PLACES.length>1 && !PLACE){ SEL_WHEN=''; host.innerHTML='<div class="plnote">請先選上面的「服務地點」，就會出現可以約的時間</div>'; return; }
+  var fut=all.filter(slotFits);
+  if(SEL_WHEN && !fut.some(function(s){ return wkey(s.slot_at)===SEL_WHEN && !s.taken; })) SEL_WHEN='';
+  var pnote=(PLACE && PLACES.length>1)?'<div class="plnote ok">只顯示引路人在「'+esc(PLACE.t)+'」的時間</div>':'';
+  if(!fut.some(function(s){ return !s.taken; })){ host.innerHTML=pnote+'<div class="plnote">這個地點目前沒有可以約的時段，請換其他地點，或<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加官方 LINE</a> 詢問。</div>'; return; }
   var byDate={}, order=[], WD=['日','一','二','三','四','五','六'];
   fut.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+p2(p.mo)+'-'+p2(p.d);
     if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
     byDate[dk].push({when:dk+'T'+p2(p.h)+':'+p2(p.mi), t:p2(p.h)+':'+p2(p.mi), taken:!!s.taken}); });
   if(!SEL_DATE || !byDate[SEL_DATE]) SEL_DATE=order[0].k;
-  var h='<div class="lbl2">選日期</div><div class="slchips">';
+  var h=pnote+'<div class="lbl2">選日期</div><div class="slchips">';
   order.forEach(function(o){ var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()]; h+='<span class="slchip'+(o.k===SEL_DATE?' on':'')+'" data-d="'+o.k+'">'+o.p.mo+'/'+o.p.d+' '+w+'</span>'; });
   h+='</div><div class="lbl2">選時段（白色＝已被約）</div><div class="slchips">';
   byDate[SEL_DATE].forEach(function(s){
@@ -230,7 +242,7 @@ function renderSlotPicker(){
   Array.prototype.forEach.call(host.querySelectorAll('[data-d]'),function(c){ c.onclick=function(){ SEL_DATE=c.getAttribute('data-d'); SEL_WHEN=''; renderSlotPicker(); }; });
   Array.prototype.forEach.call(host.querySelectorAll('[data-w]'),function(c){ c.onclick=function(){ SEL_WHEN=c.getAttribute('data-w'); renderSlotPicker(); }; });
 }
-async function refreshSlots(){ if(!guide) return; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(r&&!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){} renderSlotPicker(); }
+async function refreshSlots(){ if(!guide) return; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(r&&!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){} await loadSlotPlaces(); renderSlotPicker(); }
 
 function getId(){ return new URLSearchParams(location.search).get('id'); }
 
@@ -246,6 +258,7 @@ async function loadGuide(){
     try{ var pr=await db.from('public_plans').select('label,price,unit').eq('guide_id',guide.id).order('price'); GUIDE_PLANS=(pr && !pr.error && Array.isArray(pr.data)) ? pr.data.map(function(p){return {label:p.label, price:Number(p.price)||0, unit:p.unit||''};}) : []; }catch(e){ GUIDE_PLANS=[]; }
     try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(sr && !sr.error && Array.isArray(sr.data)) ? sr.data : []; }catch(e){ OPEN_SLOTS=[]; }
     try{ var pl=await db.rpc('guide_places',{p_guide_id:guide.id}); PLACES=buildPlaces((pl && !pl.error) ? pl.data : null); }catch(e){ PLACES=[]; }
+    await loadSlotPlaces();
     renderGuide(); renderSlotPicker(); show('content');
   }catch(e){ show('notfound'); }
 }
@@ -331,7 +344,7 @@ function renderPlaces(){
   f.style.display='block';
   box.innerHTML=PLACES.map(function(x,i){ return '<label class="paybox'+(PLACE&&PLACE.v===x.v?' sel':'')+'" data-pl="'+i+'"><span class="dot"></span><span class="pic">'+x.ic+'</span><span>'+esc(x.t)+'<small>'+esc(x.s)+'</small></span></label>'; }).join('');
   var hint=$('#place-hint'); if(hint) hint.textContent=PLACES.some(function(x){ return x.v==='線上'; })?(PLACES.length>1?'完整地址或視訊連結會在付款成功後直接顯示給你':'視訊連結會在付款成功後直接顯示給你'):'完整地址會在付款成功後直接顯示給你';
-  box.querySelectorAll('[data-pl]').forEach(function(el){ el.onclick=function(){ PLACE=PLACES[+el.getAttribute('data-pl')]; box.querySelectorAll('.paybox').forEach(function(y){ y.classList.toggle('sel', y===el); }); box.style.outline=''; }; });
+  box.querySelectorAll('[data-pl]').forEach(function(el){ el.onclick=function(){ PLACE=PLACES[+el.getAttribute('data-pl')]; box.querySelectorAll('.paybox').forEach(function(y){ y.classList.toggle('sel', y===el); }); box.style.outline=''; SEL_DATE=''; renderSlotPicker(); }; });
 }
 function selectedPlan(){ var sel=$('#f-plan'); if(!sel||sel.value==='') return null; return planList()[Number(sel.value)]||null; }
 function renderPayOptions(){

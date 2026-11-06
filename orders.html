@@ -256,7 +256,7 @@ function rsMsg(t,c){ var m=$('#rs-msg'); m.textContent=t; m.style.color=c||'var(
 async function openReschedule(ref){
   var o=ALL_ORDERS.find(function(x){ return x.order_ref===ref; }); if(!o) return;
   RS={ref:ref,sel:'',date:''};
-  $('#rs-sub').innerHTML=esc(o.guide_name||'引路人')+'　'+esc(o.service||'')+'<br>原本時間：<b>'+fmtDT(o.appointment_at)+'</b><br>只會改日期時間，方案與金額不變，不用再付款。每筆訂單限改期一次。';
+  $('#rs-sub').innerHTML=esc(o.guide_name||'引路人')+'　'+esc(o.service||'')+'<br>原本時間：<b>'+fmtDT(o.appointment_at)+'</b><br>只會改日期時間，方案、地點與金額不變，不用再付款。每筆訂單限改期一次。';
   $('#rs-pick').innerHTML='<div class="rs-sub">載入可選時段中…</div>'; rsMsg(''); $('#rs-go').disabled=true;
   $('#rs-mask').classList.add('on');
   var info=null;
@@ -264,9 +264,11 @@ async function openReschedule(ref){
   if(!info){ $('#rs-pick').innerHTML='<div class="rs-sub" style="color:#C0506A">找不到這筆訂單。</div>'; return; }
   if(!info.can){ $('#rs-pick').innerHTML='<div class="rs-sub" style="color:#C0506A">'+(Number(info.reschedule_count||0)>=1?'這筆訂單已經改期過一次了，如需協助請聯繫官方 LINE。':'這筆訂單目前不能改期。')+'</div>'; return; }
   var slots=[]; try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:info.guide_id}); if(!sr.error && Array.isArray(sr.data)) slots=sr.data; }catch(e){}
+  // 時段有分地點：只能改到同一個地點的時段（SQL：guide_slot_places、my_order_reschedule_info.location）
+  var spl={}; if(info.location){ try{ var pr=await db.rpc('guide_slot_places',{p_guide_id:info.guide_id}); if(!pr.error && Array.isArray(pr.data)) pr.data.forEach(function(x){ var p=wpart(x.slot_at); if(p && Array.isArray(x.places) && x.places.length) spl[p.y+'-'+p2(p.mo)+'-'+p2(p.d)+'T'+p2(p.h)+':'+p2(p.mi)]=x.places; }); }catch(e){} }
   var now=new Date(), cur=String(o.appointment_at||'').slice(0,16);
   var open=slots.map(function(x){ var p=wpart(x.slot_at); return p?{w:p.y+'-'+p2(p.mo)+'-'+p2(p.d)+'T'+p2(p.h)+':'+p2(p.mi),p:p,taken:!!x.taken}:null; })
-    .filter(function(x){ return x && new Date(x.p.y,x.p.mo-1,x.p.d,x.p.h,x.p.mi)>now; });
+    .filter(function(x){ return x && new Date(x.p.y,x.p.mo-1,x.p.d,x.p.h,x.p.mi)>now && (!spl[x.w] || spl[x.w].indexOf(info.location)>=0); });
   var avail=open.some(function(x){ return !x.taken && x.w!==cur; });
   if(avail) drawSlotPick(open,cur);
   else $('#rs-pick').innerHTML='<div class="rs-sub">這位引路人目前沒有其他可改的開放時段，請加官方 LINE，我們幫你安排改期。</div><a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:11px">加官方 LINE 詢問改期　→</a>';

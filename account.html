@@ -354,18 +354,7 @@
   </div>
 
   <div class="gsec-lab">我的開放時間</div>
-  <div class="gbox" style="padding:14px 16px">
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-size:12.5px;color:var(--soft)">選日期</span>
-      <input id="sl-date" type="date" style="font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 12px;outline:none">
-    </div>
-    <div style="font-size:12.5px;color:var(--soft);margin:12px 2px 8px">這天開放哪些時段（點選，半小時一格）</div>
-    <div id="sl-times" class="slchips"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-top:12px"><button class="lo" id="sl-add" style="margin-top:0;padding:8px 18px;font-size:13px">新增時段</button><span id="sl-msg" style="font-size:12px"></span></div>
-    <div style="font-size:12.5px;color:var(--soft);margin:18px 2px 8px">已開放時段</div>
-    <div id="sl-list"></div>
-    <div style="font-size:11.5px;color:var(--soft);margin-top:10px;line-height:1.7">客戶預約時只能從你這裡開放的時段挑；被約走的時段會自動變灰、不能再被約。沒排任何時段時，客戶端會沿用自由選時間。</div>
-  </div>
+  <div class="gbox" style="padding:14px 16px"><div id="sl-editor"></div></div>
 
   <div class="gsec-lab">我的方案</div>
   <div class="gbox" style="padding:14px 16px">
@@ -423,6 +412,7 @@
 </div></div>
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
+<script src="slot-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -737,28 +727,19 @@ function custRowG(m){
   return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(m.name||'客戶')+'</span><span class="grow-amt">'+money(m.spend)+'</span></div>'
     +'<div class="grow-sub">'+escA(m.contact||'—')+(m.phone?'　·　'+escA(m.phone):'')+(m.area?'　·　'+escA(m.area):'')+'　·　'+(m.bookings||0)+' 次</div></div>';
 }
-async function loadMySlots(){
-  var box=$('#sl-list'); if(!box) return;
-  box.innerHTML='<p class="gempty" style="margin:0">載入中…</p>';
-  var rows=[]; try{ var r=await db.rpc('my_slots'); if(!r.error && Array.isArray(r.data)) rows=r.data; }catch(e){}
-  if(!rows.length){ box.innerHTML='<p class="gempty" style="margin:0">還沒排開放時段。排了之後客戶才能從這些時間預約。</p>'; return; }
-  var WD=['日','一','二','三','四','五','六'];
-  var byDate={}, order=[];
-  rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+String(p.mo).padStart(2,'0')+'-'+String(p.d).padStart(2,'0');
-    if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
-    byDate[dk].push({id:s.id, t:String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'), taken:!!s.taken}); });
-  var html='';
-  order.forEach(function(o){
-    var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()];
-    html+='<div class="sl-d">'+o.p.mo+'/'+o.p.d+'（'+w+'）</div><div class="sl-row">';
-    byDate[o.k].forEach(function(s){
-      if(s.taken){ html+='<span class="sl-pill booked">'+s.t+'<span class="sl-bk">已被預約</span></span>'; }
-      else { html+='<span class="sl-pill">'+s.t+'<span class="sl-rm" data-id="'+s.id+'">&times;</span></span>'; }
-    });
-    html+='</div>';
+// 我的開放時間（可以分地點，畫面在 slot-ui.js；SQL：my_slots_v2、my_guide_places、add_my_slots_v2）
+var SLOT_ED=null;
+function isMissingFn(e){ return !!e && (e.code==='PGRST202' || /could not find the function|does not exist/i.test(e.message||'')); }
+function loadMySlots(){
+  var box=$('#sl-editor'); if(!box || !window.RWSlots) return;
+  if(SLOT_ED){ SLOT_ED.reload(); return; }
+  SLOT_ED=RWSlots.editor(box,{
+    load:async function(){ var r=await db.rpc('my_slots_v2'); if(r.error && isMissingFn(r.error)) r=await db.rpc('my_slots'); if(r.error) throw new Error(r.error.message); return {rows:Array.isArray(r.data)?r.data:[]}; },
+    places:async function(){ var r=await db.rpc('my_guide_places'); return (!r.error && r.data)?RWSlots.placesFrom(r.data):[]; },
+    add:async function(slots,places){ var r=await db.rpc('add_my_slots_v2',{p_slots:slots,p_places:places.length?places:null}); if(r.error && isMissingFn(r.error)) r=await db.rpc('add_my_slots',{p_slots:slots}); if(r.error) throw new Error(r.error.message); return r.data; },
+    del:async function(id){ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); },
+    changed:function(){ loadSchedule(); }
   });
-  box.innerHTML=html;
-  Array.prototype.forEach.call(box.querySelectorAll('.sl-rm'),function(x){ x.onclick=async function(){ var id=x.getAttribute('data-id'); try{ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); loadMySlots(); loadSchedule(); }catch(e){ alert(e.message||'刪除失敗'); } }; });
 }
 async function enterGuide(d){
   d=d||GUIDE_DATA; if(!d) return;
@@ -807,30 +788,9 @@ async function enterGuide(d){
       sv.disabled=false;
     };
   })();
-  // 我的開放時間：選日期＋點時段＋新增／刪除
-  (function(){
-    var dIn=$('#sl-date'), times=$('#sl-times'), addB=$('#sl-add'), msg=$('#sl-msg');
-    if(times){
-      var opts=''; for(var hh=8;hh<23;hh++){ for(var mm=0;mm<60;mm+=30){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; opts+='<span class="slchip" data-t="'+v+'">'+v+'</span>'; } }
-      times.innerHTML=opts;
-      Array.prototype.forEach.call(times.querySelectorAll('.slchip'),function(c){ c.onclick=function(){ c.classList.toggle('on'); }; });
-    }
-    if(dIn && !dIn.value){ var t=new Date(); dIn.value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
-    loadMySlots();
-    loadSchedule();
-    function setMsg(t,c){ if(!msg) return; msg.textContent=t; msg.style.color=c; if(c!=='#C0506A') setTimeout(function(){ if(msg&&msg.textContent===t) msg.textContent=''; },2200); }
-    if(addB) addB.onclick=async function(){
-      var d=dIn?dIn.value:''; if(!d){ setMsg('請先選日期','#C0506A'); return; }
-      var picked=Array.prototype.map.call(times.querySelectorAll('.slchip.on'),function(c){return c.getAttribute('data-t');});
-      if(!picked.length){ setMsg('請點選要開放的時段','#C0506A'); return; }
-      var slots=picked.map(function(t){ return d+'T'+t; });
-      setMsg('新增中…','var(--soft)');
-      try{ var r=await db.rpc('add_my_slots',{p_slots:slots}); if(r.error) throw new Error(r.error.message);
-        Array.prototype.forEach.call(times.querySelectorAll('.slchip.on'),function(c){ c.classList.remove('on'); });
-        setMsg('已新增 '+(r.data||0)+' 個時段','#4F8E6E'); loadMySlots(); loadSchedule();
-      }catch(e){ setMsg('新增失敗','#C0506A'); }
-    };
-  })();
+  // 我的開放時間
+  loadMySlots();
+  loadSchedule();
   // 我的方案：自設＋送審
   (function(){
     var addBtn=$('#g-plan-add'), li=$('#g-plan-label'), pi=$('#g-plan-price'), ui=$('#g-plan-unit'), qi=$('#g-plan-qty');

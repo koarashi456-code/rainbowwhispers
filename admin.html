@@ -561,6 +561,7 @@
 
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
+<script src="slot-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -830,11 +831,6 @@ function guideCard(g){
       '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:6px">可預約時間（引路人自己設定，客戶只能從這些時段預約）</div>'+
       (g.availability ? '<div data-gs-legacy style="font-size:12px;color:var(--soft);background:#fff;border:1px dashed var(--line);border-radius:10px;padding:6px 10px;margin-bottom:8px">舊的文字說明：「'+esc(g.availability)+'」（客戶頁只在沒有開放時段時顯示）<button type="button" class="del" data-gs-clear style="margin-left:6px">清除</button></div>' : '')+
       '<div data-gslots-body style="color:var(--soft);font-size:12.5px">展開後載入…</div>'+
-      '<div data-gs-add style="display:none;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)">'+
-        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:12.5px;color:var(--soft)">選日期</span><input type="date" data-gs-date class="in" style="width:auto;padding:6px 10px"><span style="font-size:12px;color:var(--soft)">再點要開放的時段（可複選）</span></div>'+
-        '<div class="gs-chips" data-gs-times></div>'+
-        '<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button type="button" class="del" data-gs-addbtn style="flex:none;white-space:nowrap;color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 16px">新增時段</button><span data-gs-msg style="font-size:12px;min-width:0;overflow-wrap:anywhere"></span></div>'+
-      '</div>'+
     '</div>'+
     '<div class="cust-actions">'+
       (g.pending
@@ -899,54 +895,25 @@ async function fetchGuideSlots(id){
   if(r2.error) throw new Error(r2.error.message);
   return {rows:Array.isArray(r2.data)?r2.data:[], editable:false};
 }
-async function loadGuideSlots(el,id){
-  var box=el.querySelector('[data-gslots-body]'), add=el.querySelector('[data-gs-add]'); if(!box) return;
-  if(!box.innerHTML || box.textContent==='展開後載入…') box.textContent='載入中…';
-  var res; try{ res=await fetchGuideSlots(id); }catch(e){ box.textContent='讀取失敗：'+(e.message||'')+'（收合再展開可重試）'; el._slotsLoaded=false; return; }
-  var rows=res.rows;
-  el._gsTaken={}; el._gsHave={};
-  var WD=['日','一','二','三','四','五','六'], byDate={}, order=[], taken=0;
-  rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+gsP2(p.mo)+'-'+gsP2(p.d), t=gsP2(p.h)+':'+gsP2(p.mi);
-    if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
-    if(s.taken) taken++;
-    el._gsHave[dk+'T'+t]=true;
-    byDate[dk].push({id:s.id, t:t, taken:!!s.taken}); });
-  order.sort(function(x,y){ return x.k<y.k?-1:x.k>y.k?1:0; });
-  var h='';
-  if(!rows.length){ h='<div>引路人尚未設定開放時段'+(res.editable?'，可在下方直接點選新增':'')+'（沒有時段時，客戶預約頁會改用自填日期時間）</div>'; }
-  else{
-    h='<div style="margin-bottom:4px">可約 '+(rows.length-taken)+' 個　·　已被約 '+taken+' 個</div>';
-    order.forEach(function(o){
-      var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()];
-      byDate[o.k].sort(function(x,y){ return x.t<y.t?-1:1; });
-      h+='<div class="gs-d">'+o.p.mo+'/'+o.p.d+'（'+w+'）</div><div class="gs-row">';
-      byDate[o.k].forEach(function(s){
-        if(s.taken) h+='<span class="gs-pill booked">'+s.t+'<span class="gs-bk">已約</span></span>';
-        else h+='<span class="gs-pill">'+s.t+(res.editable&&s.id?'<span class="gs-rm" data-gs-rm="'+esc(s.id)+'" title="刪除這個時段">&times;</span>':'')+'</span>';
-      });
-      h+='</div>';
-    });
-  }
-  if(!res.editable) h+='<div style="margin-top:8px;color:#B07A2E">⚠️ 後台點選新增／刪除時段需先在 Supabase 加上後台時段函式（SQL），目前只能檢視。</div>';
-  box.innerHTML=h;
-  box.querySelectorAll('[data-gs-rm]').forEach(function(x){ x.onclick=async function(){
-    if(!confirm('刪除這個開放時段？')) return;
-    var r=await db.rpc('admin_del_guide_slot',{p_guide_id:id, p_id:x.getAttribute('data-gs-rm')});
-    if(r.error){ alert('刪除失敗：'+r.error.message); return; }
-    if(r.data===false) alert('找不到這個時段（可能已被刪除），已重新整理');
-    loadGuideSlots(el,id);
-  }; });
-  if(add){ add.style.display=res.editable?'block':'none'; if(res.editable) setupGuideSlotAdd(el,id); }
+// 引路人可預約時段（可以分地點，畫面在 slot-ui.js；SQL：admin_guide_slots、admin_add_guide_slots_v2）
+function adminGuidePlaces(g){
+  if(!g) return [];
+  var mode=String(g.service_mode||''), areas=guideLocs(g).map(function(x){ return x.area; }).filter(Boolean);
+  return RWSlots.placesFrom({online:/線上/.test(mode)||!!String(g.video_link||'').trim(), offline:/實體/.test(mode)||!mode.trim()||areas.length>0, areas:areas});
 }
-function drawGuideSlotTimes(el){
-  var times=el.querySelector('[data-gs-times]'), dIn=el.querySelector('[data-gs-date]'); if(!times||!dIn) return;
-  var d=dIn.value, picked={};
-  times.querySelectorAll('.gs-chip.on').forEach(function(c){ picked[c.getAttribute('data-t')]=true; });
-  var h=''; for(var hh=8;hh<23;hh++){ for(var mm=0;mm<60;mm+=30){ var v=gsP2(hh)+':'+gsP2(mm);
-    if(el._gsHave && el._gsHave[d+'T'+v]) h+='<span class="gs-chip has" title="已開放">'+v+'</span>';
-    else h+='<span class="gs-chip'+(picked[v]?' on':'')+'" data-t="'+v+'">'+v+'</span>'; } }
-  times.innerHTML=h;
-  times.querySelectorAll('.gs-chip[data-t]').forEach(function(c){ c.onclick=function(){ c.classList.toggle('on'); }; });
+function loadGuideSlots(el,id){
+  var box=el.querySelector('[data-gslots-body]'); if(!box || !window.RWSlots) return;
+  if(el._slotEd){ el._slotEd.reload(); return; }
+  box.style.color='var(--ink)'; box.style.fontSize='';
+  el._slotEd=RWSlots.editor(box,{
+    load:async function(){ var r=await fetchGuideSlots(id); return {rows:r.rows, editable:r.editable}; },
+    places:async function(){ return adminGuidePlaces(guideById(id)); },
+    add:async function(slots,places){
+      var r=await db.rpc('admin_add_guide_slots_v2',{p_guide_id:id, p_slots:slots, p_places:places.length?places:null});
+      if(r.error && (r.error.code==='PGRST202' || /could not find the function/i.test(r.error.message||''))) r=await db.rpc('admin_add_guide_slots',{p_guide_id:id, p_slots:slots});
+      if(r.error) throw new Error(r.error.message); return r.data; },
+    del:async function(sid){ var r=await db.rpc('admin_del_guide_slot',{p_guide_id:id, p_id:sid}); if(r.error) throw new Error(r.error.message); if(r.data===false) throw new Error('找不到這個時段（可能已被刪除）'); }
+  });
 }
 function bindGuideLegacy(el,id){
   var clr=el.querySelector('[data-gs-clear]');
@@ -956,28 +923,6 @@ function bindGuideLegacy(el,id){
     if(r.error){ alert('清除失敗：'+r.error.message); return; }
     var g=guideById(id); if(g) g.availability=null;
     var lg=el.querySelector('[data-gs-legacy]'); if(lg) lg.remove();
-  };
-}
-function setupGuideSlotAdd(el,id){
-  var dIn=el.querySelector('[data-gs-date]'), btn=el.querySelector('[data-gs-addbtn]'), msg=el.querySelector('[data-gs-msg]');
-  if(!dIn||!btn) return;
-  if(!dIn.value){ dIn.value=gsToday(); }
-  dIn.min=gsToday();
-  dIn.onchange=function(){ var times=el.querySelector('[data-gs-times]'); if(times) times.querySelectorAll('.gs-chip.on').forEach(function(c){ c.classList.remove('on'); }); drawGuideSlotTimes(el); };
-  drawGuideSlotTimes(el);
-  function setMsg(t,c){ if(!msg) return; msg.textContent=t; msg.style.color=c; if(c!=='#C0506A') setTimeout(function(){ if(msg.textContent===t) msg.textContent=''; },2200); }
-  btn.onclick=async function(){
-    var d=dIn.value; if(!d){ setMsg('請先選日期','#C0506A'); return; }
-    if(d<gsToday()){ setMsg('不能選今天以前的日期','#C0506A'); return; }
-    var picked=Array.prototype.map.call(el.querySelectorAll('[data-gs-times] .gs-chip.on'),function(c){ return c.getAttribute('data-t'); });
-    if(!picked.length){ setMsg('請點選要開放的時段','#C0506A'); return; }
-    btn.disabled=true; setMsg('新增中…','var(--soft)');
-    var r=await db.rpc('admin_add_guide_slots',{p_guide_id:id, p_slots:picked.map(function(t){ return d+'T'+t; })});
-    btn.disabled=false;
-    if(r.error){ setMsg('新增失敗：'+r.error.message,'#C0506A'); return; }
-    el.querySelectorAll('[data-gs-times] .gs-chip.on').forEach(function(c){ c.classList.remove('on'); });
-    setMsg('已新增 '+(r.data||0)+' 個時段','#4F8E6E');
-    loadGuideSlots(el,id);
   };
 }
 function ensureGuideSlots(el){ if(!el.classList.contains('collapsed') && !el._slotsLoaded){ el._slotsLoaded=true; loadGuideSlots(el,el.getAttribute('data-id')); } }
@@ -1057,6 +1002,7 @@ function bindGuideLocs(el,id){
     if(r.error){ msg('存檔失敗'+(/locations/.test(r.error.message||'')?'（請先執行 SQL）':''),'#C0506A'); return; }
     var g=guideById(id); if(g) Object.assign(g,patch);
     msg('已儲存','#4F8E6E');
+    if(el._slotEd) el._slotEd.refreshPlaces();  // 時段的地點選項跟著更新
   }
   function draw(){
     box.innerHTML=L.length?L.map(function(x,i){
