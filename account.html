@@ -157,6 +157,39 @@
   .cal-st{flex:none;font-size:11px;padding:2px 8px;border-radius:999px;background:#FBE7CC;color:#A5643A}
   .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#8A7659}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
   .cal-open{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  /* 交易紀錄：條列式（跟會員「我的訂單」同樣子），點一筆從下方滑出明細 */
+  .olist-h{font-size:12.5px;color:var(--soft);font-weight:500;margin:14px 4px 7px;text-align:left}
+  .olist-h:first-child{margin-top:4px}
+  .olist{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .orow{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 14px;cursor:pointer;color:inherit}
+  .orow:last-of-type{border-bottom:0}
+  .orow:hover{background:#FBF6EC}
+  .od{flex:none;width:52px;text-align:center;background:#FBF6EC;border-radius:12px;padding:6px 0;line-height:1.25}
+  .orow:hover .od{background:#fff}
+  .od b{display:block;font-size:15px;color:var(--brush);font-variant-numeric:tabular-nums}
+  .od small{display:block;font-size:11px;color:var(--soft);white-space:nowrap}
+  .om{flex:1;min-width:0}
+  .om .t{font-size:14.5px;color:var(--brush);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .om .s{font-size:12.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .oright{flex:none;text-align:right}
+  .oright .a{font-size:14.5px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
+  .oright .cal-st{display:inline-block;margin-top:3px}
+  .ogo{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
+  .orow.dim .od b,.orow.dim .om .t,.orow.dim .oright .a{color:#9C8B74}
+  .gs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:85}
+  .gs-mask.on{display:flex}
+  .gs-box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 18px 26px;max-height:86vh;overflow:auto;text-align:left}
+  @media(min-width:600px){ .gs-mask{align-items:center} .gs-box{border-radius:20px} }
+  .gs-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .gs-h{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;color:var(--brush)}
+  .gs-x{font:inherit;font-size:24px;line-height:1;color:var(--soft);background:none;border:0;cursor:pointer;padding:0 2px}
+  .kv{display:flex;justify-content:space-between;gap:14px;font-size:14px;padding:8px 0;border-bottom:1px dashed #EFE3CE}
+  .kv span:first-child{color:var(--soft);flex:none}
+  .kv span:last-child{text-align:right;color:var(--ink);word-break:break-word}
+  .kv.tot span:last-child{font-weight:600;color:var(--brush)}
+  .gs-noshow{font:inherit;font-size:13.5px;color:#B4566E;background:#fff;border:1.5px solid #F0D5DC;border-radius:999px;padding:9px 18px;cursor:pointer}
+  .gs-noshow:disabled{opacity:.6}
+  .gs-link{font:inherit;font-size:13px;color:var(--brush);background:none;border:0;cursor:pointer;margin-top:12px}
   .gx-sum{font:inherit;display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:2px 0;cursor:pointer;text-align:left;color:var(--ink)}
   .gx-main{flex:1;min-width:0;font-size:14px}
   .gx-main b{color:var(--brush);font-weight:600}
@@ -383,7 +416,8 @@
 
   <div class="gsec-lab">交易紀錄</div>
   <input class="g-search" data-target="g-bookings" type="search" placeholder="搜尋 客戶／項目／日期／訂單編號／狀態…">
-  <div class="gbox" id="g-bookings"></div>
+  <div id="g-bookings"></div>
+  <div class="gs-mask" id="gs-mask"><div class="gs-box" id="gs-box" role="dialog" aria-label="預約明細"></div></div>
 
   <div class="gsec-lab">客戶管理</div>
   <input class="g-search" data-target="g-members" type="search" placeholder="搜尋 姓名／電話／信箱／地區／備註…">
@@ -609,26 +643,72 @@ function openGuidePage(t){
   if(t==='我的行程' && CAL.y) drawCal();
   window.scrollTo({top:0});
 }
+// 交易紀錄：一行一筆（日期、客戶、方案｜地點、金額、狀態），分「即將到來」「過去的預約」，點一筆從下方滑出明細
+var GORD=[];
+var GWD=['日','一','二','三','四','五','六'];
+function gStc(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st==='已取消'||st==='已退費')?'cancel':''; }
+function gSplit(sv){ sv=String(sv||''); var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
+function gKey(o){ var p=wpart(o.appointment_at); return p?new Date(p.y,p.mo-1,p.d,p.h,p.mi):new Date(0); }
+function gUpcoming(o){ return o.status==='已預約' && !o.past && !!o.appointment_at; }
+function gRow(o){
+  var i=GORD.indexOf(o), p=wpart(o.appointment_at), sp=gSplit(o.service), dim=(o.status==='已取消'||o.status==='已退費');
+  var d=p?(p.mo+'/'+String(p.d).padStart(2,'0')):'—', sub=p?(GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'未定時間';
+  var search=[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' ').toLowerCase();
+  return '<button type="button" class="orow'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'">'
+    +'<span class="od"><b>'+d+'</b><small>'+sub+'</small></span>'
+    +'<span class="om"><div class="t">'+escA(o.customer_name||'客戶')+'</div><div class="s">'+escA(sp.plan)+(sp.place?'｜'+escA(sp.place):'')+'</div></span>'
+    +'<span class="oright"><div class="a">'+money(o.amount)+'</div><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
+}
+function gsClose(){ var m=$('#gs-mask'); if(m) m.classList.remove('on'); }
+function gFullDT(s){ var p=wpart(s); if(!p) return '未定時間'; return p.y+'/'+p.mo+'/'+p.d+'（'+GWD[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
+function gKv(k,v,c){ return '<div class="kv'+(c?' '+c:'')+'"><span>'+k+'</span><span>'+v+'</span></div>'; }
+function openGOrder(i){
+  var o=GORD[i]; if(!o) return;
+  var sp=gSplit(o.service), can=o.past && (o.status==='已預約'||o.status==='已完成');
+  var h='<div class="gs-top"><span class="gs-h">預約明細</span><button type="button" class="gs-x" id="gs-x" aria-label="關閉">×</button></div>'
+    +'<div style="margin:6px 0 4px"><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></div>'
+    +gKv('客戶',escA(o.customer_name||'客戶'))+gKv('聯絡',escA(o.customer_contact||'—'))+gKv('方案',escA(sp.plan||'—'))+(sp.place?gKv('服務地點',escA(sp.place)):'')
+    +gKv('預約時間',gFullDT(o.appointment_at))+gKv('付款方式',escA(o.method||'—'))+(o.method==='匯款'&&o.pay_last5?gKv('匯款末 5 碼',escA(o.pay_last5)):'')
+    +gKv('金額',money(o.amount),'tot')+(o.order_ref?gKv('訂單編號',escA(o.order_ref)):'');
+  if(can) h+='<div style="margin-top:14px;text-align:center"><button type="button" class="gs-noshow" id="gs-noshow">客戶沒來？標記未出席</button></div>';
+  if(o.customer_contact||o.customer_name) h+='<div style="text-align:center"><button type="button" class="gs-link" id="gs-cust">看這位客戶的所有紀錄 ›</button></div>';
+  $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on');
+  $('#gs-x').onclick=gsClose;
+  var nb=$('#gs-noshow'); if(nb) nb.onclick=async function(){
+    if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
+    nb.disabled=true; nb.textContent='處理中…';
+    try{ var x=await db.rpc('guide_mark_noshow',{p_id:o.id}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); gsClose(); loadGuideOrders(); loadSchedule(); }
+    catch(e){ alert('標記失敗：'+(e.message||'')); nb.disabled=false; nb.textContent='客戶沒來？標記未出席'; }
+  };
+  var cb=$('#gs-cust'); if(cb) cb.onclick=function(){ gsClose(); openGuideCustomer(o.customer_contact, o.customer_name); };
+}
+// 跳到客戶管理裡的那位客人（用聯絡方式找，找不到就用名字）
+function openGuideCustomer(contact,name){
+  openGuidePage('客戶管理');
+  var tries=0;
+  (function find(){
+    var box=$('#g-members'); var rows=box?Array.prototype.slice.call(box.querySelectorAll('.gx')):[];
+    var c=String(contact||'').toLowerCase().trim(), n=String(name||'').toLowerCase().trim();
+    var row=rows.filter(function(r){ var s=r.getAttribute('data-search')||''; return c && s.indexOf(c)>=0; })[0] || rows.filter(function(r){ var s=(r.getAttribute('data-search')||'')+' '+r.textContent.toLowerCase(); return n && s.indexOf(n)>=0; })[0];
+    if(row){ var b=row.querySelector('.gx-sum'); if(b) b.click(); return; }
+    if(++tries<20) setTimeout(find,150);
+  })();
+}
+(function(){ var m=document.getElementById('gs-mask'); if(m) m.addEventListener('click',function(e){ if(e.target===m) gsClose(); }); document.addEventListener('keydown',function(e){ if(e.key==='Escape') gsClose(); }); })();
 async function loadGuideOrders(){
   var bx=$('#g-bookings'); if(!bx) return;
   try{ await db.rpc('auto_complete_orders'); }catch(e){}
   var r; try{ r=await db.rpc('my_guide_orders'); }catch(e){ return; }
   if(!r || r.error || !Array.isArray(r.data)) return;
-  var tx=r.data;
-  var stc=function(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st==='已取消'||st==='已退費')?'cancel':''; };
-  bx.innerHTML= tx.length ? tx.map(function(o){
-    var can=o.past && (o.status==='已預約'||o.status==='已完成');
-    var sum='<span class="gx-main"><b>'+escA(o.customer_name||'客戶')+'</b>　'+escA(o.service||'')+'<small>'+(o.appointment_at?fmtDT(o.appointment_at):'未定時間')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(o.amount)+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="gx-go">›</span>';
-    var det=txRowG(o).replace(/^<div class="grow">/,'<div>')+(can?'<div style="margin-top:10px;text-align:right"><button type="button" class="g-noshow" data-id="'+escA(o.id)+'" style="font:inherit;font-size:12.5px;color:#B4566E;background:#fff;border:1.5px solid #F0D5DC;border-radius:999px;padding:6px 14px;cursor:pointer">客戶沒來？標記未出席</button></div>':'');
-    return gxRow(sum,det,[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' '));
-  }).join('') : '<p class="gempty">還沒有交易。</p>';
-  bindGx(bx);
-  bx.querySelectorAll('.g-noshow').forEach(function(b){ b.onclick=async function(){
-    if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
-    b.disabled=true; b.textContent='處理中…';
-    try{ var x=await db.rpc('guide_mark_noshow',{p_id:b.getAttribute('data-id')}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); loadGuideOrders(); loadSchedule(); }
-    catch(e){ alert('標記失敗：'+(e.message||'')); b.disabled=false; b.textContent='客戶沒來？標記未出席'; }
-  }; });
+  GORD=r.data;
+  if(!GORD.length){ bx.innerHTML='<div class="gbox"><p class="gempty">還沒有交易。</p></div>'; return; }
+  var up=GORD.filter(gUpcoming).sort(function(a,b){ return gKey(a)-gKey(b); });
+  var past=GORD.filter(function(o){ return !gUpcoming(o); }).sort(function(a,b){ return gKey(b)-gKey(a); });
+  var h='';
+  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(gRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的預約</div><div class="olist">'+past.map(gRow).join('')+'</div>';
+  bx.innerHTML=h;
+  bx.querySelectorAll('[data-gi]').forEach(function(b){ b.onclick=function(){ openGOrder(+b.getAttribute('data-gi')); }; });
 }
 // 客戶管理（新版）：每位客人的預約明細＋引路人自己的備註；需 SQL my_guide_customers / set_my_customer_note，沒有時維持舊列表
 // 列表只顯示摘要，點進去看明細；「‹ 回列表」返回
@@ -648,8 +728,9 @@ function bindGx(box){
 // 交易紀錄／客戶管理搜尋：即時篩選列表（含備註文字），列表重新載入後自動套用
 function applyGuideSearch(id){
   var inp=document.querySelector('.g-search[data-target="'+id+'"]'), box=document.getElementById(id); if(!inp||!box) return;
-  var q=inp.value.trim().toLowerCase(), rows=box.querySelectorAll('.grow'), shown=0;
+  var q=inp.value.trim().toLowerCase(), rows=box.querySelectorAll('.grow, .orow'), shown=0;
   rows.forEach(function(r){ var ta=r.querySelector('textarea'); var hay=(r.getAttribute('data-search')||'')+' '+(r.textContent+' '+(ta?ta.value:'')).toLowerCase(); var ok=!q||hay.indexOf(q)>=0; r.style.display=ok?'':'none'; if(ok) shown++; });
+  box.querySelectorAll('.olist').forEach(function(l){ var any=Array.prototype.some.call(l.querySelectorAll('.orow'),function(r){ return r.style.display!=='none'; }); l.style.display=any?'':'none'; var hd=l.previousElementSibling; if(hd && hd.classList.contains('olist-h')) hd.style.display=any?'':'none'; });
   var nr=box.querySelector('.g-noresult');
   if(q && rows.length && !shown){ if(!nr){ nr=document.createElement('div'); nr.className='g-noresult'; box.appendChild(nr); } nr.textContent='沒有符合「'+inp.value.trim()+'」的結果'; }
   else if(nr) nr.remove();
@@ -812,7 +893,7 @@ async function enterGuide(d){
   rep.innerHTML=''; bx.innerHTML='<p class="gempty">載入中…</p>'; mx.innerHTML='';
   var data=null;
   try{ var r=await db.rpc('my_guide_data'); if(!r.error && r.data && r.data.ok) data=r.data; }catch(e){}
-  if(!data){ bx.innerHTML='<p class="gempty">目前讀不到後台資料，請稍後再試或聯繫官方 LINE。</p>'; mx.innerHTML=''; return; }
+  if(!data){ bx.innerHTML='<div class="gbox"><p class="gempty">目前讀不到後台資料，請稍後再試或聯繫官方 LINE。</p></div>'; mx.innerHTML=''; return; }
   if(data.guide_name) $('#g-hi').textContent='引路人・'+data.guide_name;
   // 報表
   var rp=data.report||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
@@ -823,7 +904,7 @@ async function enterGuide(d){
     gstat('匯款', money(rp.m_transfer)) + gstat('儲值折抵', money(rp.m_stored));
   // 交易紀錄
   var tx=data.transactions||[];
-  bx.innerHTML= tx.length ? tx.map(txRowG).join('') : '<p class="gempty">還沒有交易。</p>';
+  bx.innerHTML='<div class="gbox">'+(tx.length ? tx.map(txRowG).join('') : '<p class="gempty">還沒有交易。</p>')+'</div>';
   loadGuideOrders();
   // 客戶管理
   var cs=data.customers||[];
