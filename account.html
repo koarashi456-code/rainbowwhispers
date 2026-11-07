@@ -190,6 +190,17 @@
   .gs-noshow{font:inherit;font-size:13.5px;color:#B4566E;background:#fff;border:1.5px solid #F0D5DC;border-radius:999px;padding:9px 18px;cursor:pointer}
   .gs-noshow:disabled{opacity:.6}
   .gs-link{font:inherit;font-size:13px;color:var(--brush);background:none;border:0;cursor:pointer;margin-top:12px}
+  /* 明細：上下間距調窄 */
+  #gs-box{padding:14px 16px 18px}
+  #gs-box .kv{padding:5px 0;font-size:13.5px;line-height:1.45}
+  #gs-box .rwa-box{margin:10px 0 2px;padding:10px 13px}
+  #gs-box .rwa-a{font-size:15px;line-height:1.5}
+  #gs-box .rwa-s{margin-top:3px;line-height:1.55}
+  #gs-box .rwa-btns{margin-top:8px}
+  #gs-box .rwa-btns a,#gs-box .rwa-btns button{padding:7px 0}
+  #gs-box .gs-h{font-size:17px}
+  #gs-box .gs-noshow{padding:7px 16px}
+  #gs-box .gs-link{margin-top:8px}
   .gx-sum{font:inherit;display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:2px 0;cursor:pointer;text-align:left;color:var(--ink)}
   .gx-main{flex:1;min-width:0;font-size:14px}
   .gx-main b{color:var(--brush);font-weight:600}
@@ -666,7 +677,7 @@ function openGOrder(i){
   var o=GORD[i]; if(!o) return;
   var sp=gSplit(o.service), can=o.past && (o.status==='已預約'||o.status==='已完成');
   var h='<div class="gs-top"><span class="gs-h">預約明細</span><button type="button" class="gs-x" id="gs-x" aria-label="關閉">×</button></div>'
-    +'<div style="margin:6px 0 4px"><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></div>'
+    +'<div style="margin:3px 0 2px"><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></div>'
     +gKv('客戶',escA(o.customer_name||'客戶'))+gKv('聯絡',escA(o.customer_contact||'—'))+gKv('方案',escA(sp.plan||'—'))+(sp.place?gKv('服務地點',escA(sp.place)):'')
     +gKv('預約時間',gFullDT(o.appointment_at))+gKv('付款方式',escA(o.method||'—'))+(o.method==='匯款'&&o.pay_last5?gKv('匯款末 5 碼',escA(o.pay_last5)):'')
     +gKv('金額',money(o.amount),'tot')+(o.order_ref?gKv('訂單編號',escA(o.order_ref)):'');
