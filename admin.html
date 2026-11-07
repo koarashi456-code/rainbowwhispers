@@ -162,6 +162,13 @@
   .sp-del{flex:1;font-size:13.5px;border:1.5px solid #F0D3D9;background:#fff;color:#C0506A}
   .sp-save{flex:2;font-size:14px;font-weight:500;border:0;background:var(--rainbow);color:#4A3A2A}
   .sp-save:disabled{opacity:.6}
+  .cd-pk-h{font-size:12.5px;color:var(--soft);font-weight:500;margin:10px 0 6px}
+  .xf-src{display:flex;flex-direction:column;gap:2px;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 12px;margin-top:10px}.xf-src b{color:var(--brush);font-size:14.5px}.xf-src span{font-size:12.5px;color:var(--soft)}
+  .xf-list{display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:220px;overflow:auto}
+  .xf-c{display:flex;flex-direction:column;align-items:flex-start;position:relative;font:inherit;text-align:left;background:#fff;border:1.5px solid #EFE3CE;border-radius:11px;padding:7px 34px 7px 12px;cursor:pointer;color:var(--ink)}
+  .xf-c b{font-size:13.5px;color:var(--brush)}.xf-c small{font-size:11.5px;color:var(--soft)}.xf-c.on{border-color:#8CC49A;background:#F1F8F2}.xf-c i{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;color:#3F7A5E}
+  .xf-none{font-size:12.5px;color:var(--soft);padding:6px 2px}
+  .xf-note{font-size:11.5px;color:var(--soft);background:#FBF6EC;border-radius:10px;padding:7px 10px;margin-top:10px;line-height:1.6}
   /* 客戶管理：條列式 */
   #list{background:#FFFDF8;border:1px solid var(--line);border-radius:16px;overflow:hidden}
   #list:empty{display:none}
@@ -625,9 +632,11 @@
   </div>
 </div>
 
+<div class="sp-mask" id="xf-mask"><div class="sp-box" id="xf-box" role="dialog" aria-label="轉讓課程"></div></div>
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
 <script src="slot-ui.js"></script>
+<script src="course-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -703,6 +712,7 @@ document.querySelectorAll('.tabbar button').forEach(function(b){
   };
 });
 
+var PKGS=[];
 async function loadAll(){
   try{ await db.rpc('auto_complete_orders'); }catch(e){}  // 預約日已過的「已預約」自動改「已完成」（未建 SQL 時略過）
   if(!seenTs()) setSeen(new Date().toISOString());
@@ -717,6 +727,7 @@ async function loadAll(){
   var nd=function(x){return !x.deleted;}, dd=function(x){return x.deleted;};
   var C=res[0].data||[], G=res[1].data||[], T=res[2].data||[], P=res[3].data||[];
   GPLANS=((res[4]&&res[4].data)||[]).filter(function(x){return !x.deleted;});
+  try{ var pk=await db.rpc('admin_packages'); PKGS=(!pk.error && Array.isArray(pk.data))?pk.data:[]; }catch(e){ PKGS=[]; }
   ALL=C.filter(nd); GUIDES=G.filter(nd); TX=T.filter(nd); TOPUPS=P.filter(nd);
   DEL={customers:C.filter(dd),guides:G.filter(dd),transactions:T.filter(dd),topups:P.filter(dd)};
   var err=res.slice(0,4).find(function(x){return x.error;});
@@ -774,7 +785,8 @@ function card(c){
   var a=custAgg(c.id), mem=(c.source==='會員');
   var nm=String(c.admin_alias||c.name||c.contact||'?').trim(), ini=nm?Array.from(nm)[0]:'?';
   var nav=((c.test_results||{})['心靈導航測驗']||{}).result||c.result_type||'';
-  var sub=[mem?'會員':'過路客', nav, c.contact||(jd?jd+' 加入':'')].filter(Boolean).map(esc).join('・');
+  var myPk=PKGS.filter(function(k){ return k.customer_id===c.id; }), pkRem=myPk.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0);
+  var sub=[mem?'會員':'過路客', nav, c.contact||(jd?jd+' 加入':'')].filter(Boolean).map(esc).join('・')+(myPk.length?'<span style="color:#6E4F9E">・課程剩 '+pkRem+' 堂</span>':'');
   var jd=c.created_at?(function(d){ return (d.getMonth()+1)+'/'+d.getDate(); })(new Date(c.created_at)):'';
   var amt=a.balance>0?[money(a.balance),'餘額']:a.spent>0?[money(a.spent),'累計消費']:['—','還沒消費'];
   function fr(k,v,top){ return '<div class="cd-fr'+(top?' top':'')+'"><span>'+k+'</span>'+v+'</div>'; }
@@ -789,6 +801,7 @@ function card(c){
     '<div class="cd-stats"><div><small>餘額</small><b>'+money(a.balance)+'</b></div><div><small>累積消費</small><b>'+money(a.spent)+'</b></div><div><small>儲值</small><b>'+money(a.topup)+'</b></div></div>'+
     '<button type="button" class="rlink cd-link" data-rec>查看消費／儲值紀錄 ›</button>'+
     '<div class="records" data-recbox style="display:none">'+customerRecords(c.id)+'</div>'+
+    '<div class="cd-pkgs" data-cpk>'+custPkgsHtml(c.id)+'</div>'+
     '<div class="cd-fields">'+
       fr('姓名','<input class="in" data-f="name" value="'+esc(c.name)+'" placeholder="客人本人資料">')+
       fr('聯絡','<input class="in" data-f="contact" value="'+esc(c.contact)+'" placeholder="LINE／電話">')+
@@ -802,9 +815,49 @@ function card(c){
     '</div>'+
   '</div>';
 }
+// 客人的套裝課程（SQL：admin_packages、package_adjust、admin_transfer_package；畫面在 course-ui.js）
+function custPkgsHtml(cid){ if(!window.RWCourse) return ''; var L=PKGS.filter(function(k){ return k.customer_id===cid; }); return L.length?'<div class="cd-pk-h">套裝課程</div>'+L.map(function(k){ return RWCourse.card(k,'admin'); }).join(''):''; }
+async function reloadPkgs(){ try{ var pk=await db.rpc('admin_packages'); if(!pk.error && Array.isArray(pk.data)) PKGS=pk.data; }catch(e){} }
+function bindCustPkgs(el,cid){
+  var box=el.querySelector('[data-cpk]'); if(!box || !window.RWCourse) return;
+  RWCourse.bind(box,PKGS.filter(function(k){ return k.customer_id===cid; }),{
+    adjust:async function(id,d,at){ var x=await db.rpc('package_adjust',{p_package_id:id,p_delta:d,p_at:at,p_note:null}); if(x.error) throw new Error(x.error.message); },
+    done:async function(){ await reloadPkgs(); box.innerHTML=custPkgsHtml(cid); bindCustPkgs(el,cid); },
+    transfer:function(pk){ openPkgTransfer(pk, async function(){ await reloadPkgs(); box.innerHTML=custPkgsHtml(cid); bindCustPkgs(el,cid); render(); var card=document.querySelector('#list .cust[data-id="'+cid+'"]'); if(card){ if(isM()) mOpenCard(card); else card.classList.remove('collapsed'); } }); }
+  });
+}
+// 轉讓課程：選另一位客人＋堂數
+function openPkgTransfer(pk,done){
+  var m=$('#xf-mask'), b=$('#xf-box'); if(!m||!b) return;
+  var rem=Number(pk.remaining)||0, pick=null;
+  b.innerHTML='<div class="sp-top"><span class="sp-h">轉讓課程</span><button type="button" class="sp-x" id="xf-x" aria-label="關閉">×</button></div>'
+    +'<div class="xf-src"><b>'+esc(pk.label||'套裝課程')+'</b><span>'+esc(pk.customer_name||'')+'（目前持有）・剩 '+rem+' 堂</span></div>'
+    +'<label class="sp-l">轉給哪位客人？（打名字、信箱或電話搜尋）</label><input class="in sp-in" id="xf-q" placeholder="搜尋客人…" autocomplete="off"><div class="xf-list" id="xf-list"></div>'
+    +'<label class="sp-l">轉幾堂？</label><select class="in sp-in" id="xf-n">'+Array.from({length:rem},function(_,i){ var n=rem-i; return '<option value="'+n+'">'+(n===rem?'剩下的 '+n+' 堂全部':n+' 堂')+'</option>'; }).join('')+'</select>'
+    +'<div class="xf-note">轉讓後兩邊的「我的課程」都會留下紀錄；已預約的那堂不會被轉走。</div><div class="sp-msg" id="xf-msg"></div>'
+    +'<div class="sp-acts"><button type="button" class="sp-del" id="xf-cancel" style="color:var(--brush);border-color:var(--line)">取消</button><button type="button" class="sp-save" id="xf-go">確認轉讓</button></div>';
+  m.classList.add('on');
+  function close(){ m.classList.remove('on'); }
+  $('#xf-x').onclick=close; $('#xf-cancel').onclick=close;
+  function draw(){ var q=($('#xf-q').value||'').trim().toLowerCase(), L=ALL.filter(function(c){ return c.id!==pk.customer_id && (!q || [c.admin_alias,c.name,c.contact,c.phone].join(' ').toLowerCase().indexOf(q)>=0); }).slice(0,8);
+    $('#xf-list').innerHTML=L.map(function(c){ return '<button type="button" class="xf-c'+(pick===c.id?' on':'')+'" data-xc="'+c.id+'"><b>'+esc(custLabel(c))+'</b><small>'+esc([c.contact,c.phone].filter(Boolean).join('・'))+'</small>'+(pick===c.id?'<i>✓</i>':'')+'</button>'; }).join('')||'<div class="xf-none">找不到符合的客人</div>';
+    $('#xf-list').querySelectorAll('[data-xc]').forEach(function(x){ x.onclick=function(){ pick=x.getAttribute('data-xc'); draw(); }; }); }
+  $('#xf-q').oninput=function(){ pick=null; draw(); }; draw();
+  $('#xf-go').onclick=async function(){
+    var msg=$('#xf-msg'); if(!pick){ msg.textContent='請先選要轉給哪位客人'; return; }
+    var n=Number($('#xf-n').value)||0, to=custById(pick);
+    if(!confirm('把「'+(pk.label||'套裝課程')+'」'+n+' 堂轉給 '+(to?custLabel(to):'這位客人')+'？')) return;
+    this.disabled=true; msg.textContent='';
+    var r=await db.rpc('admin_transfer_package',{p_package_id:pk.id,p_to_customer:pick,p_count:n});
+    this.disabled=false;
+    if(r.error){ msg.textContent='轉讓失敗：'+r.error.message; return; }
+    close(); if(done) done();
+  };
+}
 function bindCards(){
   document.querySelectorAll('#list .cust').forEach(function(el){
     var id=el.getAttribute('data-id');
+    bindCustPkgs(el,id);
     var rb=el.querySelector('[data-rec]'); if(rb) rb.onclick=function(){ var box=el.querySelector('[data-recbox]'); box.style.display=(box.style.display==='none'?'block':'none'); };
     el.querySelectorAll('[data-deltp]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆儲值？會移到「刪除紀錄」可還原；餘額會重算。'))return; var tid=btn.getAttribute('data-deltp'); if(await softDelete('topups',tid,TOPUPS)){ render(); renderTx(); renderTrash(); } }; });
     el.querySelectorAll('[data-deltx]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆消費紀錄？會移到「刪除紀錄」，可還原。'))return; var tid=btn.getAttribute('data-deltx'); if(await softDelete('transactions',tid,TX)){ render(); renderTx(); renderTrash(); } }; });
@@ -920,7 +973,8 @@ function guidePlansHtml(g){
   var mine=GPLANS.filter(function(p){return p.guide_id===g.id;});
   var list = mine.length ? mine.map(function(p){
     return '<div class="gp-row" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)">'+
-      '<div style="flex:1;min-width:0;font-size:13.5px">'+esc(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12px">· '+esc(p.unit)+'</span>'):'')+' <span style="color:var(--soft)">｜$'+Number(p.price||0).toLocaleString()+'</span></div>'+
+      '<div style="flex:1;min-width:0;font-size:13.5px">'+esc(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12px">· '+esc(p.unit)+'</span>'):'')+' <span style="color:var(--soft)">｜$'+Number(p.price||0).toLocaleString()+'</span>'+(Number(p.sessions)>=2?' <span style="font-size:11px;color:#6E4F9E;background:#EAD9F2;border-radius:999px;padding:1px 8px;white-space:nowrap">分次使用 '+Number(p.sessions)+' 堂</span>':'')+'</div>'+
+      '<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--soft);white-space:nowrap" title="套裝課程：客人買一次，之後每次預約扣 1 堂">分次<input type="number" min="0" max="100" data-psess value="'+(Number(p.sessions)>=2?Number(p.sessions):'')+'" placeholder="—" style="width:48px;font:inherit;font-size:12.5px;padding:3px 5px;border:1.5px solid #EFE3CE;border-radius:7px;background:#fff">堂</label>'+
       '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;color:'+(p.approved?'#4F8E6E':'#B07A2E')+';white-space:nowrap"><input type="checkbox" data-pappr '+(p.approved?'checked':'')+'> '+(p.approved?'已核准':'核准')+'</label>'+
       '<button class="del" data-pdel>刪除</button>'+
     '</div>';
@@ -932,6 +986,7 @@ function guidePlansHtml(g){
       '<input class="in gp-nl" placeholder="方案名稱（含項目，例：塔羅 1 小時）" style="flex:1;min-width:150px">'+
       '<input class="in gp-np" type="number" min="0" placeholder="價格" style="width:84px">'+
       '<input class="in gp-nu" placeholder="時數/次數 如2小時" style="width:120px">'+
+      '<input class="in gp-ns" type="number" min="0" max="100" placeholder="分次堂數（選填）" title="套裝課程：填 10 代表客人買 10 堂、每次預約扣 1 堂" style="width:128px">'+
       '<button class="del gp-add" style="color:#4A3A2A;background:var(--rainbow);text-decoration:none;border-radius:999px;padding:7px 15px">新增並核准</button>'+
     '</div>'+
   '</div>';
@@ -942,15 +997,18 @@ function bindGuidePlans(el){
     var pid=row.getAttribute('data-pid');
     var ap=row.querySelector('[data-pappr]');
     if(ap) ap.onchange=async function(){ var v=ap.checked; var r=await db.from('guide_plans').update({approved:v}).eq('id',pid); if(r.error){ alert('更新失敗：'+r.error.message); ap.checked=!v; return; } var p=GPLANS.find(function(x){return x.id===pid;}); if(p)p.approved=v; var lab=ap.parentNode; lab.style.color=v?'#4F8E6E':'#B07A2E'; if(ap.nextSibling) ap.nextSibling.textContent=' '+(v?'已核准':'核准'); };
+    var ps=row.querySelector('[data-psess]');
+    if(ps) ps.onchange=async function(){ var n=Number(ps.value)||0; var v=n>=2?Math.min(n,100):null; var r=await db.from('guide_plans').update({sessions:v}).eq('id',pid); if(r.error){ alert('更新失敗：'+r.error.message+(/sessions/.test(r.error.message||'')?'（請先執行套裝課程的 SQL）':'')); return; } var p=GPLANS.find(function(x){return x.id===pid;}); if(p)p.sessions=v; var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); } };
     var pd=row.querySelector('[data-pdel]');
     if(pd) pd.onclick=async function(){ if(!confirm('刪除這個方案？'))return; var r=await db.from('guide_plans').update({deleted:true}).eq('id',pid); if(r.error){ alert('刪除失敗：'+r.error.message); return; } GPLANS=GPLANS.filter(function(x){return x.id!==pid;}); var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); } };
   });
   var addb=el.querySelector('.gp-add');
   if(addb) addb.onclick=async function(){
-    var nl=el.querySelector('.gp-nl'), np=el.querySelector('.gp-np'), nu=el.querySelector('.gp-nu');
+    var nl=el.querySelector('.gp-nl'), np=el.querySelector('.gp-np'), nu=el.querySelector('.gp-nu'), ns=el.querySelector('.gp-ns');
     var label=(nl&&nl.value||'').trim(), price=Number(np&&np.value||0), unit=(nu&&nu.value||'').trim();
     if(!label){ alert('請填方案名稱'); return; }
-    var r=await db.from('guide_plans').insert({guide_id:id,label:label,price:price,unit:unit||null,approved:true}).select();
+    var sn=Number(ns&&ns.value||0), row0={guide_id:id,label:label,price:price,unit:unit||null,approved:true}; if(sn>=2) row0.sessions=Math.min(sn,100);
+    var r=await db.from('guide_plans').insert(row0).select();
     if(r.error){ alert('新增失敗：'+r.error.message); return; }
     if(r.data&&r.data[0]) GPLANS.unshift(r.data[0]);
     var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); }
@@ -1541,6 +1599,7 @@ function openSpEdit(id){
 (function(){
   var b=document.getElementById('sp-addbtn'); if(b) b.onclick=function(){ openSpEdit(null); };
   var m=document.getElementById('sp-mask'); if(m) m.addEventListener('click',function(e){ if(e.target===m) spClose(); });
+  var xm=document.getElementById('xf-mask'); if(xm) xm.addEventListener('click',function(e){ if(e.target===xm) xm.classList.remove('on'); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && m && m.classList.contains('on')) spClose(); });
 })();
 

@@ -237,7 +237,7 @@ function orderRow(o){
   return '<button type="button" class="orow'+(dim?' dim':'')+'" data-i="'+i+'">'
     +'<span class="od'+(isShop(o)?' shop':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
     +'<span class="om"><div class="t">'+(isShop(o)?'商品訂單':esc(o.guide_name||'引路人'))+'</div><div class="s">'+esc(sp.plan)+(sp.place?'｜'+esc(sp.place):'')+'</div></span>'
-    +'<span class="oright"><div class="a">'+money(o.amount)+'</div>'+statusBadge(stText(o))+'</span><span class="ogo">›</span></button>';
+    +'<span class="oright"><div class="a">'+(o.method==='課程'?'1 堂':money(o.amount))+'</div>'+statusBadge(stText(o))+'</span><span class="ogo">›</span></button>';
 }
 function kv(k,v,c){ return '<div class="kv'+(c?' '+c:'')+'"><span>'+k+'</span><span>'+v+'</span></div>'; }
 function fullDT(s){ var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+'（'+WDN[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
@@ -251,7 +251,7 @@ function openDetail(i){
     h+=kv('品項',esc(sp.plan))+kv('下單日',fmtDay(o.created_at))+kv('付款方式',esc(o.method||'—'))+kv('金額',money(o.amount),'tot')+(o.order_ref?kv('訂單編號',esc(o.order_ref)):'');
   } else {
     h+=kv('引路人',esc(o.guide_name||'引路人'))+kv('方案',esc(sp.plan||'—'))+(sp.place?kv('服務地點',esc(sp.place)):'')
-      +kv('預約時間',fullDT(o.appointment_at))+kv('付款方式',esc(o.method||'—'))+kv('金額',money(o.amount),'tot')
+      +kv('預約時間',fullDT(o.appointment_at))+kv('付款方式',esc(o.method==='課程'?'課程堂數':(o.method||'—')))+kv('金額',o.method==='課程'?'扣 1 堂（$0）':money(o.amount),'tot')
       +(o.order_ref?kv('訂單編號',esc(o.order_ref)):'')+kv('下單日',fmtDay(o.created_at));
   }
   if(hasAccess(o)) h+='<div id="od-acc"><div class="rs-sub" style="margin-top:12px">讀取地址／視訊連結中…</div></div>';
@@ -286,6 +286,10 @@ async function openCancel(ref){
   $('#cx-mask').classList.add('on');
   var q; try{ var r=await db.rpc('cancel_my_order',{p_ref:ref,p_confirm:false}); if(r.error) throw new Error(r.error.message); q=r.data; }
   catch(e){ $('#cx-body').innerHTML='<div class="rs-sub" style="color:#C0506A">'+esc(e.message||'暫時無法取消')+'</div><a class="oc-btn" style="display:inline-block;text-decoration:none" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加官方 LINE 詢問</a>'; $('#cx-go').style.display='none'; $('#cx-close').textContent='關閉'; return; }
+  if(q.method==='課程'){
+    $('#cx-body').innerHTML='<div class="cx-box" style="text-align:center"><div style="font-size:15px;font-weight:600;color:var(--brush)">取消後，這堂會退回你的課程</div><div style="font-size:13px;color:var(--soft);margin-top:6px;line-height:1.7">用課程堂數約的，不用退錢，也不會被扣掉。<br>可以在「會員中心 → 我的課程」再約一次。</div></div>'+(canEdit(o)?'<button type="button" class="cx-alt" id="cx-rs">不想取消？改成改期一次 ›</button>':'');
+    $('#cx-go').disabled=false; var rb0=$('#cx-rs'); if(rb0) rb0.onclick=function(){ cxClose(); openReschedule(ref); }; return;
+  }
   var h='<div class="rs-sub" style="margin-bottom:8px">距離預約時間還有 <b style="color:var(--brush)">'+(q.hours>=9999?'—':(q.hours>=48?Math.floor(q.hours/24)+' 天':q.hours+' 小時'))+'</b>，依條款'+(q.full?'可以<b style="color:#3F7A5E">全額退費</b>':'<b style="color:#C0506A">酌收服務費 50%'+(q.fee?'，媒合費不退':'')+'</b>')+'：</div>';
   h+='<div class="cx-box">'+
     '<div class="cx-line"><span>實付服務費</span><span>'+money(q.paid)+'</span></div>'+
@@ -303,7 +307,7 @@ async function doCancel(){
   try{ var r=await db.rpc('cancel_my_order',{p_ref:CX.ref,p_confirm:true}); if(r.error) throw new Error(r.error.message); var q=r.data||{};
     var o=ALL_ORDERS.find(function(x){ return x.order_ref===CX.ref; }); if(o) o.status='已取消';
     try{ fetch('https://formsubmit.co/ajax/koarashi456@gmail.com',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({_subject:'彩之語 · 會員取消預約 '+CX.ref,_template:'table',訂單編號:CX.ref,引路人:(o&&o.guide_name)||'',服務項目:(o&&o.service)||'',預約時間:o?fmtDT(o.appointment_at):'',付款方式:q.method||'',可退金額:money(q.refund),酌收服務費:money(q.kept||0),退款方式:q.return_to||''})}).catch(function(){}); }catch(e){}
-    $('#cx-body').innerHTML='<div class="cx-box" style="text-align:center"><div style="font-size:16px;font-weight:600;color:var(--brush)">已取消預約</div><div style="margin-top:6px;font-size:13.5px">可退金額 <b>'+money(q.refund)+'</b>，'+esc(q.return_to||'')+'</div></div>';
+    $('#cx-body').innerHTML='<div class="cx-box" style="text-align:center"><div style="font-size:16px;font-weight:600;color:var(--brush)">已取消預約</div><div style="margin-top:6px;font-size:13.5px">'+(q.method==='課程'?'這堂已經退回你的課程':'可退金額 <b>'+money(q.refund)+'</b>，'+esc(q.return_to||''))+'</div></div>';
     $('#cx-msg').textContent=''; btn.style.display='none'; $('#cx-close').textContent='關閉';
     reloadOrders();
   }catch(e){ $('#cx-msg').style.color='#C0506A'; $('#cx-msg').textContent='取消失敗：'+(e.message||'請稍後再試'); btn.disabled=false; }

@@ -198,7 +198,7 @@
 <script src="booking-access.js"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
-var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
+var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, PKG_PLANS=[], OWNED=[], MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function money(n){return '$'+Number(n||0).toLocaleString();}
@@ -258,6 +258,9 @@ async function loadGuide(){
     try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(sr && !sr.error && Array.isArray(sr.data)) ? sr.data : []; }catch(e){ OPEN_SLOTS=[]; }
     try{ var pl=await db.rpc('guide_places',{p_guide_id:guide.id}); PLACES=buildPlaces((pl && !pl.error) ? pl.data : null); }catch(e){ PLACES=[]; }
     await loadSlotPlaces();
+    // 套裝課程：這位引路人的課程方案（guide_packages）、我已經買的課程（my_packages）
+    try{ var gp=await db.rpc('guide_packages',{p_guide_id:guide.id}); PKG_PLANS=(gp&&!gp.error&&Array.isArray(gp.data))?gp.data:[]; }catch(e){ PKG_PLANS=[]; }
+    if(MEMBER){ try{ var mp=await db.rpc('my_packages'); OWNED=(mp&&!mp.error&&Array.isArray(mp.data))?mp.data.filter(function(x){ return x.guide_id===guide.id && Number(x.remaining)>0; }):[]; }catch(e){ OWNED=[]; } }
     renderGuide(); renderSlotPicker(); show('content');
   }catch(e){ show('notfound'); }
 }
@@ -313,17 +316,24 @@ var PLANS_DEFAULT=[
 ];
 var GUIDE_PLANS=[];
 // 引路人沒有自訂方案時：用服務項目 × 預設方案組成「彩虹卡・完整 30 分」這種方案
+function pkgOf(p){ return PKG_PLANS.filter(function(k){ return k.label===p.label && Number(k.price)===Number(p.price) && String(k.unit||'')===String(p.unit||''); })[0]||null; }
 function planList(){
-  if(GUIDE_PLANS && GUIDE_PLANS.length) return GUIDE_PLANS;
+  if(GUIDE_PLANS && GUIDE_PLANS.length) return GUIDE_PLANS.map(function(p){ var k=pkgOf(p); if(k){ p.pkg={id:k.id, sessions:Number(k.sessions)||0}; } return p; });
   var svcs=(guide && guide.services)||[];
   if(!svcs.length) return PLANS_DEFAULT;
   var out=[]; svcs.forEach(function(sv){ PLANS_DEFAULT.forEach(function(p){ out.push({label:sv+'・'+p.label, price:p.price, group:sv}); }); }); return out;
 }
 function planText(p){ return p ? (p.label+(p.unit?(' · '+p.unit):'')) : ''; }
 function planLabelFull(p){ return esc(planText(p)); }
-function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(), h='<option value="">— 請選擇方案 —</option>', grp=null;
-  L.forEach(function(p,i){ if(p.group!==grp){ if(grp) h+='</optgroup>'; grp=p.group||null; if(grp) h+='<optgroup label="'+esc(grp)+'">'; } h+='<option value="'+i+'">'+planLabelFull(p)+'｜'+money(p.price)+'</option>'; });
-  if(grp) h+='</optgroup>'; sel.innerHTML=h; }
+function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(), h='<option value="">— 請選擇方案 —</option>';
+  // 已經買的課程：放最上面，用堂數預約
+  if(OWNED.length) h+='<optgroup label="用我的課程堂數">'+OWNED.map(function(k,i){ return '<option value="own:'+i+'">'+esc(k.label||'套裝課程')+'（剩 '+Number(k.remaining)+' 堂）</option>'; }).join('')+'</optgroup>';
+  var grouped=L.some(function(p){ return !!p.group; }), grp=null;
+  if(OWNED.length && L.length && !grouped) h+='<optgroup label="買新的方案">';
+  L.forEach(function(p,i){ if(grouped && p.group!==grp){ if(grp) h+='</optgroup>'; grp=p.group; h+='<optgroup label="'+esc(grp)+'">'; } h+='<option value="'+i+'">'+planLabelFull(p)+(p.pkg?'・分次使用':'')+'｜'+money(p.price)+'</option>'; });
+  if(grp || (OWNED.length && L.length && !grouped)) h+='</optgroup>';
+  sel.innerHTML=h;
+  if(OWNED.length){ var want=new URLSearchParams(location.search).get('pkg'), wi=0; OWNED.forEach(function(k,i){ if(String(k.id)===want) wi=i; }); sel.value='own:'+wi; } }
 // 服務地點：guide_places 回 {online, offline, app, areas:[…]}（SQL：guide_places）
 var PIN_IC='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
 var CAM_IC='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>';
@@ -345,8 +355,14 @@ function renderPlaces(){
   var hint=$('#place-hint'); if(hint) hint.textContent=PLACES.some(function(x){ return x.v==='線上'; })?(PLACES.length>1?'完整地址或視訊連結會在付款成功後直接顯示給你':'視訊連結會在付款成功後直接顯示給你'):'完整地址會在付款成功後直接顯示給你';
   box.querySelectorAll('[data-pl]').forEach(function(el){ el.onclick=function(){ PLACE=PLACES[+el.getAttribute('data-pl')]; box.querySelectorAll('.paybox').forEach(function(y){ y.classList.toggle('sel', y===el); }); box.style.outline=''; SEL_DATE=''; renderSlotPicker(); }; });
 }
-function selectedPlan(){ var sel=$('#f-plan'); if(!sel||sel.value==='') return null; return planList()[Number(sel.value)]||null; }
+function selectedPlan(){ var sel=$('#f-plan'); if(!sel||sel.value==='') return null;
+  if(/^own:/.test(sel.value)){ var k=OWNED[Number(sel.value.slice(4))]; return k?{label:k.label||'套裝課程', price:0, own:k}:null; }
+  return planList()[Number(sel.value)]||null; }
 function renderPayOptions(){
+  var sp0=selectedPlan(), cpf=$('#f-coupon'); if(cpf){ var fld=cpf.closest('.field'); if(fld) fld.style.display=(sp0&&sp0.own)?'none':''; }
+  if(sp0 && sp0.own){ var k=sp0.own, rem=Number(k.remaining)||0, po0=$('#pay-options'); if(!po0) return;
+    po0.innerHTML='<label class="paybox sel" data-pay="課程"><span class="dot"></span><span>用課程堂數（'+esc(k.label||'套裝課程')+'，剩 <b>'+rem+'</b> 堂）<small>這次扣 1 堂，不用再付錢；扣完剩 '+(rem-1)+' 堂</small></span></label>';
+    PAY_METHOD='課程'; COUPON=null; return; }
   var svcAmt=serviceAmount(), canStore=!!(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt);
   var opts='';
   if(MEMBER){
@@ -407,20 +423,24 @@ $('#to-pay').onclick=function(){
   var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
-  h+='<div class="sumline"><span>方案</span><span>'+planLabelFull(plan)+'</span></div>';
+  h+='<div class="sumline"><span>方案</span><span>'+planLabelFull(plan)+(plan&&plan.own?'（用堂數）':'')+'</span></div>';
+  if(plan && plan.pkg) h+='<div class="sumline"><span>套裝課程</span><span>共 '+plan.pkg.sessions+' 堂，這次約第 1 堂</span></div>';
+  if(plan && plan.own) h+='<div class="sumline"><span>這次</span><span>第 '+((Number(plan.own.used)||0)+(Number(plan.own.booked)||0)+1)+' 堂</span></div>';
   if(PLACE) h+='<div class="sumline"><span>服務地點</span><span>'+esc(PLACE.label)+'</span></div>';
   h+='<div class="sumline"><span>希望時間</span><span>'+fmtWhen(when)+'</span></div>';
   h+='<div class="sumline"><span>姓名</span><span>'+esc(nm)+'</span></div>';
   h+='<div class="sumline"><span>電話</span><span>'+esc(ph)+'</span></div>';
   h+='<div class="sumline"><span>信箱</span><span>'+esc((($('#f-email')||{}).value||'')||(MEMBER&&MEMBER.email)||'')+'</span></div>';
-  h+='<div class="sumline"><span>付款方式</span><span>'+esc(PAY_METHOD)+'</span></div>';
-  h+='<div class="sumline"><span>引路人服務費</span><span>'+money(amt)+'</span></div>';
+  h+='<div class="sumline"><span>付款方式</span><span>'+esc(PAY_METHOD==='課程'?'課程堂數':PAY_METHOD)+'</span></div>';
+  if(PAY_METHOD!=='課程') h+='<div class="sumline"><span>引路人服務費</span><span>'+money(amt)+'</span></div>';
   if(disc) h+='<div class="sumline"><span>優惠折抵（'+esc(COUPON.code)+'）</span><span class="neg">−'+money(disc)+'</span></div>';
-  h+='<div class="sumline total"><span>'+totalLabel+'</span><span>'+money(total)+'</span></div>';
+  h+='<div class="sumline total"><span>'+totalLabel+'</span><span>'+(PAY_METHOD==='課程'?'$0（扣 1 堂）':money(total))+'</span></div>';
   $('#pay-summary').innerHTML=h;
   // 付款方式對應內容
   var mb='';
-  if(PAY_METHOD==='儲值'){
+  if(PAY_METHOD==='課程'){
+    var rk=Number(plan.own.remaining)||0; mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">用課程堂數</div>送出後從「'+esc(plan.own.label||'套裝課程')+'」扣 <b>1</b> 堂，扣完剩 <b>'+(rk-1)+'</b> 堂。取消這次預約，這堂會自動退回。</div>';
+  } else if(PAY_METHOD==='儲值'){
     mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">以儲值餘額付款</div>送出後自動從你的儲值折抵 <b>'+money(total)+'</b>，折抵後餘額約 <b>'+money(Math.max(0,MEMBER_BALANCE-total))+'</b>。</div>';
   } else if(PAY_METHOD==='匯款'){
     mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">匯款資訊（測試）</div>銀行：<b>玉山銀行（808）</b><br>戶名：<b>彩之語 Rainbow Whisper</b><br>帳號：<b>0000-0000-0000-0000</b><div class="bankwarn">⚠️ 這是測試流程，請勿真的匯款。正式帳號會在我們確認預約後提供。</div></div>'+
@@ -459,9 +479,23 @@ $('#do-submit').onclick=async function(){
   btn.disabled=true; btn.textContent='送出中…';
   try{
     // 優惠編號：送出前再確認一次，失效就先不送出
-    if(COUPON){ var ck=await db.rpc('check_coupon',{p_code:COUPON.code,p_amount:amt});
+    if(COUPON && !(plan&&plan.own)){ var ck=await db.rpc('check_coupon',{p_code:COUPON.code,p_amount:amt});
       if(ck.error || !ck.data || !ck.data.ok){ var cm=(ck.data&&ck.data.msg)||'優惠編號暫時無法使用'; COUPON=null; renderCoupon(cm); throw new Error(cm+'，請回上一步重新確認金額'); } }
     if(nm||ph){ try{ await db.rpc('update_my_profile',{p_name:nm, p_phone:ph, p_area:MEMBER_AREA||''}); MEMBER_NAME=nm; MEMBER_PHONE=ph; }catch(e){} }
+    // 用課程堂數：直接扣 1 堂預約（SQL：book_with_package）
+    if(plan && plan.own){
+      var pr=await db.rpc('book_with_package',{p_package_id:plan.own.id, p_at:when, p_location:(PLACE?PLACE.v:null), p_note:note});
+      if(pr.error) throw new Error(pr.error.message);
+      var pref=pr.data; plan.own.remaining=Number(plan.own.remaining)-1; plan.own.booked=(Number(plan.own.booked)||0)+1;
+      var pacc=window.RWAccess?await RWAccess.load(db,pref):null;
+      sendBookingEmail({ref:pref, name:nm, email:email, phone:ph, guide:(guide.name||''), plan:(plan.label+'（用課程堂數，剩 '+plan.own.remaining+' 堂）'), place:(placeTxt||'—'), when:fmtWhen(when), method:'課程堂數', total:'$0（扣 1 堂）', access:(window.RWAccess?RWAccess.text(pacc):'')});
+      $('#done-ref').textContent='訂單編號 '+pref;
+      var pda=$('#done-access'); if(pda){ pda.innerHTML=window.RWAccess?RWAccess.html(pacc):''; if(window.RWAccess) RWAccess.bind(pda); }
+      if(pda && !pda.innerHTML){ pda.innerHTML='<p class="muted" style="font-size:13.5px;line-height:1.7;margin-top:12px">服務地址或視訊連結會用 Email 寄給你，也可以在「我的訂單」查看。</p>'; }
+      $('#done-summary').innerHTML=$('#pay-summary').innerHTML+'<div class="cpok" style="margin-top:8px"><span>課程剩 '+plan.own.remaining+' 堂，可在「會員中心 → 我的課程」查看</span></div>';
+      $('#book-pay').style.display='none'; $('#book-done').style.display='block'; $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
     var res=await db.rpc('book_appointment',{
       p_guide_id:guide.id, p_service:svcFull, p_appointment_at:(when||null), p_amount:amt,
       p_note:(totalLabel+' '+money(total)+(isStore?'（儲值折抵）':'')+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
@@ -473,13 +507,16 @@ $('#do-submit').onclick=async function(){
     if(COUPON){ try{ var ap=await db.rpc('apply_coupon',{p_code:COUPON.code,p_ref:ref}); if(ap.error || !ap.data || !ap.data.ok) cpWarn=(ap.data&&ap.data.msg)||'優惠編號沒有套用成功'; }catch(e){ cpWarn='優惠編號沒有套用成功'; } }
     // 記下客人選的地點（SQL：set_my_booking_location）
     if(PLACE){ try{ await db.rpc('set_my_booking_location',{p_ref:ref,p_location:PLACE.v}); }catch(e){} }
+    // 買套裝課程：開通課程，這次的時間就是第 1 堂（SQL：start_my_package）
+    var pkWarn='';
+    if(plan && plan.pkg){ try{ var sp=await db.rpc('start_my_package',{p_ref:ref,p_plan_id:plan.pkg.id}); if(sp.error || !sp.data || !sp.data.ok) pkWarn=(sp.error&&sp.error.message)||'課程沒有開通成功'; }catch(e){ pkWarn='課程沒有開通成功'; } }
     // 刷卡／儲值：預約成功直接給地址或視訊連結（SQL：my_booking_access）
     var acc=window.RWAccess?await RWAccess.load(db,ref):null;
-    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), plan:(planTxt||'—'), place:(placeTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)+(disc&&!cpWarn?'（已折抵 '+COUPON.code+' −'+money(disc)+'）':''), access:(window.RWAccess?RWAccess.text(acc):'')});
+    sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), plan:((planTxt||'—')+(plan&&plan.pkg?'（套裝課程 '+plan.pkg.sessions+' 堂，這次第 1 堂）':'')), place:(placeTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)+(disc&&!cpWarn?'（已折抵 '+COUPON.code+' −'+money(disc)+'）':''), access:(window.RWAccess?RWAccess.text(acc):'')});
     $('#done-ref').textContent='訂單編號 '+ref;
     var da=$('#done-access'); if(da){ da.innerHTML=window.RWAccess?RWAccess.html(acc):''; if(window.RWAccess) RWAccess.bind(da); }
     if(da && !da.innerHTML){ da.innerHTML='<p class="muted" style="font-size:13.5px;line-height:1.7;margin-top:12px">服務地址或視訊連結會用 Email 寄給你，也可以在「我的訂單」查看。</p>'; }
-    $('#done-summary').innerHTML=$('#pay-summary').innerHTML+(cpWarn?'<div class="cperr" style="margin-top:8px">'+esc(cpWarn)+'，這筆先以原價計算，請聯絡官方 LINE 協助。</div>':'');
+    $('#done-summary').innerHTML=$('#pay-summary').innerHTML+(cpWarn?'<div class="cperr" style="margin-top:8px">'+esc(cpWarn)+'，這筆先以原價計算，請聯絡官方 LINE 協助。</div>':'')+(plan&&plan.pkg?(pkWarn?'<div class="cperr" style="margin-top:8px">'+esc(pkWarn)+'，請聯絡官方 LINE 協助。</div>':'<div class="cpok" style="margin-top:8px"><span>課程已開通，共 '+plan.pkg.sessions+' 堂，可在「會員中心 → 我的課程」查看</span></div>'):'');
     $('#book-pay').style.display='none';
     $('#book-done').style.display='block';
     $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
