@@ -198,7 +198,6 @@
 <script src="booking-access.js"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
-var FEE=39;
 var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
@@ -351,7 +350,7 @@ function renderPayOptions(){
   var svcAmt=serviceAmount(), canStore=!!(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt);
   var opts='';
   if(MEMBER){
-    opts+='<label class="paybox'+(canStore?'':' dis')+'" data-pay="儲值"'+(canStore?'':' data-dis="1"')+'><span class="dot"></span><span>儲值餘額（餘額 '+money(MEMBER_BALANCE)+(canStore?'，免媒合費':'')+'）'+
+    opts+='<label class="paybox'+(canStore?'':' dis')+'" data-pay="儲值"'+(canStore?'':' data-dis="1"')+'><span class="dot"></span><span>儲值餘額（餘額 '+money(MEMBER_BALANCE)+'）'+
       (canStore?'':(svcAmt>0?'<small>餘額不足這次的 '+money(svcAmt)+'，<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE 儲值 ›</a></small>':'<small>選好方案後，餘額夠就能用儲值付款</small>'))+'</span></label>';
   }
   opts+='<label class="paybox" data-pay="刷卡"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 刷卡（信用卡）</label>';
@@ -404,7 +403,7 @@ $('#to-pay').onclick=function(){
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
   var disc=couponDiscount(amt);
-  var total=(isStore?amt:(amt+FEE))-disc;
+  var total=amt-disc;
   var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
@@ -416,14 +415,13 @@ $('#to-pay').onclick=function(){
   h+='<div class="sumline"><span>信箱</span><span>'+esc((($('#f-email')||{}).value||'')||(MEMBER&&MEMBER.email)||'')+'</span></div>';
   h+='<div class="sumline"><span>付款方式</span><span>'+esc(PAY_METHOD)+'</span></div>';
   h+='<div class="sumline"><span>引路人服務費</span><span>'+money(amt)+'</span></div>';
-  h+='<div class="sumline"><span>彩之語媒合費</span><span>'+(isStore?'免收':money(FEE))+'</span></div>';
   if(disc) h+='<div class="sumline"><span>優惠折抵（'+esc(COUPON.code)+'）</span><span class="neg">−'+money(disc)+'</span></div>';
   h+='<div class="sumline total"><span>'+totalLabel+'</span><span>'+money(total)+'</span></div>';
   $('#pay-summary').innerHTML=h;
   // 付款方式對應內容
   var mb='';
   if(PAY_METHOD==='儲值'){
-    mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">以儲值餘額付款</div>送出後自動從你的儲值折抵 <b>'+money(total)+'</b>，折抵後餘額約 <b>'+money(Math.max(0,MEMBER_BALANCE-total))+'</b>。<div class="bankwarn">用儲值付款免收媒合費。</div></div>';
+    mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">以儲值餘額付款</div>送出後自動從你的儲值折抵 <b>'+money(total)+'</b>，折抵後餘額約 <b>'+money(Math.max(0,MEMBER_BALANCE-total))+'</b>。</div>';
   } else if(PAY_METHOD==='匯款'){
     mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">匯款資訊（測試）</div>銀行：<b>玉山銀行（808）</b><br>戶名：<b>彩之語 Rainbow Whisper</b><br>帳號：<b>0000-0000-0000-0000</b><div class="bankwarn">⚠️ 這是測試流程，請勿真的匯款。正式帳號會在我們確認預約後提供。</div></div>'+
        '<div class="field" style="margin-top:12px;margin-bottom:0"><div class="lbl">轉帳帳號末 5 碼 <span class="req">*</span></div><input class="in" id="f-last5" inputmode="numeric" maxlength="5" placeholder="匯款完成後填上，方便我們對帳"></div>';
@@ -455,7 +453,7 @@ $('#do-submit').onclick=async function(){
   var amt=serviceAmount();
   var isStore=(PAY_METHOD==='儲值');
   var disc=couponDiscount(amt);
-  var total=(isStore?amt:(amt+FEE))-disc;
+  var total=amt-disc;
   var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var nm=(($('#f-name')||{}).value||'').trim(), ph=(($('#f-phone')||{}).value||'').trim();
   btn.disabled=true; btn.textContent='送出中…';
@@ -466,7 +464,7 @@ $('#do-submit').onclick=async function(){
     if(nm||ph){ try{ await db.rpc('update_my_profile',{p_name:nm, p_phone:ph, p_area:MEMBER_AREA||''}); MEMBER_NAME=nm; MEMBER_PHONE=ph; }catch(e){} }
     var res=await db.rpc('book_appointment',{
       p_guide_id:guide.id, p_service:svcFull, p_appointment_at:(when||null), p_amount:amt,
-      p_note:(totalLabel+' '+money(total)+(isStore?'（儲值折抵）':'（含媒合費'+money(FEE)+'）')+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
+      p_note:(totalLabel+' '+money(total)+(isStore?'（儲值折抵）':'')+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
