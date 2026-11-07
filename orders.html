@@ -34,20 +34,10 @@
   .osum{font-size:13.5px;color:var(--soft);margin:2px 2px 10px}
   .osum b{color:var(--brush)}
 
-  /* 訂單卡：乾淨直式列 */
-  .ocard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:11px}
-  .oc-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-  .oc-title{font-size:15px;color:var(--brush);font-weight:500;line-height:1.4}
-  .oc-title .svc{color:var(--ink);font-weight:400}
-  .oc-right{display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none}
-  .oc-amt{font-variant-numeric:tabular-nums;color:var(--brush);font-weight:600;font-size:15px}
-  .oc-line{font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.6}
-  .oc-line .k{color:#A48C72}
   .status-badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px}
   .st-book{background:#FBE7CC;color:#A5643A}
   .st-noshow{background:#F6DDE3;color:#B4566E}
   .st-ship{background:#DCEAF2;color:#4E7A94}
-  .oc-act{margin-top:10px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
   .oc-btn.cx{color:#C0506A;border-color:#F0D3D9}
   .oc-btn:disabled{opacity:.5;cursor:not-allowed}
   .cx-box{background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:14px;padding:12px 14px;margin-top:4px}
@@ -80,6 +70,38 @@
   .st-cancel{background:#EDE6DC;color:#8A7659}
   .st-refund{background:#F3D9DE;color:#B5566E}
 
+  /* 條列式：一行一筆，點開看明細 */
+  .olist-h{font-size:12.5px;color:var(--soft);font-weight:500;margin:14px 4px 7px}
+  .olist-h:first-child{margin-top:4px}
+  .olist{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .orow{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 14px;cursor:pointer;color:inherit}
+  .orow:last-child{border-bottom:0}
+  .orow:hover{background:#FBF6EC}
+  .od{flex:none;width:52px;text-align:center;background:#FBF6EC;border-radius:12px;padding:6px 0;line-height:1.25}
+  .orow:hover .od{background:#fff}
+  .od b{display:block;font-size:15px;color:var(--brush);font-variant-numeric:tabular-nums}
+  .od small{display:block;font-size:11px;color:var(--soft);white-space:nowrap}
+  .od.shop{background:#EEF4F8}
+  .om{flex:1;min-width:0}
+  .om .t{font-size:14.5px;color:var(--brush);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .om .s{font-size:12.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .oright{flex:none;text-align:right}
+  .oright .a{font-size:14.5px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
+  .oright .status-badge{margin-top:3px;font-size:11px;padding:1px 8px}
+  .ogo{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
+  .orow.dim .od b,.orow.dim .om .t,.orow.dim .oright .a{color:#9C8B74}
+  /* 明細（從下方滑出） */
+  .od-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .od-x{font:inherit;font-size:24px;line-height:1;color:var(--soft);background:none;border:0;cursor:pointer;padding:0 2px}
+  .kv{display:flex;justify-content:space-between;gap:14px;font-size:14px;padding:8px 0;border-bottom:1px dashed #EFE3CE}
+  .kv span:first-child{color:var(--soft);flex:none}
+  .kv span:last-child{text-align:right;color:var(--ink);word-break:break-word}
+  .kv.tot span:last-child{font-weight:600;color:var(--brush)}
+  .od-acts{display:flex;gap:8px;margin-top:14px}
+  .od-acts button{flex:1;font:inherit;font-size:13.5px;border-radius:999px;padding:10px 6px;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--brush)}
+  .od-acts .cx{color:#C0506A;border-color:#F0D3D9}
+  .od-acts button:disabled{opacity:.5;cursor:not-allowed}
+  .od-line{display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--brush)}
   .oempty{text-align:center;color:var(--soft);font-size:14px;padding:38px 16px;background:var(--card);border:1px solid var(--line);border-radius:16px}
   .oloading{text-align:center;color:var(--soft);font-size:14px;padding:40px 20px}
 </style>
@@ -148,6 +170,7 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 
+<div class="rs-mask" id="od-mask"><div class="rs-box" id="od-box" role="dialog" aria-label="訂單明細"></div></div>
 <div class="rs-mask" id="cx-mask"><div class="rs-box">
   <div class="rs-h">取消預約</div>
   <div class="rs-sub" id="cx-sub"></div>
@@ -187,30 +210,57 @@ function inPeriod(o){
   if(!C_FROM && !C_TO && PERIOD_DAYS>0){ var lim=new Date(); lim.setDate(lim.getDate()-PERIOD_DAYS); if(d<lim) return false; }
   return true;
 }
-function orderCard(o){
-  var isMoney = o.status!=='已取消';
-  return '<div class="ocard">'
-    +'<div class="oc-top"><div class="oc-title">'+(isShop(o)?'商品訂單 <span class="svc">'+esc(String(o.service).replace(/^商品：/,''))+'</span>':esc(o.guide_name||'引路人')+' <span class="svc">'+esc(o.service||'')+'</span>')+'</div>'
-    +'<div class="oc-right"><span class="oc-amt">'+money(o.amount)+'</span>'+statusBadge(isShop(o)&&o.status==='已預約'?'待出貨':o.status)+'</div></div>'
-    +(isShop(o)?'<div class="oc-line"><span class="k">下單</span> '+fmtDay(o.created_at)+'</div>':'<div class="oc-line"><span class="k">預約</span> '+fmtDT(o.appointment_at)+'　·　<span class="k">下單</span> '+fmtDay(o.created_at)+'</div>')
-    +'<div class="oc-line"><span class="k">付款</span> '+esc(o.method||'—')+(o.order_ref?'　·　<span class="k">編號</span> '+esc(o.order_ref):'')+'</div>'
-    +(hasAccess(o)?'<div data-acc="'+esc(o.order_ref)+'"></div>':'')
-    +((canEdit(o)||canCancel(o))?'<div class="oc-act">'+(canEdit(o)?'<button class="oc-btn" type="button" data-rs="'+esc(o.order_ref)+'">修改訂單（改期）</button>':'')+
-      (canCancel(o)?(started(o)?'<button class="oc-btn cx" type="button" disabled>服務已開始，無法取消</button>':'<button class="oc-btn cx" type="button" data-cx="'+esc(o.order_ref)+'">取消預約</button>'):'')+'</div>':'')
-    +'</div>';
+var WDN=['日','一','二','三','四','五','六'];
+// 服務名稱「方案｜新北市三重區（實體）」→ 方案、地點分開
+function splitSvc(o){ var sv=String(o.service||''); if(isShop(o)) return {plan:sv.replace(/^商品：/,''),place:''};
+  var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
+function stText(o){ return isShop(o)&&o.status==='已預約'?'待出貨':o.status; }
+function isUpcoming(o){ return o.status==='已預約' && (isShop(o) || cmpKey(o) > new Date()); }
+function orderRow(o){
+  var i=ALL_ORDERS.indexOf(o), sp=splitSvc(o), d, sub;
+  var p=(!isShop(o)&&o.appointment_at)?wpart(o.appointment_at):null;
+  if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=WDN[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
+  else { var c=new Date(o.created_at||0); d=(c.getMonth()+1)+'/'+String(c.getDate()).padStart(2,'0'); sub=WDN[c.getDay()]; }
+  var dim=(o.status==='已取消'||o.status==='已退費');
+  return '<button type="button" class="orow'+(dim?' dim':'')+'" data-i="'+i+'">'
+    +'<span class="od'+(isShop(o)?' shop':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
+    +'<span class="om"><div class="t">'+(isShop(o)?'商品訂單':esc(o.guide_name||'引路人'))+'</div><div class="s">'+esc(sp.plan)+(sp.place?'｜'+esc(sp.place):'')+'</div></span>'
+    +'<span class="oright"><div class="a">'+money(o.amount)+'</div>'+statusBadge(stText(o))+'</span><span class="ogo">›</span></button>';
+}
+function kv(k,v,c){ return '<div class="kv'+(c?' '+c:'')+'"><span>'+k+'</span><span>'+v+'</span></div>'; }
+function fullDT(s){ var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+'（'+WDN[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
+var OD_I=-1;
+function odClose(){ $('#od-mask').classList.remove('on'); OD_I=-1; }
+function openDetail(i){
+  var o=ALL_ORDERS[i]; if(!o) return; OD_I=i;
+  var sp=splitSvc(o), h='<div class="od-top"><div class="rs-h" style="margin:0">訂單明細</div><button type="button" class="od-x" id="od-x" aria-label="關閉">×</button></div>'
+    +'<div style="margin:6px 0 4px">'+statusBadge(stText(o))+'</div>';
+  if(isShop(o)){
+    h+=kv('品項',esc(sp.plan))+kv('下單日',fmtDay(o.created_at))+kv('付款方式',esc(o.method||'—'))+kv('金額',money(o.amount),'tot')+(o.order_ref?kv('訂單編號',esc(o.order_ref)):'');
+  } else {
+    h+=kv('引路人',esc(o.guide_name||'引路人'))+kv('方案',esc(sp.plan||'—'))+(sp.place?kv('服務地點',esc(sp.place)):'')
+      +kv('預約時間',fullDT(o.appointment_at))+kv('付款方式',esc(o.method||'—'))+kv('金額',money(o.amount),'tot')
+      +(o.order_ref?kv('訂單編號',esc(o.order_ref)):'')+kv('下單日',fmtDay(o.created_at));
+  }
+  if(hasAccess(o)) h+='<div id="od-acc"><div class="rs-sub" style="margin-top:12px">讀取地址／視訊連結中…</div></div>';
+  if(canEdit(o)||canCancel(o)){
+    h+='<div class="od-acts">'+(canEdit(o)?'<button type="button" id="od-rs">修改訂單（改期）</button>':'')
+      +(canCancel(o)?(started(o)?'<button type="button" class="cx" disabled>服務已開始，無法取消</button>':'<button type="button" class="cx" id="od-cx">取消預約</button>'):'')+'</div>';
+  }
+  h+='<a class="od-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">有問題？聯絡官方 LINE</a>';
+  $('#od-box').innerHTML=h; $('#od-box').scrollTop=0;
+  $('#od-mask').classList.add('on');
+  $('#od-x').onclick=odClose;
+  var rb=$('#od-rs'); if(rb) rb.onclick=function(){ odClose(); openReschedule(o.order_ref); };
+  var cb=$('#od-cx'); if(cb) cb.onclick=function(){ odClose(); openCancel(o.order_ref); };
+  if(hasAccess(o) && window.RWAccess){ (async function(){ var ref=o.order_ref; if(!(ref in ACC)) ACC[ref]=await RWAccess.load(db,ref); var el=$('#od-acc'); if(!el || OD_I!==i) return;
+    var html=RWAccess.html(ACC[ref]); el.innerHTML=html||'<div class="rs-sub" style="margin-top:12px">服務地址或視訊連結會用 Email 或官方 LINE 通知你。</div>'; RWAccess.bind(el); })(); }
 }
 // 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
 function isShop(o){ return /^商品：/.test(String(o.service||'')); }
 // 刷卡／儲值、還沒結束的預約：顯示服務地址或視訊連結（SQL：my_booking_access）
 function hasAccess(o){ return !isShop(o) && o.status==='已預約' && o.order_ref && (o.method==='刷卡'||o.method==='儲值'); }
 var ACC={};
-async function fillAccess(){
-  if(!window.RWAccess) return;
-  var boxes=document.querySelectorAll('#o-list [data-acc]');
-  for(var i=0;i<boxes.length;i++){ var el=boxes[i], ref=el.getAttribute('data-acc');
-    if(!(ref in ACC)) ACC[ref]=await RWAccess.load(db,ref);
-    el.innerHTML=RWAccess.html(ACC[ref]); RWAccess.bind(el); }
-}
 // 取消預約（依取消與退費條款；退費金額由資料庫 cancel_my_order 計算）
 function canCancel(o){ return o.status==='已預約' && !isShop(o) && o.order_ref && !/-C$/.test(o.order_ref); }
 function started(o){ return !!(o.appointment_at && cmpKey(o) <= new Date()); }
@@ -306,11 +356,14 @@ function render(){
   var total=valid.reduce(function(a,o){ return a+Number(o.amount||0); },0);
   $('#o-sum').innerHTML='';  // 不顯示筆數與有效合計
   if(!list.length){ $('#o-list').innerHTML='<div class="oempty">這個期間沒有訂單。<br>換個期間，或到「預約引路人」開始你的第一次。</div>'; return; }
-  list.sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
-  $('#o-list').innerHTML=list.map(orderCard).join('');
-  $('#o-list').querySelectorAll('[data-rs]').forEach(function(b){ b.onclick=function(){ openReschedule(b.getAttribute('data-rs')); }; });
-  $('#o-list').querySelectorAll('[data-cx]').forEach(function(b){ b.onclick=function(){ openCancel(b.getAttribute('data-cx')); }; });
-  fillAccess();
+  // 即將到來：最近的在上面；過去的訂單：最新的在上面
+  var up=list.filter(isUpcoming).sort(function(a,b){ return cmpKey(a) - cmpKey(b); });
+  var past=list.filter(function(o){ return !isUpcoming(o); }).sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
+  var h='';
+  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(orderRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的訂單</div><div class="olist">'+past.map(orderRow).join('')+'</div>';
+  $('#o-list').innerHTML=h;
+  $('#o-list').querySelectorAll('[data-i]').forEach(function(b){ b.onclick=function(){ openDetail(+b.getAttribute('data-i')); }; });
 }
 
 // 期間 chips
@@ -339,6 +392,8 @@ $('#rs-cancel').onclick=rsClose; $('#rs-go').onclick=doReschedule;
 $('#cx-close').onclick=cxClose; $('#cx-go').onclick=doCancel;
 $('#cx-mask').addEventListener('click',function(e){ if(e.target===this) cxClose(); });
 $('#rs-mask').addEventListener('click',function(e){ if(e.target===this) rsClose(); });
+$('#od-mask').addEventListener('click',function(e){ if(e.target===this) odClose(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') odClose(); });
 (async function init(){
   var s;
   try{ s=(await db.auth.getSession()).data.session; }catch(e){}
