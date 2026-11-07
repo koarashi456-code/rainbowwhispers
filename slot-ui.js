@@ -44,6 +44,14 @@ var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;co
   '.ptag{font-size:10.5px;border-radius:999px;padding:1px 7px;white-space:nowrap}'+
   '.pt-a{background:#E4F2E7;color:#3F7A5E}.pt-b{background:#EAE4F7;color:#6E4F9E}.pt-c{background:#FBE7CC;color:#A5643A}.pt-d{background:#F6E1E8;color:#A4506E}.pt-e{background:#E6EDE0;color:#5E7448}.pt-o{background:#E3EEF6;color:#4F7392}.pt-all{background:#F1EBDD;color:#8A7659}'+
   '.rs-go{font:inherit;font-size:13px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:8px 18px;cursor:pointer}.rs-go:disabled{opacity:.6}'+
+  '.rs-cal{background:#fff;border:1.5px solid #EFE3CE;border-radius:14px;padding:10px 10px 12px}'+
+  '.rs-cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.rs-cal-h span{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:600;color:var(--brush)}'+
+  '.rs-cal-h button{font:inherit;font-size:20px;line-height:1;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;width:34px;height:34px;cursor:pointer}.rs-cal-h button:disabled{opacity:.35;cursor:default}'+
+  '.rs-cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.rs-cal-w span{font-size:11.5px;color:var(--soft);text-align:center;padding:2px 0 4px}'+
+  '.rs-cd{font:inherit;position:relative;aspect-ratio:1/1;min-height:36px;border:1.5px solid transparent;border-radius:10px;background:#FBF6EC;color:var(--ink);font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;cursor:pointer}'+
+  '.rs-cd:disabled{background:transparent;color:#CFC3B0;cursor:default}.rs-cd.today{border-color:#E7C9A6}.rs-cd.sel{background:var(--rainbow);color:#4A3A2A;font-weight:600}'+
+  '.rs-cd .n{font-size:9.5px;color:#3F7A5E;line-height:1;white-space:nowrap}.rs-cd.sel .n{color:#4A3A2A}'+
+  '.rs-picked{font-size:13px;color:var(--brush);font-weight:500;margin-top:10px}'+
   '.rs-note{font-size:11.5px;color:var(--soft);margin-top:12px;line-height:1.7}.rs-empty{font-size:12.5px;color:var(--soft);margin-top:4px}';
 function css(){ if(document.getElementById('rs-css')) return; var s=document.createElement('style'); s.id='rs-css'; s.textContent=CSS; document.head.appendChild(s); }
 
@@ -55,7 +63,7 @@ function css(){ if(document.getElementById('rs-css')) return; var s=document.cre
    changed()     （選用）新增／刪除後呼叫 */
 function editor(el,api){
   css();
-  var S={rows:[], editable:true, all:[], date:today(), pick:[], view:'', times:{}};
+  var t0=new Date(), S={rows:[], editable:true, all:[], date:today(), pick:[], view:'', times:{}, cy:t0.getFullYear(), cm:t0.getMonth()+1};
   el.innerHTML='<div class="rs-empty">載入中…</div>';
   function msg(t,c){ var m=el.querySelector('[data-rs-msg]'); if(!m) return; m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },2200); }
   function byDay(){ var o={}; S.rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var k=dayKey(p); (o[k]=o[k]||[]).push({id:s.id, t:p2(p.h)+':'+p2(p.mi), taken:!!s.taken, places:s.places||null}); });
@@ -65,11 +73,16 @@ function editor(el,api){
     if(!S.view || !B[S.view]) S.view=days[0]||'';
     var h='';
     if(S.editable){
-      // 選日期：今天起 60 天
-      h+='<div class="rs-lab2">選日期</div><select class="rs-sel" data-rs-date>';
-      var d0=new Date(); for(var i=0;i<60;i++){ var d=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()+i), k=d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()), n=(B[k]||[]).length;
-        h+='<option value="'+k+'"'+(k===S.date?' selected':'')+'>'+dayLabel(k)+(i===0?' 今天':'')+(n?'・已開 '+n+' 個時段':'')+'</option>'; }
-      h+='</select>';
+      // 選日期：月曆點選（過去的日子不能點；綠字＝那天已開幾個時段）
+      var tk0=today(), tn=new Date(), first=new Date(S.cy,S.cm-1,1).getDay(), nd=new Date(S.cy,S.cm,0).getDate();
+      var atFirst=(S.cy<tn.getFullYear()) || (S.cy===tn.getFullYear() && S.cm<=tn.getMonth()+1);
+      h+='<div class="rs-lab2">選日期<small>點日曆上的日子；綠字＝那天已開幾個時段</small></div><div class="rs-cal">'+
+        '<div class="rs-cal-h"><button type="button" data-rs-m="-1" aria-label="上個月"'+(atFirst?' disabled':'')+'>‹</button><span>'+S.cy+' 年 '+S.cm+' 月</span><button type="button" data-rs-m="1" aria-label="下個月">›</button></div>'+
+        '<div class="rs-cal-g rs-cal-w">'+WD.map(function(w){ return '<span>'+w+'</span>'; }).join('')+'</div><div class="rs-cal-g">';
+      for(var i=0;i<first;i++) h+='<span></span>';
+      for(var dd=1;dd<=nd;dd++){ var k=S.cy+'-'+p2(S.cm)+'-'+p2(dd), n=(B[k]||[]).length, past=k<tk0;
+        h+='<button type="button" class="rs-cd'+(k===tk0?' today':'')+(k===S.date?' sel':'')+'"'+(past?' disabled':' data-rs-d="'+k+'"')+'>'+dd+(n?'<span class="n">'+n+' 個</span>':'')+'</button>'; }
+      h+='</div></div><div class="rs-picked">已選：'+(S.date?dayLabel(S.date)+(S.date===tk0?' 今天':''):'還沒選')+'</div>';
       if(S.all.length>1){
         h+='<div class="rs-lab2">這些時段可以約哪裡？<small>可以複選；都不選＝全部地點</small></div><div class="rs-plc">'+
           S.all.map(function(x){ var on=S.pick.indexOf(x.v)>=0; return '<button type="button" data-rs-pl="'+esc(x.v)+'" class="'+(on?'on':'')+'">'+(on?'✓ ':'')+esc(x.label)+'</button>'; }).join('')+'</div>';
@@ -94,7 +107,8 @@ function editor(el,api){
     h+='<div class="rs-note">'+(S.all.length>1?'・時段後面的小標籤是地點；同一個時段可以同時開好幾個地點（例如三重＋線上）<br>・以前排好的時段顯示「全部地點」，客人選哪個地點都能約<br>・一個時段被約走，其他地點也會一起變成已被預約<br>':'')+
       '・客人預約時只能從這裡開放的時段挑'+(S.editable?'':'<br><span style="color:#B07A2E">⚠️ 目前只能檢視（請先在 Supabase 執行時段的 SQL）</span>')+'</div>';
     el.innerHTML=h;
-    var ds=el.querySelector('[data-rs-date]'); if(ds) ds.onchange=function(){ S.date=ds.value; S.times={}; draw(); };
+    el.querySelectorAll('[data-rs-d]').forEach(function(b){ b.onclick=function(){ S.date=b.getAttribute('data-rs-d'); S.times={}; draw(); }; });
+    el.querySelectorAll('[data-rs-m]').forEach(function(b){ b.onclick=function(){ S.cm+=+b.getAttribute('data-rs-m'); if(S.cm<1){ S.cm=12; S.cy--; } if(S.cm>12){ S.cm=1; S.cy++; } draw(); }; });
     var vs=el.querySelector('[data-rs-view]'); if(vs) vs.onchange=function(){ S.view=vs.value; draw(); };
     el.querySelectorAll('[data-rs-pl]').forEach(function(b){ b.onclick=function(){ var v=b.getAttribute('data-rs-pl'), i=S.pick.indexOf(v); if(i>=0) S.pick.splice(i,1); else S.pick.push(v); draw(); }; });
     el.querySelectorAll('[data-rs-t]').forEach(function(c){ c.onclick=function(){ var v=c.getAttribute('data-rs-t'); if(S.times[v]) delete S.times[v]; else S.times[v]=true; c.classList.toggle('on',!!S.times[v]); }; });
