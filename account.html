@@ -860,7 +860,8 @@ function loadMySlots(){
     places:async function(){ var r=await db.rpc('my_guide_places'); return (!r.error && r.data)?RWSlots.placesFrom(r.data):[]; },
     add:async function(slots,places){ var r=await db.rpc('add_my_slots_v2',{p_slots:slots,p_places:places.length?places:null}); if(r.error && isMissingFn(r.error)) r=await db.rpc('add_my_slots',{p_slots:slots}); if(r.error) throw new Error(r.error.message); return r.data; },
     del:async function(id){ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); },
-    changed:function(){ loadSchedule(); }
+    changed:function(){ loadSchedule(); },
+    openAdd:true
   });
 }
 async function enterGuide(d){
