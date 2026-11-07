@@ -286,14 +286,14 @@ async function openCancel(ref){
   $('#cx-mask').classList.add('on');
   var q; try{ var r=await db.rpc('cancel_my_order',{p_ref:ref,p_confirm:false}); if(r.error) throw new Error(r.error.message); q=r.data; }
   catch(e){ $('#cx-body').innerHTML='<div class="rs-sub" style="color:#C0506A">'+esc(e.message||'暫時無法取消')+'</div><a class="oc-btn" style="display:inline-block;text-decoration:none" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加官方 LINE 詢問</a>'; $('#cx-go').style.display='none'; $('#cx-close').textContent='關閉'; return; }
-  var h='<div class="rs-sub" style="margin-bottom:8px">距離預約時間還有 <b style="color:var(--brush)">'+(q.hours>=9999?'—':(q.hours>=48?Math.floor(q.hours/24)+' 天':q.hours+' 小時'))+'</b>，依條款'+(q.full?'可以<b style="color:#3F7A5E">全額退費</b>':'<b style="color:#C0506A">酌收服務費 50%，媒合費不退</b>')+'：</div>';
+  var h='<div class="rs-sub" style="margin-bottom:8px">距離預約時間還有 <b style="color:var(--brush)">'+(q.hours>=9999?'—':(q.hours>=48?Math.floor(q.hours/24)+' 天':q.hours+' 小時'))+'</b>，依條款'+(q.full?'可以<b style="color:#3F7A5E">全額退費</b>':'<b style="color:#C0506A">酌收服務費 50%'+(q.fee?'，媒合費不退':'')+'</b>')+'：</div>';
   h+='<div class="cx-box">'+
     '<div class="cx-line"><span>實付服務費</span><span>'+money(q.paid)+'</span></div>'+
     (q.fee?'<div class="cx-line"><span>彩之語媒合費</span><span>'+money(q.fee)+(q.full?'':'（不退）')+'</span></div>':'')+
     (q.kept?'<div class="cx-line"><span>酌收服務費 50%</span><span class="neg">−'+money(q.kept)+'</span></div>':'')+
     '<div class="cx-line t"><span>可退金額</span><span>'+money(q.refund)+'</span></div>'+
     '<div style="font-size:12px;color:var(--soft);margin-top:4px">'+esc(q.return_to)+(q.method==='儲值'?'（取消後馬上退回）':'，確認後 7 個工作天內完成')+'</div></div>';
-  h+='<ul class="cx-rules"><li'+(q.full?' class="on"':'')+'>1. 服務開始前 24 小時（含）以上取消：服務費與媒合費全額退費，或免費改期一次。</li><li'+(q.full?'':' class="on"')+'>2. 服務開始前未滿 24 小時取消：服務費酌收 50%，其餘退還，媒合費不退；或改期一次（限一次）。</li><li>3. 服務開始後取消、或未於預約時間出席（NO-SHOW）：恕不退費。</li></ul>';
+  h+='<ul class="cx-rules"><li'+(q.full?' class="on"':'')+'>1. 服務開始前 24 小時（含）以上取消：全額退費，或免費改期一次。</li><li'+(q.full?'':' class="on"')+'>2. 服務開始前未滿 24 小時取消：服務費酌收 50%，其餘退還；或改期一次（限一次）。</li><li>3. 服務開始後取消、或未於預約時間出席（NO-SHOW）：恕不退費。</li></ul>';
   if(canEdit(o)) h+='<button type="button" class="cx-alt" id="cx-rs">不想取消？改成改期一次 ›</button>';
   $('#cx-body').innerHTML=h; $('#cx-go').disabled=false;
   var rb=$('#cx-rs'); if(rb) rb.onclick=function(){ cxClose(); openReschedule(ref); };
