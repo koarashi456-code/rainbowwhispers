@@ -79,7 +79,7 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 <script src="supabase-config.js"></script>
-<script src="area.js"></script>
+<script src="area.js?v=20261108"></script>
 <script src="share-card.js"></script>
 <script>
 var NUM={
@@ -99,7 +99,7 @@ function lifePath(ymd){ var s=ymd.replace(/\D/g,''), n=0; for(var i=0;i<s.length
 var CUR=null, saved=false;
 // 生日下面一起選：地區／預算／方式（配對引路人用）
 var PF=null, PREFS=null;
-(function(){ var box=document.getElementById('nm-pf'); if(!box||!window.RWMatch) return; box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-top:14px">幫你配對引路人，再多選三個：</div>'+RWMatch.formHTML(); PF=RWMatch.mount(box,document.getElementById('nm-err')); })();
+(function(){ var box=document.getElementById('nm-pf'); if(!box||!window.RWMatch) return; box.innerHTML='<div style="font-size:12.5px;color:var(--soft);margin-top:14px">幫你配對引路人，再多選幾個：</div>'+RWMatch.formHTML(); PF=RWMatch.mount(box,document.getElementById('nm-err')); })();
 function saveTestResult(topic,result,ref){
   var prefs=RWMatch.forDb(PREFS);
   function anon(){ try{fetch(SUPA.url+'/rest/v1/customers',{method:'POST',headers:{'apikey':SUPA.key,'Authorization':'Bearer '+SUPA.key,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name:(prefs&&prefs.nick)||null,ref_code:ref,topic:topic,result_type:result,status:'新客',test_results:(function(){ var o={}; o['生命靈數']={result:result,topic:topic}; if(prefs) o['生命靈數'].prefs=prefs; return o; })()})});}catch(e){} }

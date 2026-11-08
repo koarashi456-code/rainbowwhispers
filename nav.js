@@ -106,13 +106,15 @@ window.addEventListener('load',function(){
         rest('customers?select=id,name,admin_alias,contact,source,result_type,topic,created_at,deleted&order=created_at.desc&limit=300'),
         rest('guides?select=id,name,pending,created_at,deleted&order=created_at.desc&limit=200'),
         rest('transactions?select=*&order=created_at.desc&limit=40'),
-        rest('transactions?select=*&cancelled_at=not.is.null&order=cancelled_at.desc&limit=20')
+        rest('transactions?select=*&cancelled_at=not.is.null&order=cancelled_at.desc&limit=20'),
+        rest('course_packages?select=id,customer_id,label,refund_status,refund_amount,refund_requested_at&refund_status=eq.'+encodeURIComponent('申請中')+'&order=refund_requested_at.desc&limit=20')
       ]).then(function(r){
         var C=(r[0]||[]).filter(function(x){ return !x.deleted; }), G=(r[1]||[]).filter(function(x){ return !x.deleted; }), T=(r[2]||[]).slice();
         (r[3]||[]).forEach(function(x){ if(!T.some(function(y){ return y.id===x.id; })) T.push(x); });
         var cn=function(id,t){ var c=C.find(function(x){ return x.id===id; }); return c?(c.admin_alias||c.name||c.contact||'客戶'):((t&&t.guest_name)?t.guest_name+'（訪客）':'客戶'); };
         var gn=function(id){ var g=G.find(function(x){ return x.id===id; }); return g?(g.name||'引路人'):'未指定引路人'; };
         var out=[];
+        (Array.isArray(r[4])?r[4]:[]).forEach(function(k){ out.push({dot:'#E0A15E',title:'課程退費申請',body:cn(k.customer_id)+'　·　'+(k.label||'套裝課程')+'　·　可退 $'+Number(k.refund_amount||0).toLocaleString(),ts:k.refund_requested_at,link:'admin.html'}); });
         C.slice(0,40).forEach(function(c){ var m=c.source==='會員'; out.push({dot:m?'#6FB58C':'#7FA9C4',title:m?'新會員加入':'過路客完成測驗',body:(c.admin_alias||c.name||(m?'新會員':'過路客'))+(c.result_type?'　·　'+c.result_type:''),ts:c.created_at,link:'admin.html'}); });
         G.forEach(function(g){ if(g.pending) out.push({dot:'#D8A85A',title:'新引路人申請',body:g.name||'（未具名）',ts:g.created_at,link:'admin.html'}); });
         T.forEach(function(t){ if(t.deleted) return;
@@ -124,7 +126,9 @@ window.addEventListener('load',function(){
       });
     }
     // 會員：24 小時內的預約置頂提醒（不算未讀）
-    function reminders(){ if(isAdmin) return Promise.resolve([]); return rpc('my_account').then(function(d){ var out=[], now=Date.now(); ((d&&d.orders)||[]).forEach(function(o){ if(o.status!=='已預約' || !o.appointment_at || /^商品：/.test(String(o.service||''))) return; var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(o.appointment_at); if(!m) return; var t=new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime(); if(t>now && t-now<=86400e3) out.push({title:'提醒：'+(new Date(t).getDate()===new Date().getDate()?'今天':'明天')+' '+m[4]+':'+m[5]+' 有預約',body:(o.guide_name||'引路人')+'　'+(o.service||''),link:'orders.html'}); }); return out; }); }
+    // 會員：系統自動提醒（SQL：my_reminders → 明天的預約、還沒付款、該約下一堂）；還沒跑 SQL 時退回舊的「24 小時內預約」
+    function reminders(){ if(isAdmin) return Promise.resolve([]); return rpc('my_reminders').then(function(d){ if(Array.isArray(d)) return d.map(function(x){ return {title:x.title,body:x.body,link:x.link||'orders.html'}; }); return remindersOld(); }); }
+    function remindersOld(){ return rpc('my_account').then(function(d){ var out=[], now=Date.now(); ((d&&d.orders)||[]).forEach(function(o){ if(o.status!=='已預約' || !o.appointment_at || /^商品：/.test(String(o.service||''))) return; var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(o.appointment_at); if(!m) return; var t=new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5]).getTime(); if(t>now && t-now<=86400e3) out.push({title:'提醒：'+(new Date(t).getDate()===new Date().getDate()?'今天':'明天')+' '+m[4]+':'+m[5]+' 有預約',body:(o.guide_name||'引路人')+'　'+(o.service||''),link:'orders.html'}); }); return out; }); }
     var load=isAdmin?loadAdmin:loadMember;
     function draw(pins,prev){ var h='<div class="rw-nh"><span>'+(isAdmin?'後台通知':'我的通知')+'</span>'+(isAdmin?'<a href="admin.html">到後台 ›</a>':'')+'</div>';
       h+=(pins||[]).map(function(x){ return '<a class="rw-ni pin" href="'+esc(x.link)+'"><div class="t"><span>'+esc(x.title)+'</span></div><div class="b">'+esc(x.body)+'</div></a>'; }).join('');

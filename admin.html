@@ -54,6 +54,13 @@
   .notes-l{margin-top:10px}
   .gloc-box{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#FBF6EC}
   .gloc-h{font-size:12.5px;color:var(--soft);font-weight:500}.gloc-h span{font-weight:400}
+  .gloc-tog{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;font:inherit;background:none;border:0;padding:2px 0;cursor:pointer;color:var(--brush);font-size:13px;font-weight:500;text-align:left}
+  .gloc-tog span{font-size:12px;color:var(--soft);font-weight:400;text-align:right}
+  .gx-box{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#FBF6EC}
+  .gx-l{font-size:12.5px;color:var(--soft);font-weight:500;margin:2px 0 6px}.gx-l span{font-weight:400}
+  .grole{font:inherit;font-size:13px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer;margin:0 5px 5px 0}
+  .grole.on{background:var(--brush);border-color:var(--brush);color:#fff}
+  .gcap{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--ink)}.gcap input{width:72px;text-align:center}
   .gloc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
   .gloc-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.gloc-top b{font-size:13px;color:var(--brush)}
   .gloc-tag{font-weight:400;color:#3F7A5E;background:#E4F2E7;border-radius:999px;padding:1px 9px;font-size:11.5px;margin-left:8px}.gloc-tag.no{color:#A5643A;background:#FBE7CC}
@@ -651,9 +658,9 @@
 
 <div class="sp-mask" id="xf-mask"><div class="sp-box" id="xf-box" role="dialog" aria-label="轉讓課程"></div></div>
 <script src="supabase-config.js"></script>
-<script src="area.js"></script>
+<script src="area.js?v=20261108"></script>
 <script src="slot-ui.js?v=20261108"></script>
-<script src="course-ui.js?v=20261108b"></script>
+<script src="course-ui.js?v=20261108c"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -682,7 +689,7 @@ function prefsHtml(c){
   var tr=c.test_results||{}, best=null;
   Object.keys(tr).forEach(function(k){ var x=tr[k]||{}; if(x.prefs && (!best || String(x.at||'')>=String(best.at||''))) best=x; });
   if(!best) return '';
-  var p=best.prefs; return '<div style="font-size:12.5px;color:var(--soft);margin:-4px 0 8px">配對條件：<b style="color:var(--brush);font-weight:500">'+esc([p.area,p.budget,p.mode].filter(Boolean).join('・'))+'</b></div>';
+  var p=best.prefs; return '<div style="font-size:12.5px;color:var(--soft);margin:-4px 0 8px">配對條件：<b style="color:var(--brush);font-weight:500">'+esc([p.area,p.budget,p.mode,p.role?'想要'+p.role:''].filter(Boolean).join('・'))+'</b></div>';
 }
 // 後台自訂稱呼（只有後台看得到）：顯示「稱呼（客人本人填的名字）」，客人改名字括號會跟著變
 function adName(c){ var al=String(c.admin_alias||'').trim(), nm=String(c.name||'').trim(); return al&&al!==nm ? esc(al)+'<span class="a-orig">（'+(nm?esc(nm):'未填姓名')+'）</span>' : (nm?esc(nm):'(未填姓名)'); }
@@ -754,7 +761,7 @@ async function loadAll(){
   CAL_SLOTS=null;
   render(); renderGuides(); renderTx(); renderReport(); renderTrash(); renderShopOrders();
   if(activeTab==='cal') renderCal(true);
-  buildNotifs(ALL,GUIDES,TX); startNotifPoll();
+  buildNotifs(ALL,GUIDES,TX,PKGS); startNotifPoll();
 }
 
 /* ===== 金額彙總 ===== */
@@ -807,7 +814,7 @@ function custTestsHtml(c){
   if(!keys.length && c.result_type) rows.push('<div class="ct-row"><span class="ic" style="background:#EAD9F2">🧭</span><span class="n">心靈導航</span><span class="r"><b>'+esc(c.result_type)+'</b>'+(c.topic?'<small>想聊：'+esc(c.topic)+'</small>':'')+'</span><span class="d"></span></div>');
   var best=null; keys.forEach(function(k){ var x=tr[k]||{}; if(x.prefs && (!best || String(x.at||'')>=String(best.at||''))) best=x; });
   var n=rows.length;
-  if(best){ var pf=best.prefs||{}; rows.push('<div class="ct-row"><span class="ic" style="background:#E3EEF6">📍</span><span class="n">配對條件</span><span class="r"><b>'+esc(pf.area||'—')+'</b><small>'+esc([pf.budget,pf.mode].filter(Boolean).join('・'))+'</small></span><span class="d">'+(best.at?tdate(best.at):'')+'</span></div>'); }
+  if(best){ var pf=best.prefs||{}; rows.push('<div class="ct-row"><span class="ic" style="background:#E3EEF6">📍</span><span class="n">配對條件</span><span class="r"><b>'+esc(pf.area||'—')+'</b><small>'+esc([pf.budget,pf.mode,pf.role?'想要'+pf.role:''].filter(Boolean).join('・'))+'</small></span><span class="d">'+(best.at?tdate(best.at):'')+'</span></div>'); }
   if(!rows.length) return '<div class="cd-tog off">測驗結果 <span>還沒做過測驗</span></div>';
   return '<button type="button" class="cd-tog" data-tog="t">測驗結果 <span data-tog-hint>'+(n?n+' 種測驗':'')+(best?(n?'＋':'')+'配對條件':'')+'・點開 ▾</span></button><div class="ct-list" data-tog-box="t" hidden>'+rows.join('')+'</div>';
 }
@@ -887,6 +894,7 @@ function bindCustPkgs(el,cid){
   var box=el.querySelector('[data-cpk]'); if(!box || !window.RWCourse) return;
   RWCourse.bind(box,PKGS.filter(function(k){ return k.customer_id===cid; }),{
     adjust:async function(id,d,at){ var x=await db.rpc('package_adjust',{p_package_id:id,p_delta:d,p_at:at,p_note:null}); if(x.error) throw new Error(x.error.message); },
+    refundDone:async function(id){ var x=await db.rpc('admin_complete_refund',{p_package_id:id}); if(x.error) throw new Error(x.error.message); },
     done:async function(){ await reloadPkgs(); box.innerHTML=custPkgsHtml(cid); bindCustPkgs(el,cid); },
     transfer:function(pk){ openPkgTransfer(pk, async function(){ await reloadPkgs(); box.innerHTML=custPkgsHtml(cid); bindCustPkgs(el,cid); render(); var card=document.querySelector('#list .cust[data-id="'+cid+'"]'); if(card){ if(isM()) mOpenCard(card); else card.classList.remove('collapsed'); } }); }
   });
@@ -1008,10 +1016,19 @@ function guideCard(g){
       '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
     '</div>'+
     '<div class="gloc-box">'+
-      '<div class="gloc-h">服務地點（實體）<span>　可以新增好幾個，客人預約時自己選</span></div>'+
-      '<div data-glocs></div>'+
-      '<button type="button" class="gloc-add" data-gloc-add>＋ 新增地點</button>'+
-      '<div class="gloc-tip">・引路人頁面的「服務區域」會自動顯示這些地區<br>・完整地址只有刷卡／儲值預約成功的客人看得到，而且只給客人選的那個地點</div>'+
+      '<button type="button" class="gloc-tog" data-gloc-tog aria-expanded="false">服務地點（實體）<span data-gloc-hint>點開 ▾</span></button>'+
+      '<div data-gloc-body hidden>'+
+        '<div class="gloc-h" style="margin-top:4px"><span>可以新增好幾個，客人預約時自己選</span></div>'+
+        '<div data-glocs></div>'+
+        '<button type="button" class="gloc-add" data-gloc-add>＋ 新增地點</button>'+
+        '<div class="gloc-tip">・引路人頁面的「服務區域」會自動顯示這些地區<br>・完整地址只有刷卡／儲值預約成功的客人看得到，而且只給客人選的那個地點</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="gx-box">'+
+      '<div class="gx-l">角色 <span>（測驗配對用，最多選 2 個）</span></div>'+
+      '<div data-groles>'+GROLES.map(function(r){ return '<button type="button" class="grole'+((g.roles||[]).indexOf(r.k)>=0?' on':'')+'" data-role="'+r.k+'">'+r.t+'</button>'; }).join('')+'</div>'+
+      '<div class="gx-l" style="margin-top:8px">接案上限 <span>（到了自動關掉剩下的時段；空白＝不限）</span></div>'+
+      '<div class="gcap">每月最多 <input class="in" type="number" min="1" max="744" step="0.5" data-gcap="cap_month_hours" value="'+(g.cap_month_hours!=null?esc(g.cap_month_hours):'')+'" placeholder="不限"> 小時　每天最多 <input class="in" type="number" min="0.5" max="24" step="0.5" data-gcap="cap_day_hours" value="'+(g.cap_day_hours!=null?esc(g.cap_day_hours):'')+'" placeholder="不限"> 小時</div>'+
     '</div>'+
     '<div class="cust-grid" style="margin-top:10px">'+
       '<label>視訊軟體（線上服務）<select class="in" data-f="video_app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(x){ return '<option'+(g.video_app===x?' selected':'')+'>'+x+'</option>'; }).join('')+'</select></label>'+
@@ -1035,11 +1052,13 @@ function guideCard(g){
     '</div>'+
   '</div>';
 }
+function unitMinutes(u){ u=String(u||''); var m=/([\d.]+)\s*小時/.exec(u); if(m) return Math.round(Number(m[1])*60); m=/(\d+)\s*分鐘/.exec(u); return m?Number(m[1]):0; }
 function guidePlansHtml(g){
   var mine=GPLANS.filter(function(p){return p.guide_id===g.id;});
   var list = mine.length ? mine.map(function(p){
     return '<div class="gp-row" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)">'+
       '<div style="flex:1;min-width:0;font-size:13.5px">'+esc(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12px">· '+esc(p.unit)+'</span>'):'')+' <span style="color:var(--soft)">｜$'+Number(p.price||0).toLocaleString()+'</span>'+(Number(p.sessions)>=2?' <span style="font-size:11px;color:#6E4F9E;background:#EAD9F2;border-radius:999px;padding:1px 8px;white-space:nowrap">分次使用 '+Number(p.sessions)+' 堂</span>':'')+'</div>'+
+      '<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--soft);white-space:nowrap" title="一次服務多久（算接案上限用）；空白＝依方案單位，沒有就算 60 分鐘">時長<input type="number" min="5" max="600" step="5" data-pmin value="'+(p.minutes!=null?Number(p.minutes):'')+'" placeholder="'+(unitMinutes(p.unit)||60)+'" style="width:52px;font:inherit;font-size:12.5px;padding:3px 5px;border:1.5px solid #EFE3CE;border-radius:7px;background:#fff">分</label>'+
       '<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--soft);white-space:nowrap" title="套裝課程：客人買一次，之後每次預約扣 1 堂">分次<input type="number" min="0" max="100" data-psess value="'+(Number(p.sessions)>=2?Number(p.sessions):'')+'" placeholder="—" style="width:48px;font:inherit;font-size:12.5px;padding:3px 5px;border:1.5px solid #EFE3CE;border-radius:7px;background:#fff">堂</label>'+
       '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;color:'+(p.approved?'#4F8E6E':'#B07A2E')+';white-space:nowrap"><input type="checkbox" data-pappr '+(p.approved?'checked':'')+'> '+(p.approved?'已核准':'核准')+'</label>'+
       '<button class="del" data-pdel>刪除</button>'+
@@ -1063,6 +1082,8 @@ function bindGuidePlans(el){
     var pid=row.getAttribute('data-pid');
     var ap=row.querySelector('[data-pappr]');
     if(ap) ap.onchange=async function(){ var v=ap.checked; var r=await db.from('guide_plans').update({approved:v}).eq('id',pid); if(r.error){ alert('更新失敗：'+r.error.message); ap.checked=!v; return; } var p=GPLANS.find(function(x){return x.id===pid;}); if(p)p.approved=v; var lab=ap.parentNode; lab.style.color=v?'#4F8E6E':'#B07A2E'; if(ap.nextSibling) ap.nextSibling.textContent=' '+(v?'已核准':'核准'); };
+    var pm=row.querySelector('[data-pmin]');
+    if(pm) pm.onchange=async function(){ var n=pm.value.trim()===''?null:Math.round(Number(pm.value)); if(n!=null && !(n>=5 && n<=600)){ alert('時長請填 5～600 分鐘'); return; } var r=await db.from('guide_plans').update({minutes:n}).eq('id',pid); if(r.error){ alert('更新失敗：'+r.error.message+(/minutes/.test(r.error.message||'')?'（請先執行 SQL）':'')); return; } var p=GPLANS.find(function(x){return x.id===pid;}); if(p)p.minutes=n; };
     var ps=row.querySelector('[data-psess]');
     if(ps) ps.onchange=async function(){ var n=Number(ps.value)||0; var v=n>=2?Math.min(n,100):null; var r=await db.from('guide_plans').update({sessions:v}).eq('id',pid); if(r.error){ alert('更新失敗：'+r.error.message+(/sessions/.test(r.error.message||'')?'（請先執行套裝課程的 SQL）':'')); return; } var p=GPLANS.find(function(x){return x.id===pid;}); if(p)p.sessions=v; var g=guideById(id); var box=el.querySelector('.gplans'); if(g&&box){ box.outerHTML=guidePlansHtml(g); bindGuidePlans(el); } };
     var pd=row.querySelector('[data-pdel]');
@@ -1203,7 +1224,11 @@ function bindGuideLocs(el,id){
     msg('已儲存','#4F8E6E');
     if(el._slotEd) el._slotEd.refreshPlaces();  // 時段的地點選項跟著更新
   }
+  var tog=el.querySelector('[data-gloc-tog]'), body=el.querySelector('[data-gloc-body]'), hint=el.querySelector('[data-gloc-hint]');
+  function hintTxt(){ if(!hint||!body) return; if(!body.hidden){ hint.textContent='收起 ▴'; return; } var A=L.map(function(x){ return x.area; }).filter(Boolean); hint.textContent=(L.length?L.length+' 個'+(A.length?'：'+A.join('、'):''):'還沒有地點')+'・點開 ▾'; }
+  if(tog && body) tog.onclick=function(){ body.hidden=!body.hidden; tog.setAttribute('aria-expanded',body.hidden?'false':'true'); hintTxt(); };
   function draw(){
+    hintTxt();
     box.innerHTML=L.length?L.map(function(x,i){
       return '<div class="gloc" data-i="'+i+'">'+
         '<div class="gloc-top"><b>地點 '+(i+1)+(x.area?'<span class="gloc-tag">'+esc(x.area)+'</span>':'<span class="gloc-tag no">還沒選地區</span>')+'</b><button type="button" class="del" data-gloc-rm>刪除</button></div>'+
@@ -1217,7 +1242,7 @@ function bindGuideLocs(el,id){
       var pk=RWArea.picker(row.querySelector('[data-gloc-area]'),{cls:'in',value:L[i].area,onChange:function(v,ok){
         if(!ok) return;
         if(L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(L[i].area); return; }
-        L[i].area=v; var tg=row.querySelector('.gloc-tag'); if(tg){ tg.textContent=v; tg.classList.remove('no'); } save();
+        L[i].area=v; var tg=row.querySelector('.gloc-tag'); if(tg){ tg.textContent=v; tg.classList.remove('no'); } hintTxt(); save();
       }});
       row.querySelectorAll('[data-gloc-f]').forEach(function(inp){ inp.addEventListener('change',function(){ L[i][inp.getAttribute('data-gloc-f')]=inp.value; save(); }); });
       row.querySelector('[data-gloc-rm]').onclick=function(){ var x=L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; L.splice(i,1); draw(); save(); };
@@ -1225,6 +1250,26 @@ function bindGuideLocs(el,id){
   }
   if(add) add.onclick=function(){ L.push({area:'',address:'',note:''}); draw(); var last=box.querySelector('.gloc:last-child select'); if(last) last.focus(); };
   draw();
+}
+// 引路人角色（測驗配對）、接案上限（SQL：guides.roles、cap_month_hours、cap_day_hours）
+var GROLES=[{k:'陪伴',t:'陪伴者'},{k:'支持',t:'支持者'},{k:'教練',t:'教練'},{k:'指引',t:'指引者'}];
+function bindGuideRolesCaps(el,id){
+  function msg(t,c){ var s=el.querySelector('[data-saved]'); if(!s) return; s.textContent=t; s.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(s.textContent===t) s.textContent=''; },1400); }
+  async function save(patch){ msg('儲存中…'); var r=await db.from('guides').update(patch).eq('id',id); if(r.error){ msg('存檔失敗'+(/roles|cap_/.test(r.error.message||'')?'（請先執行 SQL）':''),'#C0506A'); return false; } var g=guideById(id); if(g) Object.assign(g,patch); msg('已儲存','#4F8E6E'); return true; }
+  var rb=el.querySelector('[data-groles]');
+  if(rb) rb.addEventListener('click',async function(e){
+    var b=e.target.closest('[data-role]'); if(!b) return;
+    var g=guideById(id)||{}, cur=(g.roles||[]).slice(), k=b.getAttribute('data-role'), i=cur.indexOf(k);
+    if(i>=0) cur.splice(i,1); else { if(cur.length>=2){ msg('角色最多選 2 個','#C0506A'); return; } cur.push(k); }
+    if(await save({roles:cur.length?cur:null})) rb.querySelectorAll('[data-role]').forEach(function(x){ x.classList.toggle('on',cur.indexOf(x.getAttribute('data-role'))>=0); });
+  });
+  el.querySelectorAll('[data-gcap]').forEach(function(inp){
+    inp.addEventListener('change',function(){
+      var f=inp.getAttribute('data-gcap'), v=inp.value.trim()===''?null:Number(inp.value);
+      if(v!=null && !(v>0)){ msg('上限請填大於 0 的數字','#C0506A'); return; }
+      var patch={}; patch[f]=v; save(patch);
+    });
+  });
 }
 function bindGuides(){
   document.querySelectorAll('#glist .cust').forEach(function(el){
@@ -1234,6 +1279,7 @@ function bindGuides(){
     bindGuidePhoto(el,id);
     ensureGuideSlots(el);
     bindGuideLocs(el,id);
+    bindGuideRolesCaps(el,id);
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
@@ -1925,8 +1971,20 @@ function relTime(s){
   if(diff<604800) return Math.floor(diff/86400)+' 天前';
   return (d.getMonth()+1)+'/'+d.getDate();
 }
-function buildNotifs(C,G,T){
+function buildNotifs(C,G,T,P){
   var n=[];
+  // 會員申請課程退費（SQL：course_packages.refund_status）
+  (P||[]).forEach(function(k){
+    if(k.refund_status!=='申請中' || k.deleted) return;
+    var cc=(C||[]).find(function(x){return x.id===k.customer_id;}) || custById(k.customer_id);
+    n.push({
+      kind:'refund', cat:'booking', ts:k.refund_requested_at,
+      tag:'課程退費申請', color:'#E0A15E', tcolor:'#A5643A',
+      main:(cc?esc(custLabel(cc)):'客戶')+'　·　'+esc(k.label||'套裝課程'),
+      sub:'可退 '+money(k.refund_amount)+(Number(k.refund_fee)>0?'（違約金 '+money(k.refund_fee)+'）':'（7 天內全額）')+'　·　到客戶明細按「完成退費」',
+      tab:'customers', id:k.customer_id
+    });
+  });
   (C||[]).forEach(function(c){
     var isM=(c.source==='會員');
     n.push({
@@ -2000,6 +2058,7 @@ function renderPanel(prevSeen){
       var tb=document.querySelector('.tabbar [data-tab="'+tab+'"]'); if(tb) tb.click();
       if(kind==='guide'){ var gf=$('#g-filter'); if(gf){ gf.value='待申請'; renderGuides(); } }
       if(kind==='cancel'){ var tid=row.getAttribute('data-id'); if(tid) openTxDetail(tid); }
+      if(kind==='refund'){ var cid=row.getAttribute('data-id'); setTimeout(function(){ var card=cid&&document.querySelector('#list .cust[data-id="'+cid+'"]'); if(!card) return; if(isM()) mOpenCard(card); else { card.classList.remove('collapsed'); card.scrollIntoView({block:'center'}); } },80); }
     };
   });
 }
@@ -2019,11 +2078,12 @@ async function pollNotif(){
       db.from('customers').select('id,name,contact,source,result_type,ref_code,topic,created_at,deleted').order('created_at',{ascending:false}).limit(80),
       db.from('guides').select('id,name,services,pending,created_at,deleted').order('created_at',{ascending:false}).limit(80),
       db.from('transactions').select('*').order('created_at',{ascending:false}).limit(80),
-      db.from('transactions').select('*').not('cancelled_at','is',null).order('cancelled_at',{ascending:false}).limit(30)
+      db.from('transactions').select('*').not('cancelled_at','is',null).order('cancelled_at',{ascending:false}).limit(30),
+      db.from('course_packages').select('id,customer_id,label,refund_status,refund_amount,refund_fee,refund_requested_at,deleted').not('refund_requested_at','is',null).order('refund_requested_at',{ascending:false}).limit(30)
     ]);
     var nd=function(x){return !x.deleted;};
     var T=(res[2].data||[]).slice(); ((res[3]&&!res[3].error&&res[3].data)||[]).forEach(function(x){ if(!T.some(function(y){ return y.id===x.id; })) T.push(x); });
-    buildNotifs((res[0].data||[]).filter(nd),(res[1].data||[]).filter(nd),T.filter(nd));
+    buildNotifs((res[0].data||[]).filter(nd),(res[1].data||[]).filter(nd),T.filter(nd),(res[4]&&!res[4].error&&res[4].data)||[]);
   }catch(e){}
 }
 function startNotifPoll(){ if(notifPollStarted) return; notifPollStarted=true; setInterval(pollNotif,45000); }
