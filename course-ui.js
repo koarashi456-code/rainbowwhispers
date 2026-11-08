@@ -10,6 +10,7 @@ function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(
 function when(s){ var p=wpart(s); if(!p) return '—'; return p.mo+'/'+p.d+'（'+WD[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+p2(p.h)+':'+p2(p.mi); }
 function dayw(s){ var p=wpart(s); return p?p.mo+'/'+p.d+'（'+WD[new Date(p.y,p.mo-1,p.d).getDay()]+'）':'—'; }
 function day(s){ var d=new Date(s); return isNaN(d)?'':(d.getMonth()+1)+'/'+d.getDate(); }
+function ymd(s){ var d=new Date(s); return isNaN(d)?'':d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }
 function money(n){ return '$'+Number(n||0).toLocaleString(); }
 var CSS='.pkc{background:#fff;border:1.5px solid #EFE3CE;border-radius:16px;padding:12px 14px;margin-bottom:10px;text-align:left}'+
   '.pkc-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.pkc-h b{font-size:15px;color:var(--brush)}.pkc-h span{font-size:12.5px;color:var(--soft);text-align:right}'+
@@ -53,7 +54,7 @@ function card(pk,mode){
   css();
   var total=+pk.total||0, used=+pk.used||0, bk=+pk.booked||0, tr=+pk.transferred||0, rem=+pk.remaining||0;
   var pct=function(x){ return total?Math.max(0,Math.min(100,x*100/total)):0; };
-  var right=mode==='member'?esc(pk.guide_name||''):(pk.from_name?'由 '+esc(pk.from_name)+' 轉讓':(day(pk.created_at)+' 購買'+(pk.price?' '+money(pk.price):'')));
+  var right=mode==='member'?esc(pk.guide_name||''):(pk.from_name?'由 '+esc(pk.from_name)+' 轉讓':(ymd(pk.created_at)+' 購買'+(pk.price?' '+money(pk.price):'')));
   if(mode==='member' && pk.from_name) right=esc(pk.guide_name||'')+'<br><small>由 '+esc(pk.from_name)+' 轉讓</small>';
   var h='<div class="pkc" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span>'+right+'</span></div>'+
     '<div class="pkc-bar"><i class="u" style="width:'+pct(used)+'%"></i><i class="b" style="width:'+pct(bk)+'%"></i><i class="x" style="width:'+pct(tr)+'%"></i></div>'+

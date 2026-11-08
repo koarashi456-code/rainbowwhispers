@@ -172,6 +172,7 @@
   .ct-row .d{flex:none;width:44px;text-align:right;font-size:11.5px;color:var(--soft)}
   .cr-row{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid #F1E7D6;padding:9px 11px;cursor:pointer;color:inherit}
   .cr-row:last-child{border-bottom:0}.cr-row:hover{background:#FBF6EC}
+  .cr-d.buy{background:#EAD9F2}.cr-d.buy small{color:#6E4F9E;font-weight:600}
   .cr-d{flex:none;width:46px;text-align:center;background:#FBF6EC;border-radius:10px;padding:4px 0;line-height:1.2}.cr-d.tp{background:#EFE7F8}
   .cr-d b{display:block;font-size:13.5px;color:var(--brush)}.cr-d small{display:block;font-size:10.5px;color:var(--soft);white-space:nowrap}
   .cr-m{flex:1;min-width:0}.cr-m .t{font-size:13.5px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cr-m .s{font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -652,7 +653,7 @@
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
 <script src="slot-ui.js?v=20261108"></script>
-<script src="course-ui.js?v=20261108"></script>
+<script src="course-ui.js?v=20261108b"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -814,8 +815,8 @@ function custTestsHtml(c){
 function custRecHtml(cid){
   var WD=['日','一','二','三','四','五','六'];
   var L=[];
-  TX.filter(function(t){ return t.customer_id===cid; }).forEach(function(t){ var p=t.appointment_at&&!isShopTx(t)?wpart(t.appointment_at):null, d=p?new Date(p.y,p.mo-1,p.d):new Date(t.created_at||0);
-    L.push({k:'tx', id:t.id, sort:p?p.y+'-'+gsP2(p.mo)+'-'+gsP2(p.d)+'T'+gsP2(p.h)+':'+gsP2(p.mi):String(t.created_at||''), d:(d.getMonth()+1)+'/'+gsP2(d.getDate()), w:WD[d.getDay()]+(p?' '+gsP2(p.h)+':'+gsP2(p.mi):''), t:t}); });
+  TX.filter(function(t){ return t.customer_id===cid; }).forEach(function(t){ var p=t.appointment_at&&!isShopTx(t)?wpart(t.appointment_at):null, d=p?new Date(p.y,p.mo-1,p.d):new Date(t.created_at||0), buy=!p&&/^課程購買：/.test(String(t.service||''));
+    L.push({k:'tx', id:t.id, buy:buy, sort:p?p.y+'-'+gsP2(p.mo)+'-'+gsP2(p.d)+'T'+gsP2(p.h)+':'+gsP2(p.mi):String(t.created_at||''), d:(d.getMonth()+1)+'/'+gsP2(d.getDate()), w:buy?'購買':WD[d.getDay()]+(p?' '+gsP2(p.h)+':'+gsP2(p.mi):''), t:t}); });
   TOPUPS.filter(function(t){ return t.customer_id===cid; }).forEach(function(t){ var d=new Date(t.created_at||0);
     L.push({k:'tp', id:t.id, sort:String(t.created_at||''), d:(d.getMonth()+1)+'/'+gsP2(d.getDate()), w:WD[d.getDay()], t:t}); });
   if(!L.length) return '<div class="cd-tog off">消費／儲值紀錄 <span>還沒有紀錄</span></div>';
@@ -823,7 +824,7 @@ function custRecHtml(cid){
   var rows=L.map(function(r){ var t=r.t, tp=r.k==='tp', title, sub, amt, bd;
     if(tp){ title=isCouponTopup(t)?'優惠折抵':'儲值'; sub=[isCouponTopup(t)?'系統':t.method, t.notes].filter(Boolean).map(esc).join('・'); amt='<div class="a plus">+'+money(t.amount)+'</div>'; bd='<span class="status-badge st-topup">'+(isCouponTopup(t)?'折抵':'儲值')+'</span>'; }
     else { var shop=isShopTx(t); title=esc(String(t.service||'—').replace(/^商品：/,'商品・')); sub=[shop?'':guideName(t.guide_id), t.method==='課程'?'用課程堂數':t.method, t.order_ref].filter(Boolean).map(esc).join('・'); amt='<div class="a">'+(t.method==='課程'?'1 堂':money(t.amount))+'</div>'; bd=statusBadge(shop?shopStLabel(t.status):t.status); }
-    return '<button type="button" class="cr-row" data-crk="'+r.k+'" data-crid="'+esc(r.id)+'"><span class="cr-d'+(tp?' tp':'')+'"><b>'+r.d+'</b><small>'+r.w+'</small></span><span class="cr-m"><div class="t">'+title+'</div><div class="s">'+(sub||'—')+'</div></span><span class="cr-r">'+amt+bd+'</span><span class="cr-go">›</span></button>'; });
+    return '<button type="button" class="cr-row" data-crk="'+r.k+'" data-crid="'+esc(r.id)+'"><span class="cr-d'+(tp?' tp':'')+(r.buy?' buy':'')+'"><b>'+r.d+'</b><small>'+r.w+'</small></span><span class="cr-m"><div class="t">'+title+'</div><div class="s">'+(sub||'—')+'</div></span><span class="cr-r">'+amt+bd+'</span><span class="cr-go">›</span></button>'; });
   return '<button type="button" class="cd-tog" data-tog="r">消費／儲值紀錄 <span data-tog-hint>'+L.length+' 筆・點開 ▾</span></button><div class="cr-list" data-tog-box="r" hidden>'+rows.join('')+'</div>';
 }
 // 點一筆紀錄：手機開明細頁（返回回到這位客人），電腦跳到那筆
@@ -2185,7 +2186,8 @@ function txDetailHtml(t){
     h+=mF('日期',fmtFull(t.created_at))+mF('金額','<input class="in" data-f="amount" type="number" value="'+esc(t.amount)+'">')+mF('方式',sel('method',['現金','刷卡','匯款'],t.method))+notes;
   } else {
     var contact=c?[c.contact,c.phone].filter(Boolean).join('・'):(t.guest_contact||'');
-    h+=mF('引路人',esc(guideName(t.guide_id)))+mF('預約時間',t.appointment_at?fmtApptFull(t.appointment_at):'未定時間')
+    var isBuyTx=!t.appointment_at && /^課程購買：/.test(String(t.service||''));
+    h+=mF('引路人',esc(guideName(t.guide_id)))+(isBuyTx?mF('購買日期',fmtFull(t.created_at)):mF('預約時間',t.appointment_at?fmtApptFull(t.appointment_at):'未定時間'))
       +mF('項目','<input class="in" data-f="service" value="'+esc(t.service)+'" placeholder="—">')
       +mF('金額','<input class="in" data-f="amount" type="number" value="'+esc(t.amount)+'">')
       +mF('付款方式',sel('method',['現金','刷卡','匯款','儲值'],t.method))
