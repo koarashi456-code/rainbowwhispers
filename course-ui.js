@@ -26,7 +26,7 @@ var CSS='.pkc{background:#fff;border:1.5px solid #EFE3CE;border-radius:16px;padd
   '.pkc-st-d{background:#D8ECDF;color:#3F7A5E}.pkc-st-b{background:#FBE7CC;color:#A5643A}.pkc-st-m{background:#EAD9F2;color:#6E4F9E}.pkc-st-n{background:#F6DDE3;color:#B4566E}.pkc-st-x{background:#EEE8DF;color:#8A7D6A}'+
   '.pkc-more{font:inherit;font-size:12.5px;color:var(--brush);background:none;border:0;text-decoration:underline;cursor:pointer;padding:6px 0 0}'+
   '.pkc-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.pkc-btns>*{flex:1;min-width:110px;font:inherit;font-size:13px;border-radius:999px;padding:8px 6px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box}'+
-  '.pkc-btns .go{background:var(--rainbow);border-color:transparent;color:#4A3A2A;font-weight:500}.pkc-btns>*:disabled{opacity:.5;cursor:default}'+
+  '.pkc-btns .pkc-go{background:var(--rainbow);border-color:transparent;color:#4A3A2A;font-weight:500}.pkc-btns>*:disabled{opacity:.5;cursor:default}'+
   '.pkc-use{display:none;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}.pkc-use.on{display:flex}'+
   '.pkc-use input{font:inherit;font-size:13.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:6px 9px}'+
   '.pkc-use button{font:inherit;font-size:13px;border-radius:999px;padding:7px 14px;border:0;background:var(--rainbow);color:#4A3A2A;cursor:pointer}'+
@@ -66,11 +66,11 @@ function card(pk,mode){
     if(show.length<rows.length) h+='<button type="button" class="pkc-more" data-pk-all>看全部 '+rows.length+' 筆紀錄</button><div class="pkc-ses" data-pk-allbox style="display:none">'+rows.join('')+'</div>';
   }
   if(mode==='member'){
-    h+='<div class="pkc-btns">'+(rem>0?'<a class="go" href="guide.html?id='+encodeURIComponent(pk.guide_id||'')+'&pkg='+encodeURIComponent(pk.id)+'">用堂數預約下一堂 ›</a>':'<span style="border:0;color:var(--soft)">堂數已經用完了</span>')+'</div>'+
+    h+='<div class="pkc-btns">'+(rem>0?'<a class="pkc-go" href="guide.html?id='+encodeURIComponent(pk.guide_id||'')+'&pkg='+encodeURIComponent(pk.id)+'">用堂數預約下一堂 ›</a>':'<span style="border:0;color:var(--soft)">堂數已經用完了</span>')+'</div>'+
       '<div class="pkc-rule"><b>無使用期限</b>・沒用完的堂數<b>不退費</b>・可以<b>轉讓</b>給親友</div>'+
       (rem>0?'<a class="pkc-link" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">想轉讓給朋友？加官方 LINE 告訴我們對方的會員信箱 ›</a>':'');
   } else {
-    h+='<div class="pkc-btns"><button type="button" class="go" data-pk-use'+(rem>0?'':' disabled')+'>＋ 記錄一堂</button><button type="button" data-pk-ret>退回一堂</button>'+(mode==='admin'?'<button type="button" data-pk-xfer'+(rem>0?'':' disabled')+'>轉讓</button>':'')+'</div>'+
+    h+='<div class="pkc-btns"><button type="button" class="pkc-go" data-pk-use'+(rem>0?'':' disabled')+'>＋ 記錄一堂</button><button type="button" data-pk-ret>退回一堂</button>'+(mode==='admin'?'<button type="button" data-pk-xfer'+(rem>0?'':' disabled')+'>轉讓</button>':'')+'</div>'+
       '<div class="pkc-use" data-pk-usebox><span style="font-size:12.5px;color:var(--soft)">上課日期</span><input type="date" data-pk-date><button type="button" data-pk-ok>確認扣 1 堂</button></div>'+
       '<div class="pkc-msg" data-pk-msg></div>'+
       '<div class="pkc-rule"><b>無使用期限</b>・沒用完不退費・可轉讓'+(mode==='guide'?'（轉讓由彩之語官方處理）':'')+'</div>';
