@@ -180,6 +180,26 @@
   .ogo{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
   .od.buy{background:#EAD9F2}.od.buy small{color:#6E4F9E;font-weight:600}
   .gc-olist{margin-top:6px}.gc-olist .orow{padding:9px 11px}
+  .gtg{flex:none;width:42px;height:24px;border-radius:999px;background:#E2D6C2;position:relative;border:0;cursor:pointer;padding:0}
+  .gtg::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
+  .gtg.on{background:#7FBF97}.gtg.on::after{left:21px}.gtg:disabled{opacity:.5}
+  .gset-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #EFE3CE;font-size:13.5px;color:var(--ink);text-align:left}
+  .gset-row:last-child{border-bottom:0}.gset-row small{display:block;font-size:11.5px;color:var(--soft)}
+  .gcap-in{width:66px;box-sizing:border-box;font:inherit;font-size:14px;text-align:center;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:5px 6px;margin:0 4px}
+  .gcap-in:disabled{opacity:.45}
+  .gmeter{height:10px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin:6px 0 4px}.gmeter i{display:block;height:100%;background:var(--rainbow)}.gmeter.full i{background:#D99A9A}
+  .gmeter-h{display:flex;justify-content:space-between;font-size:13px;color:var(--brush);font-weight:500;margin-top:10px}
+  .gfull{font-size:12.5px;color:#B4566E;background:#FBE7E7;border-radius:10px;padding:7px 11px;margin-top:8px;line-height:1.6;text-align:left}
+  .grole{font:inherit;font-size:13.5px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:6px 12px;cursor:pointer;margin:0 6px 6px 0;text-align:left;line-height:1.35}
+  .grole small{display:block;font-size:11px;color:var(--soft)}.grole.on{background:var(--brush);border-color:var(--brush);color:#fff}.grole.on small{color:#EBDCC8}
+  .gp-min{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--soft);margin-top:4px}
+  .gp-min select{font:inherit;font-size:12.5px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:8px;padding:2px 4px}
+  .grm-btn{font:inherit;font-size:13px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:6px 14px;cursor:pointer;margin-top:10px}
+  .grm-opt{display:flex;gap:9px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 11px;margin-top:7px;cursor:pointer;text-align:left}
+  .grm-opt.on{border-color:#C9A7DE;background:#FBF7FE}.grm-opt input{margin-top:5px}.grm-opt b{font-size:13.5px;color:var(--brush)}.grm-opt div{font-size:12px;color:var(--soft)}
+  .grm-opt.off{opacity:.5;cursor:default}
+  .grm-ta{width:100%;box-sizing:border-box;font:inherit;font-size:13.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;margin-top:8px;min-height:70px;resize:vertical}
+  .grm-sel{width:100%;box-sizing:border-box;font:inherit;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:6px 8px;margin-top:6px}
   .gc-tog{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;margin-top:12px;font:inherit;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 12px;cursor:pointer;color:var(--brush);font-size:13.5px;font-weight:500;text-align:left}
   .gc-tog span{font-size:12px;color:var(--soft);font-weight:400}.gc-olist[hidden]{display:none}
   .orow.dim .od b,.orow.dim .om .t,.orow.dim .oright .a{color:#9C8B74}
@@ -221,6 +241,7 @@
   .gx.open .gx-det{display:block}
   .gx-mode .gx:not(.open){display:none!important}
   .gx-mode .g-noresult{display:none}
+  .gx-hide{display:none!important}
   .gx-back{font:inherit;font-size:13px;color:var(--soft);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;margin-bottom:10px}
   .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;margin:0 0 10px;outline:none}
   .g-search:focus{border-color:#C9A7DE}
@@ -402,9 +423,14 @@
     <div style="font-size:12.5px;color:var(--soft);margin:14px 0 6px">自我介紹／經歷（客戶會看到）</div>
     <textarea id="gi-notes" rows="6" maxlength="1000" placeholder="例：我是 XUAN，接觸彩虹卡 5 年，擅長陪你把卡住的感受說清楚…" style="width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.7;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;outline:none;resize:vertical"></textarea>
     <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button class="lo" id="gi-save" style="margin-top:0;padding:8px 18px;font-size:13px">儲存介紹</button><span id="gi-msg" style="font-size:12px"></span></div>
+    <div id="gi-roles-wrap" style="display:none">
+      <div style="font-size:12.5px;color:var(--soft);margin:16px 0 6px">我是哪種角色？（測驗會用這個幫客人配對，最多選 2 個）</div>
+      <div id="gi-roles"></div><div id="gi-rmsg" style="font-size:12px;min-height:1.2em"></div>
+    </div>
   </div>
 
   <div class="gsec-lab">我的開放時間</div>
+  <div class="gbox" id="g-caps" style="padding:12px 16px;display:none;margin-bottom:12px"></div>
   <div class="gbox" style="padding:14px 16px"><div id="sl-editor"></div></div>
 
   <div class="gsec-lab">我的方案</div>
@@ -438,6 +464,7 @@
   <div id="g-bookings"></div>
 
   <div class="gsec-lab">客戶管理</div>
+  <div id="g-remind" style="display:none;margin-bottom:10px"></div>
   <input class="g-search" data-target="g-members" type="search" placeholder="搜尋 姓名／電話／信箱／地區／備註…">
   <div class="gbox" id="g-members"></div>
 
@@ -466,9 +493,9 @@
   <button type="button" class="ob-go" id="ob-go">完成，開始探索</button>
 </div></div>
 <script src="supabase-config.js"></script>
-<script src="area.js"></script>
+<script src="area.js?v=20261108"></script>
 <script src="slot-ui.js?v=20261108"></script>
-<script src="course-ui.js?v=20261108b"></script>
+<script src="course-ui.js?v=20261108c"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -512,7 +539,16 @@ async function loadMyPackages(){
   var L=[]; try{ var r=await db.rpc('my_packages'); if(!r.error && Array.isArray(r.data)) L=r.data; }catch(e){}
   if(!L.length){ w.style.display='none'; return; }
   w.style.display='block'; box.innerHTML=L.map(function(k){ return RWCourse.card(k,'member'); }).join('');
-  RWCourse.bind(box,L,{});
+  // 退費（SQL：package_refund_quote、request_package_refund、cancel_package_refund）
+  RWCourse.bind(box,L,{
+    refund:async function(pk){
+      var q; try{ var r=await db.rpc('package_refund_quote',{p_package_id:pk.id}); if(r.error) throw new Error(r.error.message); q=r.data; }catch(e){ alert('目前沒辦法試算退費：'+((e&&e.message)||'')+'\n請稍後再試或聯絡官方 LINE'); return; }
+      if(!q){ alert('找不到這個課程'); return; }
+      RWCourse.refundSheet(q,async function(acct){ var x=await db.rpc('request_package_refund',{p_package_id:pk.id,p_account:acct||null}); if(x.error) throw new Error(x.error.message); loadMyPackages(); alert('已送出退費申請，彩之語會在 3～5 個工作天內處理'); });
+    },
+    refundCancel:async function(id){ var x=await db.rpc('cancel_package_refund',{p_package_id:id}); if(x.error) throw new Error(x.error.message); },
+    done:function(){ loadMyPackages(); }
+  });
 }
 // 付費會員才顯示優惠卡（暫標「即將開放」）
 async function loadPromo(){
@@ -770,10 +806,11 @@ function gxRow(sum,det,search){
 }
 function bindGx(box){
   var inp=document.querySelector('.g-search[data-target="'+box.id+'"]');
-  box.classList.remove('gx-mode'); if(inp) inp.style.display='';  // 列表重新載入後回到列表狀態
+  box.classList.remove('gx-mode'); if(inp) inp.style.display=''; var rmd0=box.id==='g-members'?document.getElementById('g-remind'):null; if(rmd0) rmd0.classList.remove('gx-hide');  // 列表重新載入後回到列表狀態
   box.querySelectorAll('.gx').forEach(function(row){
-    row.querySelector('.gx-sum').onclick=function(){ box.classList.add('gx-mode'); row.classList.add('open'); if(inp) inp.style.display='none'; window.scrollTo({top:0}); };
-    row.querySelector('.gx-back').onclick=function(){ box.classList.remove('gx-mode'); row.classList.remove('open'); if(inp) inp.style.display=''; };
+    var rmd=box.id==='g-members'?document.getElementById('g-remind'):null;
+    row.querySelector('.gx-sum').onclick=function(){ box.classList.add('gx-mode'); row.classList.add('open'); if(inp) inp.style.display='none'; if(rmd) rmd.classList.add('gx-hide'); window.scrollTo({top:0}); };
+    row.querySelector('.gx-back').onclick=function(){ box.classList.remove('gx-mode'); row.classList.remove('open'); if(inp) inp.style.display=''; if(rmd) rmd.classList.remove('gx-hide'); };
   });
 }
 // 交易紀錄／客戶管理搜尋：即時篩選列表（含備註文字），列表重新載入後自動套用
@@ -798,7 +835,7 @@ async function loadGuideCustomers(){
   var mx=$('#g-members'); if(!mx) return;
   var r; try{ r=await db.rpc('my_guide_customers'); }catch(e){ return; }
   if(!r || r.error || !Array.isArray(r.data)) return;
-  var cs=r.data;
+  var cs=r.data; GCUST=cs;
   if(!cs.length){ mx.innerHTML='<p class="gempty">還沒有預約你的客戶。</p>'; return; }
   var stc=function(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st==='已取消'||st==='已退費')?'cancel':''; };
   mx.innerHTML=cs.map(function(m){
@@ -815,6 +852,7 @@ async function loadGuideCustomers(){
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
       +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span><span class="grow-amt">'+money(m.spend)+'</span></div>'
       +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
+      +'<button type="button" class="grm-btn" data-remind="'+escA(m.id)+'">🔔 提醒客人</button>'
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div>'
@@ -862,7 +900,7 @@ async function loadGuideCustomers(){
 }
 // 客戶明細裡的消費紀錄：平常收起來，點「消費紀錄」展開；點一筆打開跟交易紀錄一樣的明細
 function gcTog(t,open){ var l=t.nextElementSibling; if(!l) return; if(open==null) open=l.hidden; l.hidden=!open; t.setAttribute('aria-expanded',open?'true':'false'); var s=t.querySelector('span'); if(s) s.textContent=open?'收起 ▴':s.getAttribute('data-hint')+'・點開 ▾'; }
-(function(){ var mx=document.getElementById('g-members'); if(mx) mx.addEventListener('click',async function(e){ var t=e.target.closest('.gc-tog'); if(t){ gcTog(t); return; } var b=e.target.closest('.gc-orow'); if(!b) return; var ref=b.getAttribute('data-ref'); if(!ref) return; if(!GORD.length) await loadGuideOrders(); for(var j=0;j<GORD.length;j++){ if(GORD[j].order_ref===ref){ openGOrder(j); return; } } }); })();
+(function(){ var mx=document.getElementById('g-members'); if(mx) mx.addEventListener('click',async function(e){ var t=e.target.closest('.gc-tog'); if(t){ gcTog(t); return; } var rmb=e.target.closest('[data-remind]'); if(rmb){ if(!GPKGS.length){ try{ var pr=await db.rpc('my_guide_packages'); if(!pr.error && Array.isArray(pr.data)) GPKGS=pr.data; }catch(x){} } openRemind(rmb.getAttribute('data-remind')); return; } var b=e.target.closest('.gc-orow'); if(!b) return; var ref=b.getAttribute('data-ref'); if(!ref) return; if(!GORD.length) await loadGuideOrders(); for(var j=0;j<GORD.length;j++){ if(GORD[j].order_ref===ref){ openGOrder(j); return; } } }); })();
 // 引路人後台：客人的套裝課程（SQL：my_guide_packages、package_adjust；畫面在 course-ui.js）
 var GPKGS=[];
 async function loadGuidePkgs(){
@@ -950,6 +988,8 @@ async function enterGuide(d){
   // 我的開放時間
   loadMySlots();
   loadSchedule();
+  loadGuideCaps();
+  loadGuideSettings();
   // 我的方案：自設＋送審
   (function(){
     var addBtn=$('#g-plan-add'), li=$('#g-plan-label'), pi=$('#g-plan-price'), ui=$('#g-plan-unit'), qi=$('#g-plan-qty');
@@ -977,7 +1017,7 @@ async function enterGuide(d){
   var data=null;
   try{ var r=await db.rpc('my_guide_data'); if(!r.error && r.data && r.data.ok) data=r.data; }catch(e){}
   if(!data){ bx.innerHTML='<div class="gbox"><p class="gempty">目前讀不到後台資料，請稍後再試或聯繫官方 LINE。</p></div>'; mx.innerHTML=''; return; }
-  if(data.guide_name) $('#g-hi').textContent='引路人・'+data.guide_name;
+  if(data.guide_name){ $('#g-hi').textContent='引路人・'+data.guide_name; GNAME=data.guide_name; }
   // 報表
   var rp=data.report||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
   rep.innerHTML=
@@ -1007,14 +1047,129 @@ async function loadGuidePlans(){
       ? '<span style="font-size:11.5px;color:#4F8E6E;background:#EAF4EC;border-radius:999px;padding:2px 10px">已審核</span>'
       : '<span style="font-size:11.5px;color:#B07A2E;background:#FBF0DC;border-radius:999px;padding:2px 10px">審核中</span>';
     return '<div style="display:flex;align-items:center;gap:10px;background:#FBF6EC;border:1px solid #EFE3CE;border-radius:12px;padding:9px 13px">'+
-      '<div style="flex:1;min-width:0"><div style="font-size:14px;color:var(--ink)">'+escA(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12.5px">· '+escA(p.unit)+'</span>'):'')+(Number(p.sessions)>=2?' <span style="font-size:11px;color:#6E4F9E;background:#EAD9F2;border-radius:999px;padding:1px 8px;white-space:nowrap">分次使用</span>':'')+'</div><div style="font-size:12px;color:var(--soft);margin-top:1px">'+money(p.price)+(Number(p.sessions)>=2?'（平均每堂 '+money(Math.round(Number(p.price)/Number(p.sessions)))+'）':'')+'</div></div>'+
+      '<div style="flex:1;min-width:0"><div style="font-size:14px;color:var(--ink)">'+escA(p.label)+(p.unit?(' <span style="color:var(--soft);font-size:12.5px">· '+escA(p.unit)+'</span>'):'')+(Number(p.sessions)>=2?' <span style="font-size:11px;color:#6E4F9E;background:#EAD9F2;border-radius:999px;padding:1px 8px;white-space:nowrap">分次使用</span>':'')+'</div><div style="font-size:12px;color:var(--soft);margin-top:1px">'+money(p.price)+(Number(p.sessions)>=2?'（平均每堂 '+money(Math.round(Number(p.price)/Number(p.sessions)))+'）':'')+'</div>'+gpMinHtml(p)+'</div>'+
       badge+
       '<button data-pid="'+p.id+'" class="gp-del" style="border:none;background:none;color:#C0506A;font-size:13px;cursor:pointer;padding:4px 6px">刪除</button>'+
     '</div>';
   }).join('');
+  Array.prototype.forEach.call(box.querySelectorAll('[data-pmin]'),function(sel){
+    sel.onchange=async function(){ var v=sel.value===''?null:Number(sel.value); sel.disabled=true;
+      try{ var r=await db.rpc('set_my_plan_minutes',{p_plan_id:sel.getAttribute('data-pmin'),p_minutes:v}); if(r.error) throw new Error(r.error.message); }catch(e){ alert('時長沒有存成功：'+(e.message||'')); }
+      sel.disabled=false; loadGuideCaps(); };
+  });
   Array.prototype.forEach.call(box.querySelectorAll('.gp-del'),function(b){
     b.onclick=async function(){ var id=b.getAttribute('data-pid'); if(!confirm('確定刪除這個方案？')) return; try{ var r=await db.rpc('del_my_plan',{p_id:id}); if(r.error) throw new Error(r.error.message); loadGuidePlans(); }catch(e){ alert('刪除失敗'); } };
   });
+}
+// 方案時長（算接案上限用）：沒設定就照單位（1小時＝60 分），沒有單位就算 60 分（SQL：set_my_plan_minutes）
+function gpMinHtml(p){
+  if(p.minutes===undefined && p.unit_minutes===undefined) return '';
+  var um=Number(p.unit_minutes)||0, cur=p.minutes==null?'':String(p.minutes), opts=[15,20,30,45,60,75,90,120,150,180,240];
+  if(cur && opts.indexOf(Number(cur))<0) opts.push(Number(cur));
+  return '<label class="gp-min">時長 <select data-pmin="'+escA(p.id)+'"><option value="">'+(um?'照單位 '+um+' 分':'預設 60 分')+'</option>'+opts.sort(function(a,b){return a-b;}).map(function(n){ return '<option value="'+n+'"'+(String(n)===cur?' selected':'')+'>'+n+' 分</option>'; }).join('')+'</select></label>';
+}
+// 接案上限：每月最多幾小時、每天最多幾小時（SQL：my_guide_caps、set_my_caps）
+var GNAME='';
+function hrs(min){ var h=Math.round(Number(min||0)/6)/10; return (h%1?h.toFixed(1):String(h)); }
+async function loadGuideCaps(){
+  var box=$('#g-caps'); if(!box) return;
+  var c=null; try{ var r=await db.rpc('my_guide_caps'); if(!r.error && r.data) c=r.data; }catch(e){}
+  if(!c){ box.style.display='none'; return; }
+  box.style.display='block';
+  var cm=c.cap_month_hours, cd=c.cap_day_hours, mn=Number(c.min_minutes)||60, ms=c.months||{}, ds=c.days||{};
+  var mu=Number(ms[c.month]||0), nu=Number(ms[c.next_month]||0);
+  var fullDays=Object.keys(ds).filter(function(k){ return cd!=null && k>=c.today && Number(ds[k])+mn>cd*60; }).sort();
+  var mlab=function(k){ return Number(String(k).slice(5,7))+' 月'; }, dlab=function(k){ return Number(k.slice(5,7))+'/'+Number(k.slice(8,10)); };
+  var meter=function(lab,used,cap){ var full=cap!=null && used+mn>cap*60; return '<div class="gmeter-h"><span>'+lab+'</span><span>已接 '+hrs(used)+(cap!=null?' / '+cap:'')+' 小時'+(full?'・已滿':'')+'</span></div>'+(cap!=null?'<div class="gmeter'+(full?' full':'')+'"><i style="width:'+Math.min(100,used/(cap*60)*100)+'%"></i></div>':''); };
+  box.innerHTML='<div style="text-align:left"><b style="color:var(--brush);font-size:14.5px">接案上限</b><div style="font-size:12px;color:var(--soft)">容易累的話設上限，到了就自動關掉剩下的時段，客人看不到</div></div>'+
+    '<div class="gset-row"><span>每個月最多<input class="gcap-in" id="cap-m" type="number" min="1" max="744" step="0.5" value="'+(cm!=null?cm:12)+'"'+(cm==null?' disabled':'')+'>小時</span><button type="button" class="gtg'+(cm!=null?' on':'')+'" id="cap-m-on" aria-label="每月上限"></button></div>'+
+    '<div class="gset-row"><span>每一天最多<input class="gcap-in" id="cap-d" type="number" min="0.5" max="24" step="0.5" value="'+(cd!=null?cd:3)+'"'+(cd==null?' disabled':'')+'>小時</span><button type="button" class="gtg'+(cd!=null?' on':'')+'" id="cap-d-on" aria-label="每天上限"></button></div>'+
+    '<div style="font-size:11.5px;color:var(--soft);text-align:left;margin-top:6px">時數照方案時長算（在下面「我的方案」可以改）；算已預約＋已完成＋未出席，客人取消的不算</div>'+
+    meter(mlab(c.month),mu,cm)+meter(mlab(c.next_month),nu,cm)+
+    (fullDays.length?'<div class="gfull">已到每天上限：'+fullDays.map(dlab).join('、')+'（這幾天剩下的時段已關閉）</div>':'')+
+    '<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button class="lo" id="cap-save" style="margin-top:0;padding:8px 18px;font-size:13px">儲存上限</button><span id="cap-msg" style="font-size:12px"></span></div>';
+  [['m','#cap-m'],['d','#cap-d']].forEach(function(x){ var t=$('#cap-'+x[0]+'-on'), inp=$(x[1]); t.onclick=function(){ t.classList.toggle('on'); inp.disabled=!t.classList.contains('on'); }; });
+  $('#cap-save').onclick=async function(){
+    var b=this, msg=$('#cap-msg'), m=$('#cap-m-on').classList.contains('on')?Number($('#cap-m').value):null, d=$('#cap-d-on').classList.contains('on')?Number($('#cap-d').value):null;
+    if((m!=null && !(m>=1)) || (d!=null && !(d>=0.5))){ msg.textContent='請填正確的小時數'; msg.style.color='#C0506A'; return; }
+    b.disabled=true; msg.textContent='儲存中…'; msg.style.color='var(--soft)';
+    try{ var r=await db.rpc('set_my_caps',{p_month:m,p_day:d}); if(r.error) throw new Error(r.error.message); await loadGuideCaps(); var m2=$('#cap-msg'); if(m2){ m2.textContent='已儲存'; m2.style.color='#4F8E6E'; } }
+    catch(e){ b.disabled=false; msg.textContent='儲存失敗：'+(e.message||''); msg.style.color='#C0506A'; }
+  };
+}
+// 角色（測驗配對）＋自動提醒設定（SQL：my_guide_settings、set_my_roles、set_my_remind_cfg）
+var GROLES=[{k:'陪伴',t:'陪伴者',s:'聽客人說、陪他走一段'},{k:'支持',t:'支持者',s:'給客人鼓勵和力量'},{k:'教練',t:'教練',s:'幫客人定目標、推他行動'},{k:'指引',t:'指引者',s:'直接給方向和答案'}];
+var GRM=[{k:'day_before',t:'預約前一天提醒',s:'客人小鈴鐺置頂「明天 15:00 有預約」'},{k:'unpaid',t:'還沒付款提醒',s:'匯款訂單下單 24 小時後還沒填末 5 碼，提醒結帳'},{k:'next',t:'課程下一堂提醒',s:'上完一堂 7 天後還沒約下一堂，提醒來約第 N 堂'}];
+async function loadGuideSettings(){
+  var st=null; try{ var r=await db.rpc('my_guide_settings'); if(!r.error && r.data) st=r.data; }catch(e){}
+  var rw=$('#gi-roles-wrap'), rm=$('#g-remind');
+  if(!st){ if(rw) rw.style.display='none'; if(rm) rm.style.display='none'; return; }
+  // 角色
+  var roles=(st.roles||[]).slice();
+  function drawRoles(){ $('#gi-roles').innerHTML=GROLES.map(function(x){ return '<button type="button" class="grole'+(roles.indexOf(x.k)>=0?' on':'')+'" data-role="'+x.k+'">'+x.t+'<small>'+x.s+'</small></button>'; }).join(''); }
+  if(rw){ rw.style.display='block'; drawRoles();
+    $('#gi-roles').onclick=async function(e){ var b=e.target.closest('[data-role]'); if(!b) return; var k=b.getAttribute('data-role'), nx=roles.slice(), i=nx.indexOf(k), msg=$('#gi-rmsg');
+      if(i>=0) nx.splice(i,1); else { if(nx.length>=2){ msg.textContent='最多選 2 個，先取消一個再選'; msg.style.color='#C0506A'; return; } nx.push(k); }
+      msg.textContent='儲存中…'; msg.style.color='var(--soft)';
+      try{ var x=await db.rpc('set_my_roles',{p_roles:nx}); if(x.error) throw new Error(x.error.message); roles=nx; drawRoles(); msg.textContent='已儲存'; msg.style.color='#4F8E6E'; setTimeout(function(){ if(msg.textContent==='已儲存') msg.textContent=''; },1500); }
+      catch(err){ msg.textContent='儲存失敗：'+(err.message||''); msg.style.color='#C0506A'; } };
+  }
+  // 自動提醒
+  var cfg=st.remind_cfg||{}, on=function(k){ return cfg[k]!==false; };
+  if(rm){
+    var open=rm.getAttribute('data-open')==='1';
+    var nOn=GRM.filter(function(x){ return on(x.k); }).length;
+    rm.style.display='';
+    rm.innerHTML='<button type="button" class="gc-tog" id="grm-tog" style="margin-top:0">自動提醒客人 <span>'+(open?'收起 ▴':(nOn===GRM.length?'3 種都開著':nOn+' 種開著')+'・點開 ▾')+'</span></button>'+
+      '<div class="gbox" style="padding:6px 14px;margin-top:6px'+(open?'':';display:none')+'">'+GRM.map(function(x){ return '<div class="gset-row"><span>'+x.t+'<small>'+x.s+'</small></span><button type="button" class="gtg'+(on(x.k)?' on':'')+'" data-rk="'+x.k+'" aria-label="'+x.t+'"></button></div>'; }).join('')+
+      '<div style="font-size:11.5px;color:var(--soft);text-align:left;padding:2px 0 6px">系統自動發到客人網站右上角的小鈴鐺；想個別提醒，點客人進去按「🔔 提醒客人」</div></div>';
+    $('#grm-tog').onclick=function(){ rm.setAttribute('data-open',open?'0':'1'); loadGuideSettings(); };
+    rm.querySelectorAll('[data-rk]').forEach(function(t){ t.onclick=async function(){ var nc={}; GRM.forEach(function(x){ nc[x.k]=on(x.k); }); nc[t.getAttribute('data-rk')]=!t.classList.contains('on'); t.disabled=true;
+      try{ var x=await db.rpc('set_my_remind_cfg',{p_cfg:nc}); if(x.error) throw new Error(x.error.message); }catch(e){ alert('沒有存成功：'+(e.message||'')); }
+      loadGuideSettings(); }; });
+  }
+}
+// 提醒客人：提醒結帳／提醒預約下一堂／自己寫（SQL：guide_remind_customer；客人要是會員才收得到）
+var GCUST=[];
+function openRemind(cid){
+  var m=GCUST.filter(function(x){ return String(x.id)===String(cid); })[0]; if(!m) return;
+  var nm=m.alias||m.name||'客人';
+  var od=(m.orders||[]).filter(function(o){ return o.status==='已預約' && Number(o.amount)>0 && !gIsBuy(o); });
+  var pk=(GPKGS||[]).filter(function(k){ return String(k.customer_id)===String(cid) && !k.refund_status && Number(k.remaining)>0; });
+  var cur=od.length?'pay':pk.length?'next':'own', oi=0, ki=0;
+  var oTxt=function(o){ var p=wpart(o.appointment_at); return (p?p.mo+'/'+p.d+' ':'')+gSplit(o.service).plan; };
+  function tpl(){
+    if(cur==='pay'){ var o=od[oi]; return o?oTxt(o)+' '+money(o.amount)+' 還沒收到付款，麻煩記得完成付款，謝謝！':''; }
+    if(cur==='next'){ var k=pk[ki]; return k?(k.label||'套裝課程')+' 還剩 '+k.remaining+' 堂，挑個時間來上第 '+((Number(k.used)||0)+(Number(k.booked)||0)+1)+' 堂吧～':''; }
+    return '';
+  }
+  function draw(text){
+    var opt=function(k,t,d,ok){ return '<label class="grm-opt'+(cur===k?' on':'')+(ok?'':' off')+'" data-k="'+k+'"><input type="radio" name="grm"'+(cur===k?' checked':'')+(ok?'':' disabled')+'><span><b>'+t+'</b><div>'+d+'</div></span></label>'; };
+    var h='<div class="gs-top"><span class="gs-h">提醒 '+escA(nm)+'</span><button type="button" class="gs-x" id="gs-x" aria-label="關閉">×</button></div>'+
+      opt('pay','提醒結帳',od.length?'有 '+od.length+' 筆已預約的訂單':'目前沒有已預約、要付款的訂單',od.length>0)+
+      (cur==='pay'&&od.length>1?'<select class="grm-sel" id="grm-o">'+od.map(function(o,i){ return '<option value="'+i+'"'+(i===oi?' selected':'')+'>'+escA(oTxt(o))+' '+money(o.amount)+'</option>'; }).join('')+'</select>':'')+
+      opt('next','提醒預約下一堂',pk.length?pk.map(function(k){ return escA(k.label||'套裝課程')+' 剩 '+k.remaining+' 堂'; }).join('、'):'這位客人沒有還有剩堂數的課程',pk.length>0)+
+      (cur==='next'&&pk.length>1?'<select class="grm-sel" id="grm-k">'+pk.map(function(k,i){ return '<option value="'+i+'"'+(i===ki?' selected':'')+'>'+escA(k.label||'套裝課程')+' 剩 '+k.remaining+' 堂</option>'; }).join('')+'</select>':'')+
+      opt('own','自己寫','例：上次聊到的練習，記得每天做一次',true)+
+      '<textarea class="grm-ta" id="grm-ta" maxlength="200" placeholder="想跟客人說的話…">'+escA(text!=null?text:tpl())+'</textarea>'+
+      '<div style="font-size:12px;color:var(--soft);margin-top:6px;text-align:left">客人會在網站右上角的小鈴鐺看到「'+escA(GNAME||'引路人')+'：…」；同一種提醒一天只能發一次</div>'+
+      '<div class="err" id="grm-err" style="font-size:12.5px;color:#C0506A;min-height:1.2em;margin-top:6px;text-align:left"></div>'+
+      '<div style="text-align:center"><button type="button" class="grm-btn" id="grm-send" style="padding:9px 26px;font-size:14px">送出提醒</button></div>';
+    $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on');
+    $('#gs-x').onclick=gsClose;
+    $('#gs-box').querySelectorAll('.grm-opt').forEach(function(o){ o.onclick=function(e){ e.preventDefault(); if(o.classList.contains('off')) return; cur=o.getAttribute('data-k'); draw(); }; });
+    var so=$('#grm-o'); if(so) so.onchange=function(){ oi=+so.value; draw(); };
+    var sk=$('#grm-k'); if(sk) sk.onchange=function(){ ki=+sk.value; draw(); };
+    $('#grm-send').onclick=async function(){
+      var b=this, er=$('#grm-err'), body=($('#grm-ta').value||'').trim();
+      if(!body){ er.textContent='請寫提醒內容'; return; }
+      b.disabled=true; er.style.color='var(--soft)'; er.textContent='送出中…';
+      try{ var x=await db.rpc('guide_remind_customer',{p_customer_id:m.id,p_kind:cur,p_body:body}); if(x.error) throw new Error(x.error.message);
+        $('#gs-box').innerHTML='<div class="gs-top"><span class="gs-h">已送出</span><button type="button" class="gs-x" id="gs-x" aria-label="關閉">×</button></div><p style="font-size:14px;line-height:1.8;text-align:left;margin-top:8px">'+escA(nm)+' 的小鈴鐺會出現這則提醒。</p>'; $('#gs-x').onclick=gsClose; setTimeout(gsClose,1800);
+      }catch(e){ b.disabled=false; er.style.color='#C0506A'; er.textContent=(e.message||'送出失敗'); }
+    };
+  }
+  draw();
 }
 // LINE(LIFF) 會員也寫進客戶後台（同一瀏覽器只寫一次）
 function saveLineMember(p){

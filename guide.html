@@ -62,6 +62,9 @@
   .sumline span:last-child{font-variant-numeric:tabular-nums;text-align:right}
   .sumline.total{border-top:1px dashed var(--line);margin-top:6px;padding-top:10px;font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush)}
   .sumline small{color:var(--soft);font-size:12px}
+  .pkagree{margin-top:14px;border:2px solid #EBD3A8;border-radius:14px;padding:12px 14px;background:#FFFDF8}
+  .pkagree-t{background:#FBF3E4;border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.8;color:var(--ink)}.pkagree-t b{color:var(--brush)}
+  .pkagree-l{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:14px;cursor:pointer;line-height:1.6;text-align:left}.pkagree-l input{margin-top:5px;width:17px;height:17px;flex:none}.pkagree-l a{color:#B5713F}
   .bank{background:#FBF6EC;border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;color:var(--ink);line-height:1.9}
   .bank b{color:var(--brush)}
   .bankwarn{font-size:12.5px;color:#C0506A;margin-top:8px}
@@ -207,6 +210,10 @@ function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(
 function p2(n){ return (n<10?'0':'')+n; }
 function fmtWhen(s){ if(!s) return '未指定'; var p=wpart(s); if(!p) return '未指定'; return p.y+'/'+p.mo+'/'+p.d+' '+p2(p.h)+':'+p2(p.mi); }
 var OPEN_SLOTS=[], SLOT_PL={}, SEL_DATE='', SEL_WHEN='';
+// 接案上限：已經滿的月份／日期不顯示時段（SQL：guide_closed_days）
+var CAP_CLOSED={months:[],days:[],all:false};
+async function loadClosed(){ CAP_CLOSED={months:[],days:[],all:false}; try{ var r=await db.rpc('guide_closed_days',{p_guide_id:guide.id}); if(!r.error && r.data) CAP_CLOSED={months:r.data.months||[],days:r.data.days||[],all:!!r.data.all}; }catch(e){} }
+function slotOpen(s){ if(CAP_CLOSED.all) return false; var p=wpart(s.slot_at); if(!p) return true; var mk=p.y+'-'+p2(p.mo), dk=mk+'-'+p2(p.d); return CAP_CLOSED.months.indexOf(mk)<0 && CAP_CLOSED.days.indexOf(dk)<0; }
 // 時段的地點（SQL：guide_slot_places；沒設地點＝全部地點）
 function wkey(s){ var p=wpart(s); return p?p.y+'-'+p2(p.mo)+'-'+p2(p.d)+'T'+p2(p.h)+':'+p2(p.mi):''; }
 function slotFits(s){ if(!PLACE) return true; var pl=SLOT_PL[wkey(s.slot_at)]; return !pl || !pl.length || pl.indexOf(PLACE.v)>=0; }
@@ -215,9 +222,10 @@ function slotMode(){ var host=$('#slotpick'); return !!(host && host.style.displ
 function chosenWhen(){ if(slotMode()) return SEL_WHEN||''; var dt=($('#f-date')||{}).value||'', tm=($('#f-time')||{}).value||''; return (dt&&tm)?dt+'T'+tm:''; }
 function renderSlotPicker(){
   var host=$('#slotpick'), ft=$('#freetime'); if(!host) return;
-  var all=OPEN_SLOTS||[];
-  if(!all.length){ host.style.display='none'; host.innerHTML=''; if(ft) ft.style.display='flex'; return; }
+  var all=(OPEN_SLOTS||[]).filter(slotOpen);
+  if(!(OPEN_SLOTS||[]).length){ host.style.display='none'; host.innerHTML=''; if(ft) ft.style.display='flex'; return; }
   if(ft) ft.style.display='none'; host.style.display='block';
+  if(!all.some(function(s){ return !s.taken; })){ SEL_WHEN=''; host.innerHTML='<div class="plnote">'+esc(guide.name||'引路人')+' 近期的預約已經滿了，請過幾天再來看看，或<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加官方 LINE</a> 詢問。</div>'; return; }
   // 有分地點：先選地點，只顯示引路人在那個地點的時段
   if(PLACES.length>1 && !PLACE){ SEL_WHEN=''; host.innerHTML='<div class="plnote">請先選上面的「服務地點」，就會出現可以約的時間</div>'; return; }
   var fut=all.filter(slotFits);
@@ -241,7 +249,7 @@ function renderSlotPicker(){
   Array.prototype.forEach.call(host.querySelectorAll('[data-d]'),function(c){ c.onclick=function(){ SEL_DATE=c.getAttribute('data-d'); SEL_WHEN=''; renderSlotPicker(); }; });
   Array.prototype.forEach.call(host.querySelectorAll('[data-w]'),function(c){ c.onclick=function(){ SEL_WHEN=c.getAttribute('data-w'); renderSlotPicker(); }; });
 }
-async function refreshSlots(){ if(!guide) return; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(r&&!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){} await loadSlotPlaces(); renderSlotPicker(); }
+async function refreshSlots(){ if(!guide) return; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(r&&!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){} await loadSlotPlaces(); await loadClosed(); renderSlotPicker(); }
 
 function getId(){ return new URLSearchParams(location.search).get('id'); }
 
@@ -258,6 +266,7 @@ async function loadGuide(){
     try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(sr && !sr.error && Array.isArray(sr.data)) ? sr.data : []; }catch(e){ OPEN_SLOTS=[]; }
     try{ var pl=await db.rpc('guide_places',{p_guide_id:guide.id}); PLACES=buildPlaces((pl && !pl.error) ? pl.data : null); }catch(e){ PLACES=[]; }
     await loadSlotPlaces();
+    await loadClosed();
     // 套裝課程：這位引路人的課程方案（guide_packages）、我已經買的課程（my_packages）
     try{ var gp=await db.rpc('guide_packages',{p_guide_id:guide.id}); PKG_PLANS=(gp&&!gp.error&&Array.isArray(gp.data))?gp.data:[]; }catch(e){ PKG_PLANS=[]; }
     if(MEMBER){ try{ var mp=await db.rpc('my_packages'); OWNED=(mp&&!mp.error&&Array.isArray(mp.data))?mp.data.filter(function(x){ return x.guide_id===guide.id && Number(x.remaining)>0; }):[]; }catch(e){ OWNED=[]; } }
@@ -448,7 +457,13 @@ $('#to-pay').onclick=function(){
   } else {
     mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">刷卡（信用卡）</div>刷卡付款即將開放（綠界金流串接中）。你可以先送出預約，我們會在確認後與你聯繫完成刷卡；或返回改用「匯款」立即完成。<div class="bankwarn">⚠️ 目前刷卡尚未開通，此為測試流程。</div></div>';
   }
+  // 買套裝課程：付款前要勾選同意退費方式
+  var needAgree=!!(plan && plan.pkg);
+  if(needAgree) mb+='<div class="pkagree"><div class="pkagree-t"><b>套裝課程退費方式</b><br>・購買後 7 天內：沒上過的堂數全額退費<br>・超過 7 天：退還沒上過的堂數金額，酌收該金額 10% 違約金<br>・沒有使用期限，可以轉讓（由彩之語官方處理）</div>'+
+    '<label class="pkagree-l"><input type="checkbox" id="pk-agree"> <span>我已閱讀並同意<a href="policies.html#course" target="_blank" rel="noopener">套裝課程退費方式</a>與<a href="policies.html#refund" target="_blank" rel="noopener">服務條款</a></span></label></div>';
   $('#pay-method-box').innerHTML=mb;
+  var sb=$('#do-submit'); if(sb){ sb.disabled=needAgree; sb.style.opacity=needAgree?'.5':''; }
+  var ag=$('#pk-agree'); if(ag) ag.onchange=function(){ if(sb){ sb.disabled=!ag.checked; sb.style.opacity=ag.checked?'':'.5'; } var pe=$('#pay-err'); if(pe && ag.checked) pe.textContent=''; };
   $('#book-form').style.display='none';
   $('#book-pay').style.display='block';
   $('#book-pay').scrollIntoView({behavior:'smooth',block:'start'});
@@ -459,6 +474,7 @@ $('#back-form').onclick=function(){ $('#book-pay').style.display='none'; $('#boo
 $('#do-submit').onclick=async function(){
   var btn=this, err=$('#pay-err'); err.textContent='';
   if(!MEMBER){ err.textContent='請先登入會員'; return; }
+  var agr=$('#pk-agree'); if(agr && !agr.checked){ err.textContent='請先勾選同意套裝課程退費方式'; return; }
   var when=chosenWhen(), note=$('#f-note').value.trim();
   if(PLACES.length && !PLACE){ err.textContent='請回上一步選服務地點'; return; }
   if(!when){ err.textContent = slotMode()?'這個時段已被約走，請回上一步重新選時段':'請選預約時間'; return; }
@@ -498,7 +514,7 @@ $('#do-submit').onclick=async function(){
     }
     var res=await db.rpc('book_appointment',{
       p_guide_id:guide.id, p_service:svcFull, p_appointment_at:(when||null), p_amount:amt,
-      p_note:(totalLabel+' '+money(total)+(isStore?'（儲值折抵）':'')+(note?'｜'+note:'')), p_method:PAY_METHOD, p_pay_last5:last5
+      p_note:(note||null), p_method:PAY_METHOD, p_pay_last5:last5
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));

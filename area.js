@@ -101,19 +101,25 @@ window.RWArea={COUNTIES:COUNTIES, AREAS:AREAS, norm:norm, split:split, parseList
 /* ===== 測驗最後一題：地區／預算／方式 ＋ 引路人比對 ===== */
 var BUDGETS=[{k:'b1',t:'$1,000 以內',max:1000},{k:'b2',t:'$1,000～2,000',max:2000},{k:'b3',t:'$2,000～3,000',max:3000},{k:'b4',t:'$3,000 以上',max:Infinity},{k:'any',t:'還不確定',max:Infinity}];
 var MODES=[{k:'online',t:'線上（視訊／語音）',s:'線上'},{k:'offline',t:'實體見面',s:'實體見面'},{k:'any',t:'都可以',s:'線上或實體'}];
+// ④ 希望引路人是什麼角色（可以選 1～2 個；「都可以」單選）；引路人自己的角色存在 guides.roles（SQL：guide_roles）
+var ROLES=[{k:'陪伴',t:'陪伴者',s:'聽我說、陪我走一段'},{k:'支持',t:'支持者',s:'給我鼓勵和力量'},{k:'教練',t:'教練',s:'幫我定目標、推我行動'},{k:'指引',t:'指引者',s:'直接給我方向和答案'},{k:'any',t:'都可以',s:'交給緣分'}];
+function rOf(k){ return ROLES.filter(function(r){ return r.k===k; })[0]; }
+function rolePick(p){ return (p&&Array.isArray(p.roles))?p.roles.filter(function(k){ return k!=='any' && rOf(k); }):[]; }
+function roleText(p){ var L=rolePick(p); return L.length?L.map(function(k){ return rOf(k).t; }).join('／'):((p&&Array.isArray(p.roles)&&p.roles.indexOf('any')>=0)?'角色都可以':''); }
 function bOf(k){ return BUDGETS.filter(function(b){ return b.k===k; })[0]; }
 function mOf(k){ return MODES.filter(function(m){ return m.k===k; })[0]; }
 var LS='rw_match_prefs';
 function loadLocal(){ try{ return JSON.parse(localStorage.getItem(LS)||'null')||{}; }catch(e){ return {}; } }
 function saveLocal(p){ try{ localStorage.setItem(LS,JSON.stringify(p)); }catch(e){} }
-function label(p){ if(!p) return ''; var b=bOf(p.budget), m=mOf(p.mode); return [p.area||'', b?b.t:'', m?m.s:''].filter(Boolean).join('・'); }
+function label(p){ if(!p) return ''; var b=bOf(p.budget), m=mOf(p.mode); return [p.area||'', b?b.t:'', m?m.s:'', roleText(p)].filter(Boolean).join('・'); }
 // 存進客戶資料用（後台看得懂的文字）
-function forDb(p){ if(!p) return null; var b=bOf(p.budget), m=mOf(p.mode), o={area:p.area||'', budget:b?b.t:'', mode:m?m.s:''}; if(p.nick) o.nick=p.nick; return o; }
+function forDb(p){ if(!p) return null; var b=bOf(p.budget), m=mOf(p.mode), o={area:p.area||'', budget:b?b.t:'', mode:m?m.s:''}; var rt=roleText(p); if(rt) o.role=rt.replace(/^角色/,''); if(p.nick) o.nick=p.nick; return o; }
 
 var CSS='.pf-q{font-size:14.5px;font-weight:500;color:var(--brush);margin:18px 0 8px;text-align:left}.pf-q small{font-weight:400;color:var(--soft);font-size:12px;margin-left:4px}'+
   '.pf-area{display:flex;gap:8px}.pf-sel{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:11px 10px;outline:none}.pf-sel:disabled{opacity:.55}'+
   '.pf-hint{font-size:11.5px;color:var(--soft);margin-top:6px;text-align:left}'+
   '.pf-chips{display:flex;flex-wrap:wrap;gap:8px}.pf-chip{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}.pf-chip.on{background:var(--brush);border-color:var(--brush);color:#fff}'+
+  '.pf-chip.rl{text-align:left;border-radius:14px;padding:7px 12px;line-height:1.35}.pf-chip.rl small{display:block;font-size:11px;opacity:.75;margin-top:1px}'+
   '.pf-err{font-size:12.5px;color:#C0506A;min-height:1.2em;margin-top:10px;text-align:center}.pf-note{font-size:12px;color:var(--soft);text-align:center;margin-top:10px}'+
   '.pf-line{font-size:12.5px;color:var(--soft);text-align:center;margin:2px 0 6px}.pf-line b{color:var(--brush);font-weight:500}'+
   '.mt-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}.mt-tag{white-space:nowrap;font-size:11px;border-radius:999px;padding:1px 8px;background:#E4F2E7;color:#3F7A5E;font-weight:400}.mt-tag.no{background:#F6E6DF;color:#B4614A}'+
@@ -127,39 +133,54 @@ function formHTML(){
   var nick=(window.rwMemberToken && window.rwMemberToken())?'':'<div class="pf-q">你的暱稱 <small style="color:#C98A6A">必填</small></div><input class="pf-sel" data-pf-nick maxlength="20" placeholder="想讓我們怎麼稱呼你？" style="width:100%;box-sizing:border-box" autocomplete="nickname">';
   return nick+'<div class="pf-q">① 你住在哪裡？<small data-pf-from></small></div><div class="pf-area" data-pf-area></div><div class="pf-hint">先選縣市，再選區（鄉鎮市）；住國外選「海外」</div>'+
     '<div class="pf-q">② 一次諮詢，你能接受的預算？</div><div class="pf-chips" data-pf-g="budget">'+BUDGETS.map(function(b){ return '<button type="button" class="pf-chip" data-k="'+b.k+'">'+b.t+'</button>'; }).join('')+'</div>'+
-    '<div class="pf-q">③ 想用什麼方式？</div><div class="pf-chips" data-pf-g="mode">'+MODES.map(function(m){ return '<button type="button" class="pf-chip" data-k="'+m.k+'">'+m.t+'</button>'; }).join('')+'</div>';
+    '<div class="pf-q">③ 想用什麼方式？</div><div class="pf-chips" data-pf-g="mode">'+MODES.map(function(m){ return '<button type="button" class="pf-chip" data-k="'+m.k+'">'+m.t+'</button>'; }).join('')+'</div>'+
+    '<div class="pf-q">④ 你希望你的引路人像什麼角色？<small>可以選 1～2 個</small></div><div class="pf-chips" data-pf-roles>'+ROLES.map(function(r){ return '<button type="button" class="pf-chip rl" data-k="'+r.k+'">'+r.t+'<small>'+r.s+'</small></button>'; }).join('')+'</div>';
 }
 // 把三題掛到 box 裡；回傳 {get(), check()}：check() 沒填完會顯示提示並回傳 null
 function mount(box,errEl){
   injectCss();
-  var p=loadLocal(), cur={area:p.area||'', budget:p.budget||'', mode:p.mode||'', nick:p.nick||''};
+  var p=loadLocal(), cur={area:p.area||'', budget:p.budget||'', mode:p.mode||'', nick:p.nick||'', roles:Array.isArray(p.roles)?p.roles.filter(function(k){ return rOf(k); }).slice(0,2):[]};
   var nk=box.querySelector('[data-pf-nick]'); if(nk){ nk.value=cur.nick; nk.addEventListener('input',function(){ cur.nick=nk.value.trim(); saveLocal(cur); if(errEl) errEl.textContent=''; }); }
   var pk=picker(box.querySelector('[data-pf-area]'),{cls:'pf-sel',value:cur.area,onChange:function(v){ cur.area=v; saveLocal(cur); if(errEl) errEl.textContent=''; }});
   function drawChips(){ box.querySelectorAll('[data-pf-g]').forEach(function(g){ var f=g.getAttribute('data-pf-g'); g.querySelectorAll('.pf-chip').forEach(function(c){ c.classList.toggle('on',c.getAttribute('data-k')===cur[f]); }); }); }
   box.querySelectorAll('[data-pf-g]').forEach(function(g){ g.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; cur[g.getAttribute('data-pf-g')]=c.getAttribute('data-k'); saveLocal(cur); drawChips(); if(errEl) errEl.textContent=''; }); });
   drawChips();
+  var rb=box.querySelector('[data-pf-roles]');
+  function drawRoles(){ if(rb) rb.querySelectorAll('.pf-chip').forEach(function(c){ c.classList.toggle('on',cur.roles.indexOf(c.getAttribute('data-k'))>=0); }); }
+  if(rb) rb.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; var k=c.getAttribute('data-k'), i=cur.roles.indexOf(k);
+    if(errEl) errEl.textContent='';
+    if(k==='any') cur.roles=i>=0?[]:['any'];
+    else { cur.roles=cur.roles.filter(function(x){ return x!=='any'; }); var j=cur.roles.indexOf(k); if(j>=0) cur.roles.splice(j,1); else if(cur.roles.length>=2){ if(errEl) errEl.textContent='角色最多選 2 個'; return; } else cur.roles.push(k); }
+    saveLocal(cur); drawRoles(); });
+  drawRoles();
   // 會員登入中、還沒選過地區 → 帶入會員資料的地區
   if(!cur.area && window.SUPA && window.rwMemberToken && window.rwMemberToken()){
     fetch(SUPA.url+'/rest/v1/rpc/my_account',{method:'POST',headers:{apikey:SUPA.key,Authorization:'Bearer '+window.rwMemberToken(),'Content-Type':'application/json'},body:'{}'})
       .then(function(r){ return r.ok?r.json():null; }).then(function(d){ if(d && d.area && !cur.area){ cur.area=RWArea.split(d.area).c?d.area:''; if(cur.area){ pk.set(cur.area); var f=box.querySelector('[data-pf-from]'); if(f) f.textContent='已帶入會員資料'; } } }).catch(function(){});
   }
   return {
-    get:function(){ return {area:pk.get(), budget:cur.budget, mode:cur.mode, nick:nk?cur.nick:''}; },
+    get:function(){ return {area:pk.get(), budget:cur.budget, mode:cur.mode, roles:cur.roles.slice(), nick:nk?cur.nick:''}; },
     check:function(){
       if(nk) cur.nick=nk.value.trim();
-      var msg=(nk && !cur.nick)?'請填寫你的暱稱':!pk.county()?'請選擇你住的縣市':!pk.complete()?'請選擇你住的區（鄉鎮市）':!cur.budget?'請選擇預算':!cur.mode?'請選擇想要的方式':'';
+      var msg=(nk && !cur.nick)?'請填寫你的暱稱':!pk.county()?'請選擇你住的縣市':!pk.complete()?'請選擇你住的區（鄉鎮市）':!cur.budget?'請選擇預算':!cur.mode?'請選擇想要的方式':(rb && !cur.roles.length)?'請選擇你希望的引路人角色':'';
       if(msg){ if(errEl) errEl.textContent=msg; return null; }
-      var out={area:pk.get(), budget:cur.budget, mode:cur.mode, nick:nk?cur.nick:''}; saveLocal(out); return out;
+      var out={area:pk.get(), budget:cur.budget, mode:cur.mode, roles:cur.roles.slice(), nick:nk?cur.nick:''}; saveLocal(out); return out;
     }
   };
 }
 
 // 引路人最低價：已核准方案（public_plans）的最低價；沒有自訂方案就用預約頁的預設方案（最低 $200）
-var PRICE_CACHE=null;
+var PRICE_CACHE=null, ROLE_MAP={};
+function loadRoles(){
+  if(!window.SUPA) return Promise.resolve();
+  return fetch(SUPA.url+'/rest/v1/rpc/guide_roles',{method:'POST',headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key,'Content-Type':'application/json'},body:'{}'})
+    .then(function(r){ return r.ok?r.json():[]; }).then(function(L){ (Array.isArray(L)?L:[]).forEach(function(x){ if(x&&x.id&&Array.isArray(x.roles)) ROLE_MAP[x.id]=x.roles; }); }).catch(function(){});
+}
 function loadPrices(){
   if(PRICE_CACHE) return PRICE_CACHE;
+  var rl=loadRoles();
   PRICE_CACHE=(window.SUPA?fetch(SUPA.url+'/rest/v1/public_plans?select=guide_id,price',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}).then(function(r){ return r.ok?r.json():[]; }).catch(function(){ return []; }):Promise.resolve([]))
-    .then(function(rows){ var m={}; (Array.isArray(rows)?rows:[]).forEach(function(x){ var v=Number(x.price); if(!isFinite(v)) return; if(m[x.guide_id]==null || v<m[x.guide_id]) m[x.guide_id]=v; }); return m; });
+    .then(function(rows){ var m={}; (Array.isArray(rows)?rows:[]).forEach(function(x){ var v=Number(x.price); if(!isFinite(v)) return; if(m[x.guide_id]==null || v<m[x.guide_id]) m[x.guide_id]=v; }); return rl.then(function(){ return m; }); });
   return PRICE_CACHE;
 }
 function minPrice(g,prices){ if(prices && prices[g.id]!=null) return prices[g.id]; return 200; }
@@ -179,6 +200,11 @@ function fit(g,p,prices){
   if(rf==='district'){ tags.push({ok:1,t:'✓ 同區'}); pts+=2; } else if(rf==='county'){ tags.push({ok:1,t:'✓ 同縣市'}); pts+=1; }
   var b=bOf(p.budget), mp=minPrice(g,prices);
   if(b && b.k!=='any'){ if(mp<=b.max){ tags.push({ok:1,t:'✓ 預算內 '+money(mp)+' 起'}); pts+=2; } else { tags.push({ok:0,t:'✕ '+money(mp)+' 起'}); bad++; } }
+  // 角色：合的排前面；不合只標示、不算「不符合」
+  var want=rolePick(p), gr=(ROLE_MAP[g.id]||g.roles||[]).filter(function(k){ return rOf(k); });
+  if(want.length && gr.length){ var hit=gr.filter(function(k){ return want.indexOf(k)>=0; });
+    if(hit.length){ hit.forEach(function(k){ tags.push({ok:1,t:'✓ '+rOf(k).t}); }); pts+=3*hit.length; }
+    else tags.push({ok:0,t:'角色不同（'+gr.map(function(k){ return rOf(k).t; }).join('・')+'）'}); }
   return {tags:tags,bad:bad,pts:pts-bad*4};
 }
 function tagsHTML(f){ return f&&f.tags.length?'<span class="mt-tags">'+f.tags.map(function(t){ return '<span class="mt-tag'+(t.ok?'':' no')+'">'+esc(t.t)+'</span>'; }).join('')+'</span>':''; }
@@ -193,5 +219,5 @@ function helpHTML(show,href){
     ?'<div class="mt-help"><b>沒有完全符合的引路人嗎？</b><p>距離太遠、預算不合，或沒有你想要的項目——加官方 LINE，我們用真人幫你找一位條件合的引路人，連時間都幫你約好。</p><a href="'+esc(href)+'" target="_blank" rel="noopener">加 LINE，請專人幫我配</a></div>'
     :'<div class="mt-soft">不是你想要的項目或距離？<a href="'+esc(href)+'" target="_blank" rel="noopener">加 LINE 請專人幫你配</a></div>';
 }
-window.RWMatch={BUDGETS:BUDGETS, MODES:MODES, label:label, forDb:forDb, formHTML:formHTML, mount:mount, loadPrices:loadPrices, fit:fit, tagsHTML:tagsHTML, rank:rank, helpHTML:helpHTML, injectCss:injectCss, loadLocal:loadLocal};
+window.RWMatch={BUDGETS:BUDGETS, MODES:MODES, ROLES:ROLES, label:label, forDb:forDb, formHTML:formHTML, mount:mount, loadPrices:loadPrices, fit:fit, tagsHTML:tagsHTML, rank:rank, helpHTML:helpHTML, injectCss:injectCss, loadLocal:loadLocal};
 })();
