@@ -20,6 +20,9 @@
   .fld:focus{border-color:#C9A7DE}
   .go{width:100%;font:inherit;font-weight:500;font-size:15px;color:#4A3A2A;background:var(--rainbow);border:none;border-radius:999px;padding:13px 0;cursor:pointer;margin-top:2px}
   .go:disabled{opacity:.65}
+  /* 開放時段折疊列：舊版 slot-ui.js 還在手機快取時，不要被上面的 .go（登入按鈕）撐滿 */
+  .rs-fold .go{width:auto;flex:none;margin:0;font-size:12.5px;font-weight:400;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;padding:5px 11px;white-space:nowrap}
+  .rs-fold .m{flex:1;min-width:0}
   .msg{font-size:13px;min-height:18px;margin-top:10px}
   .divider{display:flex;align-items:center;gap:10px;color:#C3B296;font-size:12px;margin:20px 0 14px}
   .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -458,8 +461,8 @@
 </div></div>
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
-<script src="slot-ui.js"></script>
-<script src="course-ui.js"></script>
+<script src="slot-ui.js?v=20261108"></script>
+<script src="course-ui.js?v=20261108"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
