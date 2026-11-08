@@ -53,9 +53,9 @@ var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;co
   '.rs-cd .n{font-size:9.5px;color:#3F7A5E;line-height:1;white-space:nowrap}.rs-cd.sel .n{color:#4A3A2A}'+
   '.rs-picked{font-size:13px;color:var(--brush);font-weight:500;margin-top:10px}'+
   '.rs-fold{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;text-align:left;background:#fff;border:1.5px solid #EFE3CE;border-radius:14px;padding:10px 12px;cursor:pointer;color:inherit;margin-top:8px}.rs-fold:first-child{margin-top:0}'+
-  '.rs-fold .ic{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:#E4F2E7}.rs-fold .ic.b{background:#FBE7CC}'+
-  '.rs-fold .m{flex:1;min-width:0}.rs-fold .m b{display:block;font-size:14.5px;color:var(--brush)}.rs-fold .m small{display:block;font-size:12px;color:var(--soft);margin-top:2px}'+
-  '.rs-fold .go{flex:none;font-size:12.5px;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:5px 11px;white-space:nowrap}'+
+  '.rs-fic{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:#E4F2E7}.rs-fic.b{background:#FBE7CC}'+
+  '.rs-fm{flex:1;min-width:0}.rs-fm b{display:block;font-size:14.5px;color:var(--brush)}.rs-fm small{display:block;font-size:12px;color:var(--soft);margin-top:2px}'+
+  '.rs-fgo{flex:none;font-size:12.5px;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:5px 11px;white-space:nowrap}'+
   '.rs-fold.open{border-bottom-left-radius:0;border-bottom-right-radius:0}'+
   '.rs-fbody{background:#fff;border:1.5px solid #EFE3CE;border-top:0;border-radius:0 0 14px 14px;padding:10px 12px 12px}'+
   '.rs-day{margin-top:12px;padding-top:10px;border-top:1px dashed #EFE3CE}.rs-day-h{font-size:15px;color:var(--brush);font-weight:600}'+
@@ -84,7 +84,7 @@ function editor(el,api){
     var nextS=S.rows.filter(function(s){ return !s.taken; }).map(function(s){ var p=wpart(s.slot_at); return p?dayKey(p)+'T'+p2(p.h)+':'+p2(p.mi):''; }).filter(function(k){ return k && k>=nowK; }).sort()[0];
     // ① 可預約時間：打開是日曆，點日子後在下面選地點和時段
     if(S.editable){
-      h+='<button type="button" class="rs-fold'+(S.openA?' open':'')+'" data-rs-fa><span class="ic">📅</span><span class="m"><b>可預約時間</b><small>'+(S.openA?'點日曆上的日子，下面選時段':'點開日曆，選日子新增時段')+'</small></span><span class="go">'+(S.openA?'收起 ▴':'打開日曆 ▾')+'</span></button>';
+      h+='<button type="button" class="rs-fold'+(S.openA?' open':'')+'" data-rs-fa><span class="rs-fic">📅</span><span class="rs-fm"><b>可預約時間</b><small>'+(S.openA?'點日曆上的日子，下面選時段':'點開日曆，選日子新增時段')+'</small></span><span class="rs-fgo">'+(S.openA?'收起 ▴':'打開日曆 ▾')+'</span></button>';
       if(S.openA){
         var tk0=today(), tn=new Date(), first=new Date(S.cy,S.cm-1,1).getDay(), nd=new Date(S.cy,S.cm,0).getDate();
         var atFirst=(S.cy<tn.getFullYear()) || (S.cy===tn.getFullYear() && S.cm<=tn.getMonth()+1);
@@ -117,8 +117,8 @@ function editor(el,api){
       }
     }
     // ② 已開放時段：另外一塊，要看再打開
-    h+='<button type="button" class="rs-fold'+(S.openB?' open':'')+'" data-rs-fb><span class="ic b">🕒</span><span class="m"><b>已開放時段</b><small>'+
-      (S.rows.length?'可約 '+(S.rows.length-tkAll)+' 個・已被預約 '+tkAll+' 個'+(nextS?'・最近 '+dayLabel(nextS.slice(0,10))+nextS.slice(11):''):'還沒排開放時段')+'</small></span><span class="go">'+(S.openB?'收起 ▴':'查看 ▾')+'</span></button>';
+    h+='<button type="button" class="rs-fold'+(S.openB?' open':'')+'" data-rs-fb><span class="rs-fic b">🕒</span><span class="rs-fm"><b>已開放時段</b><small>'+
+      (S.rows.length?'可約 '+(S.rows.length-tkAll)+' 個・已被預約 '+tkAll+' 個'+(nextS?'・最近 '+dayLabel(nextS.slice(0,10))+nextS.slice(11):''):'還沒排開放時段')+'</small></span><span class="rs-fgo">'+(S.openB?'收起 ▴':'查看 ▾')+'</span></button>';
     if(S.openB){
       h+='<div class="rs-fbody">';
       if(!days.length){ h+='<div class="rs-empty" style="margin:0">還沒排開放時段。排了之後客人才能從這些時間預約。</div>'; }
