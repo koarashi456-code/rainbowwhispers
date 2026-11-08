@@ -82,6 +82,7 @@
   .od b{display:block;font-size:15px;color:var(--brush);font-variant-numeric:tabular-nums}
   .od small{display:block;font-size:11px;color:var(--soft);white-space:nowrap}
   .od.shop{background:#EEF4F8}
+  .od.buy{background:#EAD9F2}.od.buy small{color:#6E4F9E;font-weight:600}
   .om{flex:1;min-width:0}
   .om .t{font-size:14.5px;color:var(--brush);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .om .s{font-size:12.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -226,16 +227,17 @@ var WDN=['日','一','二','三','四','五','六'];
 // 服務名稱「方案｜新北市三重區（實體）」→ 方案、地點分開
 function splitSvc(o){ var sv=String(o.service||''); if(isShop(o)) return {plan:sv.replace(/^商品：/,''),place:''};
   var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
+function isBuy(o){ return /^課程購買：/.test(String(o.service||'')); }
 function stText(o){ return isShop(o)&&o.status==='已預約'?'待出貨':o.status; }
 function isUpcoming(o){ return o.status==='已預約' && (isShop(o) || cmpKey(o) > new Date()); }
 function orderRow(o){
   var i=ALL_ORDERS.indexOf(o), sp=splitSvc(o), d, sub;
   var p=(!isShop(o)&&o.appointment_at)?wpart(o.appointment_at):null;
   if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=WDN[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
-  else { var c=new Date(o.created_at||0); d=(c.getMonth()+1)+'/'+String(c.getDate()).padStart(2,'0'); sub=WDN[c.getDay()]; }
+  else { var c=new Date(o.created_at||0); d=(c.getMonth()+1)+'/'+String(c.getDate()).padStart(2,'0'); sub=isBuy(o)?'購買':WDN[c.getDay()]; }
   var dim=(o.status==='已取消'||o.status==='已退費');
   return '<button type="button" class="orow'+(dim?' dim':'')+'" data-i="'+i+'">'
-    +'<span class="od'+(isShop(o)?' shop':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
+    +'<span class="od'+(isShop(o)?' shop':'')+(isBuy(o)?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
     +'<span class="om"><div class="t">'+(isShop(o)?'商品訂單':esc(o.guide_name||'引路人'))+'</div><div class="s">'+esc(sp.plan)+(sp.place?'｜'+esc(sp.place):'')+'</div></span>'
     +'<span class="oright"><div class="a">'+(o.method==='課程'?'1 堂':money(o.amount))+'</div>'+statusBadge(stText(o))+'</span><span class="ogo">›</span></button>';
 }
@@ -247,7 +249,10 @@ function openDetail(i){
   var o=ALL_ORDERS[i]; if(!o) return; OD_I=i;
   var sp=splitSvc(o), h='<div class="od-top"><div class="rs-h" style="margin:0">訂單明細</div><button type="button" class="od-x" id="od-x" aria-label="關閉">×</button></div>'
     +'<div style="margin:3px 0 2px">'+statusBadge(stText(o))+'</div>';
-  if(isShop(o)){
+  if(isBuy(o)){
+    var bd=new Date(o.created_at||0);
+    h+=kv('引路人',esc(o.guide_name||'引路人'))+kv('項目',esc(sp.plan.replace(/^課程購買：/,''))+'（套裝課程）')+kv('購買日期',isNaN(bd)?'—':bd.getFullYear()+'/'+(bd.getMonth()+1)+'/'+bd.getDate()+'（'+WDN[bd.getDay()]+'）'+String(bd.getHours()).padStart(2,'0')+':'+String(bd.getMinutes()).padStart(2,'0'))+kv('付款方式',esc(o.method||'—'))+kv('金額',money(o.amount),'tot')+(o.order_ref?kv('訂單編號',esc(o.order_ref)):'')+'<div class="rs-sub" style="margin-top:10px">每一堂的使用紀錄在「會員中心 → 我的課程」。</div>';
+  } else if(isShop(o)){
     h+=kv('品項',esc(sp.plan))+kv('下單日',fmtDay(o.created_at))+kv('付款方式',esc(o.method||'—'))+kv('金額',money(o.amount),'tot')+(o.order_ref?kv('訂單編號',esc(o.order_ref)):'');
   } else {
     h+=kv('引路人',esc(o.guide_name||'引路人'))+kv('方案',esc(sp.plan||'—'))+(sp.place?kv('服務地點',esc(sp.place)):'')

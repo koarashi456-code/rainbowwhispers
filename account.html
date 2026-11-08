@@ -178,6 +178,8 @@
   .oright .a{font-size:14.5px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
   .oright .cal-st{display:inline-block;margin-top:3px}
   .ogo{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
+  .od.buy{background:#EAD9F2}.od.buy small{color:#6E4F9E;font-weight:600}
+  .gc-olist{margin-top:6px}.gc-olist .orow{padding:9px 11px}
   .orow.dim .od b,.orow.dim .om .t,.orow.dim .oright .a{color:#9C8B74}
   .gs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:85}
   .gs-mask.on{display:flex}
@@ -462,7 +464,7 @@
 <script src="supabase-config.js"></script>
 <script src="area.js"></script>
 <script src="slot-ui.js?v=20261108"></script>
-<script src="course-ui.js?v=20261108"></script>
+<script src="course-ui.js?v=20261108b"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -670,17 +672,20 @@ function openGuidePage(t){
 }
 // 交易紀錄：一行一筆（日期、客戶、方案｜地點、金額、狀態），分「即將到來」「過去的預約」，點一筆從下方滑出明細
 var GORD=[];
+function gIsBuy(o){ return /^課程購買：/.test(String(o.service||'')); }
+function gBuyAt(o){ var d=new Date(o.created_at||0); return isNaN(d)?null:d; }
 var GWD=['日','一','二','三','四','五','六'];
 function gStc(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st==='已取消'||st==='已退費')?'cancel':''; }
 function gSplit(sv){ sv=String(sv||''); var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
-function gKey(o){ var p=wpart(o.appointment_at); return p?new Date(p.y,p.mo-1,p.d,p.h,p.mi):new Date(0); }
+function gKey(o){ var p=wpart(o.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); return gBuyAt(o)||new Date(0); }
 function gUpcoming(o){ return o.status==='已預約' && !o.past && !!o.appointment_at; }
 function gRow(o){
   var i=GORD.indexOf(o), p=wpart(o.appointment_at), sp=gSplit(o.service), dim=(o.status==='已取消'||o.status==='已退費');
-  var d=p?(p.mo+'/'+String(p.d).padStart(2,'0')):'—', sub=p?(GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'未定時間';
+  var d=p?(p.mo+'/'+String(p.d).padStart(2,'0')):'—', sub=p?(GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'未定時間', buy=!p&&gIsBuy(o);
+  if(buy){ var bd0=gBuyAt(o); if(bd0){ d=(bd0.getMonth()+1)+'/'+String(bd0.getDate()).padStart(2,'0'); } sub='購買'; }
   var search=[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' ').toLowerCase();
   return '<button type="button" class="orow'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'">'
-    +'<span class="od"><b>'+d+'</b><small>'+sub+'</small></span>'
+    +'<span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
     +'<span class="om"><div class="t">'+escA(o.customer_name||'客戶')+'</div><div class="s">'+escA(sp.plan)+(sp.place?'｜'+escA(sp.place):'')+'</div></span>'
     +'<span class="oright"><div class="a">'+money(o.amount)+'</div><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
 }
@@ -689,6 +694,7 @@ function gFullDT(s){ var p=wpart(s); if(!p) return '未定時間'; return p.y+'/
 function gKv(k,v,c){ return '<div class="kv'+(c?' '+c:'')+'"><span>'+k+'</span><span>'+v+'</span></div>'; }
 function openGOrder(i){
   var o=GORD[i]; if(!o) return;
+  if(gIsBuy(o)){ openGBuy(o); return; }
   var sp=gSplit(o.service), can=o.past && (o.status==='已預約'||o.status==='已完成');
   var h='<div class="gs-top"><span class="gs-h">預約明細</span><button type="button" class="gs-x" id="gs-x" aria-label="關閉">×</button></div>'
     +'<div style="margin:3px 0 2px"><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></div>'
@@ -705,6 +711,22 @@ function openGOrder(i){
     try{ var x=await db.rpc('guide_mark_noshow',{p_id:o.id}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); gsClose(); loadGuideOrders(); loadSchedule(); }
     catch(e){ alert('標記失敗：'+(e.message||'')); nb.disabled=false; nb.textContent='客戶沒來？標記未出席'; }
   };
+  var cb=$('#gs-cust'); if(cb) cb.onclick=function(){ gsClose(); openGuideCustomer(o.customer_contact, o.customer_name); };
+}
+// 課程購買明細：購買日期、共幾堂／已用／剩幾堂（課程資料來自 my_guide_packages）
+async function openGBuy(o){
+  if(!GPKGS.length){ try{ var r=await db.rpc('my_guide_packages'); if(!r.error && Array.isArray(r.data)) GPKGS=r.data; }catch(e){} }
+  var k=GPKGS.filter(function(x){ return x.order_ref && x.order_ref===o.order_ref; })[0], bd=gBuyAt(o);
+  var when=bd?bd.getFullYear()+'/'+(bd.getMonth()+1)+'/'+bd.getDate()+'（'+GWD[bd.getDay()]+'）'+String(bd.getHours()).padStart(2,'0')+':'+String(bd.getMinutes()).padStart(2,'0'):'—';
+  var h='<div class="gs-top"><span class="gs-h">課程購買明細</span><button type="button" class="gs-x" id="gs-x" aria-label="關閉">×</button></div>'
+    +'<div style="margin:3px 0 2px"><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></div>'
+    +gKv('客戶',escA(o.customer_name||'客戶'))+gKv('聯絡',escA(o.customer_contact||'—'))
+    +gKv('項目',escA(String(o.service||'').replace(/^課程購買：/,''))+'（套裝）')+gKv('購買日期',when)
+    +(k?gKv('堂數','共 '+k.total+' 堂・已用 '+((Number(k.used)||0)+(Number(k.booked)||0))+'・剩 '+k.remaining+' 堂'):'')
+    +gKv('付款方式',escA(o.method||'—'))+gKv('金額',money(o.amount),'tot')+(o.order_ref?gKv('訂單編號',escA(o.order_ref)):'');
+  if(o.customer_contact||o.customer_name) h+='<div style="text-align:center"><button type="button" class="gs-link" id="gs-cust">看這位客戶的所有紀錄 ›</button></div>';
+  $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on');
+  $('#gs-x').onclick=gsClose;
   var cb=$('#gs-cust'); if(cb) cb.onclick=function(){ gsClose(); openGuideCustomer(o.customer_contact, o.customer_name); };
 }
 // 跳到客戶管理裡的那位客人（用聯絡方式找，找不到就用名字）
@@ -731,7 +753,7 @@ async function loadGuideOrders(){
   var past=GORD.filter(function(o){ return !gUpcoming(o); }).sort(function(a,b){ return gKey(b)-gKey(a); });
   var h='';
   if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(gRow).join('')+'</div>';
-  if(past.length) h+='<div class="olist-h">過去的預約</div><div class="olist">'+past.map(gRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist">'+past.map(gRow).join('')+'</div>';
   bx.innerHTML=h;
   bx.querySelectorAll('[data-gi]').forEach(function(b){ b.onclick=function(){ openGOrder(+b.getAttribute('data-gi')); }; });
 }
@@ -778,7 +800,11 @@ async function loadGuideCustomers(){
   mx.innerHTML=cs.map(function(m){
     var info=[m.contact,m.phone,m.area].filter(Boolean).map(escA).join('　·　');
     var orders=(m.orders||[]).map(function(o){
-      return '<div class="gc-o"><span class="gc-dt">'+(o.appointment_at?fmtDT(o.appointment_at):'未定時間')+'</span><span class="gc-sv">'+escA(o.service||'—')+'</span><span class="gc-am">'+money(o.amount)+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></div>';
+      var p=wpart(o.appointment_at), buy=!p&&gIsBuy(o), bd=buy?gBuyAt(o):null, d, sub;
+      if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
+      else if(bd){ d=(bd.getMonth()+1)+'/'+String(bd.getDate()).padStart(2,'0'); sub='購買'; } else { d='—'; sub='未定時間'; }
+      var sp=gSplit(o.service);
+      return '<button type="button" class="orow gc-orow" data-ref="'+escA(o.order_ref||'')+'"><span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'+'<span class="om"><div class="t">'+escA(String(sp.plan||'—').replace(/^課程購買：/,''))+'</div><div class="s">'+(buy?'課程購買（套裝課程）':(sp.place?escA(sp.place):(o.amount===0?'用課程堂數':'')))+'</div></span>'+'<span class="oright"><div class="a">'+(o.amount===0&&!buy?'1 堂':money(o.amount))+'</div><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
     }).join('');
     var lastO=(m.orders||[])[0];
     var sum='<span class="gx-main"><b class="gc-dname">'+gcName(m.alias,m.name)+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
@@ -788,7 +814,7 @@ async function loadGuideCustomers(){
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div>'
-      +'<div class="gc-orders">'+orders+'</div></div>';
+      +(orders?'<div class="gc-note-l">預約紀錄</div><div class="olist gc-olist">'+orders+'</div>':'')+'</div>';
     return gxRow(sum,det,[m.alias,m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
   bindGx(mx);
@@ -830,6 +856,8 @@ async function loadGuideCustomers(){
   });
   loadGuidePkgs();
 }
+// 客戶明細裡的預約紀錄：點一筆打開跟交易紀錄一樣的明細
+(function(){ var mx=document.getElementById('g-members'); if(mx) mx.addEventListener('click',async function(e){ var b=e.target.closest('.gc-orow'); if(!b) return; var ref=b.getAttribute('data-ref'); if(!ref) return; if(!GORD.length) await loadGuideOrders(); for(var j=0;j<GORD.length;j++){ if(GORD[j].order_ref===ref){ openGOrder(j); return; } } }); })();
 // 引路人後台：客人的套裝課程（SQL：my_guide_packages、package_adjust；畫面在 course-ui.js）
 var GPKGS=[];
 async function loadGuidePkgs(){
