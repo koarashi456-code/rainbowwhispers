@@ -180,6 +180,8 @@
   .ogo{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
   .od.buy{background:#EAD9F2}.od.buy small{color:#6E4F9E;font-weight:600}
   .gc-olist{margin-top:6px}.gc-olist .orow{padding:9px 11px}
+  .gc-tog{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;box-sizing:border-box;margin-top:12px;font:inherit;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 12px;cursor:pointer;color:var(--brush);font-size:13.5px;font-weight:500;text-align:left}
+  .gc-tog span{font-size:12px;color:var(--soft);font-weight:400}.gc-olist[hidden]{display:none}
   .orow.dim .od b,.orow.dim .om .t,.orow.dim .oright .a{color:#9C8B74}
   .gs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:85}
   .gs-mask.on{display:flex}
@@ -434,7 +436,6 @@
   <div class="gsec-lab">交易紀錄</div>
   <input class="g-search" data-target="g-bookings" type="search" placeholder="搜尋 客戶／項目／日期／訂單編號／狀態…">
   <div id="g-bookings"></div>
-  <div class="gs-mask" id="gs-mask"><div class="gs-box" id="gs-box" role="dialog" aria-label="預約明細"></div></div>
 
   <div class="gsec-lab">客戶管理</div>
   <input class="g-search" data-target="g-members" type="search" placeholder="搜尋 姓名／電話／信箱／地區／備註…">
@@ -442,6 +443,9 @@
 
   <button class="lo" id="g-logout" style="margin-top:22px">登出</button>
 </div>
+
+<!-- 預約／購買明細（放在頁面最外層，從交易紀錄或客戶管理點開都看得到） -->
+<div class="gs-mask" id="gs-mask"><div class="gs-box" id="gs-box" role="dialog" aria-label="預約明細"></div></div>
 
 <footer class="rw-footer">
   <div class="rw-brand2 rw-serif">彩之語</div>
@@ -737,7 +741,7 @@ function openGuideCustomer(contact,name){
     var box=$('#g-members'); var rows=box?Array.prototype.slice.call(box.querySelectorAll('.gx')):[];
     var c=String(contact||'').toLowerCase().trim(), n=String(name||'').toLowerCase().trim();
     var row=rows.filter(function(r){ var s=r.getAttribute('data-search')||''; return c && s.indexOf(c)>=0; })[0] || rows.filter(function(r){ var s=(r.getAttribute('data-search')||'')+' '+r.textContent.toLowerCase(); return n && s.indexOf(n)>=0; })[0];
-    if(row){ var b=row.querySelector('.gx-sum'); if(b) b.click(); return; }
+    if(row){ var b=row.querySelector('.gx-sum'); if(b) b.click(); var t=row.querySelector('.gc-tog'); if(t) gcTog(t,true); return; }
     if(++tries<20) setTimeout(find,150);
   })();
 }
@@ -775,9 +779,9 @@ function bindGx(box){
 // 交易紀錄／客戶管理搜尋：即時篩選列表（含備註文字），列表重新載入後自動套用
 function applyGuideSearch(id){
   var inp=document.querySelector('.g-search[data-target="'+id+'"]'), box=document.getElementById(id); if(!inp||!box) return;
-  var q=inp.value.trim().toLowerCase(), rows=box.querySelectorAll('.grow, .orow'), shown=0;
+  var q=inp.value.trim().toLowerCase(), rows=box.querySelectorAll('.grow, .orow:not(.gc-orow)'), shown=0;
   rows.forEach(function(r){ var ta=r.querySelector('textarea'); var hay=(r.getAttribute('data-search')||'')+' '+(r.textContent+' '+(ta?ta.value:'')).toLowerCase(); var ok=!q||hay.indexOf(q)>=0; r.style.display=ok?'':'none'; if(ok) shown++; });
-  box.querySelectorAll('.olist').forEach(function(l){ var any=Array.prototype.some.call(l.querySelectorAll('.orow'),function(r){ return r.style.display!=='none'; }); l.style.display=any?'':'none'; var hd=l.previousElementSibling; if(hd && hd.classList.contains('olist-h')) hd.style.display=any?'':'none'; });
+  box.querySelectorAll('.olist:not(.gc-olist)').forEach(function(l){ var any=Array.prototype.some.call(l.querySelectorAll('.orow'),function(r){ return r.style.display!=='none'; }); l.style.display=any?'':'none'; var hd=l.previousElementSibling; if(hd && hd.classList.contains('olist-h')) hd.style.display=any?'':'none'; });
   var nr=box.querySelector('.g-noresult');
   if(q && rows.length && !shown){ if(!nr){ nr=document.createElement('div'); nr.className='g-noresult'; box.appendChild(nr); } nr.textContent='沒有符合「'+inp.value.trim()+'」的結果'; }
   else if(nr) nr.remove();
@@ -806,7 +810,7 @@ async function loadGuideCustomers(){
       var sp=gSplit(o.service);
       return '<button type="button" class="orow gc-orow" data-ref="'+escA(o.order_ref||'')+'"><span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'+'<span class="om"><div class="t">'+escA(String(sp.plan||'—').replace(/^課程購買：/,''))+'</div><div class="s">'+(buy?'課程購買（套裝課程）':(sp.place?escA(sp.place):(o.amount===0?'用課程堂數':'')))+'</div></span>'+'<span class="oright"><div class="a">'+(o.amount===0&&!buy?'1 堂':money(o.amount))+'</div><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
     }).join('');
-    var lastO=(m.orders||[])[0];
+    var lastO=(m.orders||[])[0], recHint=(m.orders||[]).length+' 筆・合計 '+money(m.spend);
     var sum='<span class="gx-main"><b class="gc-dname">'+gcName(m.alias,m.name)+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
       +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span><span class="grow-amt">'+money(m.spend)+'</span></div>'
@@ -814,7 +818,7 @@ async function loadGuideCustomers(){
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div>'
-      +(orders?'<div class="gc-note-l">預約紀錄</div><div class="olist gc-olist">'+orders+'</div>':'')+'</div>';
+      +(orders?'<button type="button" class="gc-tog" aria-expanded="false">消費紀錄 <span data-hint="'+escA(recHint)+'">'+escA(recHint)+'・點開 ▾</span></button><div class="olist gc-olist" hidden>'+orders+'</div>':'')+'</div>';
     return gxRow(sum,det,[m.alias,m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
   bindGx(mx);
@@ -856,8 +860,9 @@ async function loadGuideCustomers(){
   });
   loadGuidePkgs();
 }
-// 客戶明細裡的預約紀錄：點一筆打開跟交易紀錄一樣的明細
-(function(){ var mx=document.getElementById('g-members'); if(mx) mx.addEventListener('click',async function(e){ var b=e.target.closest('.gc-orow'); if(!b) return; var ref=b.getAttribute('data-ref'); if(!ref) return; if(!GORD.length) await loadGuideOrders(); for(var j=0;j<GORD.length;j++){ if(GORD[j].order_ref===ref){ openGOrder(j); return; } } }); })();
+// 客戶明細裡的消費紀錄：平常收起來，點「消費紀錄」展開；點一筆打開跟交易紀錄一樣的明細
+function gcTog(t,open){ var l=t.nextElementSibling; if(!l) return; if(open==null) open=l.hidden; l.hidden=!open; t.setAttribute('aria-expanded',open?'true':'false'); var s=t.querySelector('span'); if(s) s.textContent=open?'收起 ▴':s.getAttribute('data-hint')+'・點開 ▾'; }
+(function(){ var mx=document.getElementById('g-members'); if(mx) mx.addEventListener('click',async function(e){ var t=e.target.closest('.gc-tog'); if(t){ gcTog(t); return; } var b=e.target.closest('.gc-orow'); if(!b) return; var ref=b.getAttribute('data-ref'); if(!ref) return; if(!GORD.length) await loadGuideOrders(); for(var j=0;j<GORD.length;j++){ if(GORD[j].order_ref===ref){ openGOrder(j); return; } } }); })();
 // 引路人後台：客人的套裝課程（SQL：my_guide_packages、package_adjust；畫面在 course-ui.js）
 var GPKGS=[];
 async function loadGuidePkgs(){
