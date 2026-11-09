@@ -65,6 +65,9 @@
   .pkagree{margin-top:14px;border:2px solid #EBD3A8;border-radius:14px;padding:12px 14px;background:#FFFDF8}
   .pkagree-t{background:#FBF3E4;border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.8;color:var(--ink)}.pkagree-t b{color:var(--brush)}
   .pkagree-l{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:14px;cursor:pointer;line-height:1.6;text-align:left}.pkagree-l input{margin-top:5px;width:17px;height:17px;flex:none}.pkagree-l a{color:#B5713F}
+  .gplace{display:block;margin-top:4px}.gplace b{font-weight:500;color:var(--brush)}
+  .gtr{display:inline-block;font-size:12.5px;color:#4F7392;background:#E3EEF6;border-radius:999px;padding:1px 10px;margin-left:6px}
+  .gplace small{display:block;font-size:12px;color:var(--soft);margin-top:1px}
   .bank{background:#FBF6EC;border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;color:var(--ink);line-height:1.9}
   .bank b{color:var(--brush)}
   .bankwarn{font-size:12.5px;color:#C0506A;margin-top:8px}
@@ -198,7 +201,7 @@
 
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="booking-access.js"></script>
+<script src="booking-access.js?v=20261109"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
 var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, PKG_PLANS=[], OWNED=[], MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
@@ -210,6 +213,10 @@ function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(
 function p2(n){ return (n<10?'0':'')+n; }
 function fmtWhen(s){ if(!s) return '未指定'; var p=wpart(s); if(!p) return '未指定'; return p.y+'/'+p.mo+'/'+p.d+' '+p2(p.h)+':'+p2(p.mi); }
 var OPEN_SLOTS=[], SLOT_PL={}, SEL_DATE='', SEL_WHEN='';
+// 每個地點的附近交通（SQL：guide_place_info；公開資訊，不含完整地址）
+var PLACE_INFO=[];
+function trText(t){ if(!t) return ''; var st=String(t.station||'').trim(); if(!st) return ''; if(!/站$/.test(st)) st+='站'; var w=Number(t.walk)||0, ty=t.type||'捷運'; return (ty==='火車'?'🚆 ':ty==='公車'?'🚌 ':'🚇 ')+st+(w?' 走路 '+w+' 分鐘':''); }
+function placeInfo(a){ return PLACE_INFO.filter(function(x){ return x.area===a; })[0]||null; }
 // 接案上限：已經滿的月份／日期不顯示時段（SQL：guide_closed_days）
 var CAP_CLOSED={months:[],days:[],all:false};
 async function loadClosed(){ CAP_CLOSED={months:[],days:[],all:false}; try{ var r=await db.rpc('guide_closed_days',{p_guide_id:guide.id}); if(!r.error && r.data) CAP_CLOSED={months:r.data.months||[],days:r.data.days||[],all:!!r.data.all}; }catch(e){} }
@@ -264,6 +271,7 @@ async function loadGuide(){
     guide=res.data[0];
     try{ var pr=await db.from('public_plans').select('label,price,unit').eq('guide_id',guide.id).order('price'); GUIDE_PLANS=(pr && !pr.error && Array.isArray(pr.data)) ? pr.data.map(function(p){return {label:p.label, price:Number(p.price)||0, unit:p.unit||''};}) : []; }catch(e){ GUIDE_PLANS=[]; }
     try{ var sr=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(sr && !sr.error && Array.isArray(sr.data)) ? sr.data : []; }catch(e){ OPEN_SLOTS=[]; }
+    try{ var pinf=await db.rpc('guide_place_info',{p_guide_id:guide.id}); PLACE_INFO=(pinf && !pinf.error && Array.isArray(pinf.data))?pinf.data:[]; }catch(e){ PLACE_INFO=[]; }
     try{ var pl=await db.rpc('guide_places',{p_guide_id:guide.id}); PLACES=buildPlaces((pl && !pl.error) ? pl.data : null); }catch(e){ PLACES=[]; }
     await loadSlotPlaces();
     await loadClosed();
@@ -281,7 +289,11 @@ function renderGuide(){
   if(g.service_mode) h+='<div class="gmode">'+esc(g.service_mode)+'</div>';
   if(svcs.length) h+='<div class="gchips">'+svcs.map(function(s){return '<span class="gchip">'+esc(s)+'</span>';}).join('')+'</div>';
   var meta=[];
-  if(g.region) meta.push('服務區域：'+esc(g.region));
+  var withTr=PLACE_INFO.filter(function(x){ return x.area && (trText(x) || String(x.tip||'').trim()); });
+  if(withTr.length){
+    meta.push('服務地點：'+PLACE_INFO.filter(function(x){ return x.area; }).map(function(x){ var tr=trText(x), tip=String(x.tip||'').trim();
+      return '<span class="gplace"><b>📍 '+esc(x.area)+'</b>'+(tr?'<span class="gtr">'+esc(tr)+'</span>':'')+(tip?'<small>'+esc(tip)+'</small>':'')+'</span>'; }).join(''));
+  } else if(g.region) meta.push('服務區域：'+esc(g.region));
   // 有開放時段時以時段為準，不再顯示舊的手打文字（避免兩邊說法不一致）
   if(g.availability && !(OPEN_SLOTS && OPEN_SLOTS.length)) meta.push('可預約：'+esc(g.availability));
   if(meta.length) h+='<div class="gmeta">'+meta.join('<br>')+'</div>';
@@ -350,7 +362,7 @@ function buildPlaces(d){
   if(!d || typeof d!=='object') return [];
   var out=[], app=/zoom/i.test(d.app||'')?'Zoom':'Google Meet';
   if(d.online) out.push({v:'線上', t:'線上視訊', s:'用 '+app+'，在家就能進行', label:'線上視訊', ic:CAM_IC});
-  (Array.isArray(d.areas)?d.areas:[]).forEach(function(a){ a=String(a||'').trim(); if(a && !out.some(function(x){ return x.v===a; })) out.push({v:a, t:a, s:'實體見面', label:a+'（實體）', ic:PIN_IC}); });
+  (Array.isArray(d.areas)?d.areas:[]).forEach(function(a){ a=String(a||'').trim(); if(a && !out.some(function(x){ return x.v===a; })) var tr=trText(placeInfo(a)); out.push({v:a, t:a, s:'實體見面'+(tr?'・'+tr:''), label:a+'（實體）', ic:PIN_IC}); });
   if(d.offline && !out.some(function(x){ return x.ic===PIN_IC; })) out.push({v:'實體', t:'實體見面', s:'地點會在預約成功後告訴你', label:'實體', ic:PIN_IC});
   return out;
 }

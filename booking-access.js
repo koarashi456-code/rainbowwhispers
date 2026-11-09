@@ -15,6 +15,8 @@ var CSS='.rwa-box{margin:14px 0 4px;text-align:left;background:#FBF6EC;border:1.
   '.rwa-btns .go{background:#4285F4;border-color:#4285F4;color:#fff}';
 function css(){ if(document.getElementById('rwa-css')) return; var s=document.createElement('style'); s.id='rwa-css'; s.textContent=CSS; document.head.appendChild(s); }
 function appName(a){ return /zoom/i.test(a||'')?'Zoom':'Google Meet'; }
+// 附近交通（SQL：my_booking_access 的 transit）→「🚇 三重站 走路 5 分鐘」
+function trText(t){ if(!t) return ''; var st=String(t.station||'').trim(); if(!st) return ''; if(!/站$/.test(st)) st+='站'; var w=Number(t.walk)||0, ty=t.type||'捷運'; return (ty==='火車'?'🚆 ':ty==='公車'?'🚌 ':'🚇 ')+st+(w?' 走路 '+w+' 分鐘':''); }
 
 // 回傳 HTML；沒付款（匯款）或拿不到資料回傳空字串
 function html(acc){
@@ -25,7 +27,7 @@ function html(acc){
     if(acc.address){
       var map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(acc.address);
       h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-a">'+esc(acc.address)+'</div>'+
-        '<div class="rwa-s">'+(acc.checkin_note?esc(acc.checkin_note)+'<br>':'')+'請在預約時間前 10 分鐘抵達。</div>'+
+        '<div class="rwa-s">'+(trText(acc.transit)?esc(trText(acc.transit))+(acc.transit.tip?'（'+esc(acc.transit.tip)+'）':'')+'<br>':'')+(acc.checkin_note?esc(acc.checkin_note)+'<br>':'')+'請在預約時間前 10 分鐘抵達。</div>'+
         '<div class="rwa-btns"><a class="go" href="'+esc(map)+'" target="_blank" rel="noopener">在 Google 地圖開啟</a><button type="button" data-rwa-copy="'+esc(acc.address)+'">複製地址</button></div></div>';
     } else if(!acc.online){
       h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-s">引路人的地址還在整理中，我們會用 Email 或官方 LINE 通知你。</div></div>';
@@ -47,7 +49,7 @@ function html(acc){
 function text(acc){
   if(!acc || !acc.paid) return '';
   var L=[];
-  if(acc.offline && acc.address){ L.push('服務地址'+(acc.area?'（'+acc.area+'）':'')+'：'+acc.address); if(acc.checkin_note) L.push('報到提醒：'+acc.checkin_note); L.push('請在預約時間前 10 分鐘抵達。'); }
+  if(acc.offline && acc.address){ L.push('服務地址'+(acc.area?'（'+acc.area+'）':'')+'：'+acc.address); if(trText(acc.transit)) L.push('附近交通：'+trText(acc.transit).replace(/^\S+ /,'')+(acc.transit.tip?'（'+acc.transit.tip+'）':'')); if(acc.checkin_note) L.push('報到提醒：'+acc.checkin_note); L.push('請在預約時間前 10 分鐘抵達。'); }
   var link=safeUrl(acc.video_link);
   if(acc.online && link) L.push('線上視訊（'+appName(acc.video_app)+'）：'+link+'（預約時間到了點連結進入）');
   return L.join('\n');

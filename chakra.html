@@ -95,8 +95,9 @@
 </footer>
 
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261108"></script>
+<script src="area.js?v=20261109"></script>
 <script src="share-card.js"></script>
+<script src="next-ui.js?v=20261109"></script>
 <script>
 var CONFIG={ lineOaId:'@518xokyr', lineUrl:'https://lin.ee/t0NBjud0' };
 var SUPA=window.SUPA;
@@ -254,7 +255,7 @@ function renderResult(){
     '<div class="ck-rsub">你的脈輪能量圖</div>'+
     '<div class="ck-rtitle">'+esc(title)+'</div>'+
     ckFigure(R)+says+
-    '<div id="ck-rec"></div>'+
+    '<div id="ck-rec"></div>'+(R.balanced?'<div id="nx-box"></div>':'')+
     '<a class="ck-cta" href="booking.html#pick" style="text-decoration:none">瀏覽全部引路人</a>'+
     '<a class="ck-ghost" id="ck-line" href="'+lineHref+'" target="_blank" rel="noopener">加 LINE 收結果</a>'+
     '<button class="ck-ghost" id="ck-share" type="button">分享給朋友</button>'+
@@ -263,6 +264,8 @@ function renderResult(){
     '<div class="ck-note">此結果僅供自我覺察與參考，不作為醫療或心理診斷。</div>'+
   '</div>';
   LINE_HREF=lineHref; loadRec(R.focus);
+  // 七輪平衡：給「想再多認識自己一點？」的下一步
+  if(window.RWNext){ RWNext.markDone('ck'); var nxb=document.getElementById('nx-box'); if(nxb) RWNext.mount(nxb,{current:'ck',prefs:S.prefs,sub:'你的能量很平衡！想從別的角度認識自己，可以試試這些'}); }
   var lg=document.getElementById('ck-line'); if(lg) lg.onclick=function(){ saveLead(); };
   var shb=document.getElementById('ck-share'); if(shb) shb.onclick=function(){  // 分享圖卡（LINE・IG）：用主要的脈輪＋解析
     var col=CK_HEX[f.k];

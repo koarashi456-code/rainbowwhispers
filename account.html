@@ -197,6 +197,7 @@
   .glc-l{font-size:12px;color:var(--soft);margin:8px 0 3px}
   .glc-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 10px;outline:none}
   .glc-area{display:flex;gap:6px}.glc-area select{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 8px}
+  .glc-tr{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.glc-tr select{flex:none;width:auto}.glc-tr input{flex:1;min-width:0}.glc-tr .glc-walk{flex:none;width:58px;text-align:center}.glc-tr span{flex:none}
   .glc-add{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13px;cursor:pointer;margin-top:10px}
   .glc-h{font-size:13.5px;font-weight:600;color:var(--brush);margin:14px 0 2px;text-align:left}
   .gcap-mini{display:block;height:6px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin-top:6px}.gcap-mini i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
@@ -508,7 +509,7 @@
   <button type="button" class="ob-go" id="ob-go">完成，開始探索</button>
 </div></div>
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261108"></script>
+<script src="area.js?v=20261109"></script>
 <script src="slot-ui.js?v=20261109"></script>
 <script src="course-ui.js?v=20261108c"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1095,7 +1096,7 @@ async function loadGuideLocs(){
   if(!d){ box.style.display='none'; return; }
   var L=Array.isArray(d.locations)?d.locations:[];
   if(!L.length && window.RWArea){ L=RWArea.parseList(d.region).map(function(a,i){ return {area:a, address:i?'':(d.address||''), note:i?'':(d.checkin_note||'')}; }); if(!L.length && String(d.address||'').trim()) L=[{area:'',address:d.address||'',note:d.checkin_note||''}]; }
-  GLOC.L=L.map(function(x){ return {area:String((x&&x.area)||''), address:String((x&&x.address)||''), note:String((x&&x.note)||'')}; });
+  GLOC.L=L.map(function(x){ x=x||{}; return {area:String(x.area||''), address:String(x.address||''), note:String(x.note||''), t_type:String(x.t_type||'捷運'), t_station:String(x.t_station||''), t_walk:(x.t_walk==null||x.t_walk==='')?'':String(x.t_walk), t_tip:String(x.t_tip||'')}; });
   GLOC.app=d.video_app||''; GLOC.link=d.video_link||'';
   box.style.display='block'; drawGuideLocs();
 }
@@ -1116,7 +1117,10 @@ function drawGuideLocs(){
         return '<div class="glc" data-i="'+i+'"><div class="glc-top"><b>地點 '+(i+1)+(x.area?'<span class="glc-tag">'+escA(x.area)+'</span>':'<span class="glc-tag no">還沒選地區</span>')+'</b><button type="button" class="glc-del" data-rm="'+i+'">刪除</button></div>'+
           '<div class="glc-l">地區（公開）</div><div class="glc-area" data-area></div>'+
           '<div class="glc-l">完整地址（不公開）</div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
-          '<div class="glc-l">報到提醒</div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」"></div>'; }).join(''):'<div style="font-size:12.5px;color:var(--soft)">還沒有實體地點（只做線上的話可以不用加）</div>')+
+          '<div class="glc-l">報到提醒</div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」">'+
+          '<div class="glc-l">附近交通（公開，讓客人知道好不好到）</div><div class="glc-tr"><select class="glc-in" data-f="t_type">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
+            '<input class="glc-in" data-f="t_station" maxlength="30" list="rw-stations" value="'+escA(x.t_station)+'" placeholder="站名，例：三重站"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5"><span>分</span></div>'+
+          '<div class="glc-l">交通補充（選填）</div><input class="glc-in" data-f="t_tip" maxlength="100" value="'+escA(x.t_tip)+'" placeholder="例：附近有停車場、公車 306 重新路口站"></div>'; }).join(''):'<div style="font-size:12.5px;color:var(--soft)">還沒有實體地點（只做線上的話可以不用加）</div>')+
       '</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>'+
       '<div class="glc-h">線上視訊</div>'+
       '<div class="glc-l">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
@@ -1135,7 +1139,8 @@ function drawGuideLocs(){
     row.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
     row.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); drawGuideLocs(); await saveGuideLocs(); };
   });
-  $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:''}); drawGuideLocs(); var last=box.querySelector('#gloc-list .glc:last-child select'); if(last) last.focus(); };
+  if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
+  $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); drawGuideLocs(); var last=box.querySelector('#gloc-list .glc:last-child select'); if(last) last.focus(); };
   var ap=$('#gloc-app'), lk=$('#gloc-link');
   async function saveVideo(){
     var app=ap.value, link=lk.value.trim();

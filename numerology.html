@@ -79,8 +79,9 @@
   <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
 </footer>
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261108"></script>
+<script src="area.js?v=20261109"></script>
 <script src="share-card.js"></script>
+<script src="next-ui.js?v=20261109"></script>
 <script>
 var NUM={
  1:{kw:'開創 · 獨立',t:'1 號人｜開路先鋒',d:'你有很強的主見和行動力，喜歡自己做決定、走在前面。你天生帶著領導氣質，遇到新的挑戰反而會興奮。',tip:'偶爾放慢腳步聽聽身邊的人，你會發現一起走更輕鬆。'},
@@ -109,6 +110,7 @@ function saveTestResult(topic,result,ref){
 }
 function saveLead(){ if(saved||!CUR||!window.SUPA) return; saved=true; saveTestResult('生命靈數',CUR.n+' 號人',CUR.ref); }
 async function loadRec(){
+  if(window.RWNext) RWNext.markDone('num');
   var box=document.getElementById('nm-rec'); var guides=[];
   try{ var r=await fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,region,service_mode',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}}); guides=r.ok?(await r.json()):[]; }catch(e){}
   var prices=await RWMatch.loadPrices();

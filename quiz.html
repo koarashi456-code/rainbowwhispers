@@ -123,8 +123,9 @@
 </footer>
 
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261108"></script>
+<script src="area.js?v=20261109"></script>
 <script src="share-card.js"></script>
+<script src="next-ui.js?v=20261109"></script>
 <script>
 var CONFIG = {
   lineOaId: '@518xokyr',
@@ -341,6 +342,7 @@ function resultHTML(R){
         '<div class="st'+(R.green?' on':'')+'"><span class="dot" style="background:#5AAE7A"></span><div><div class="lbl">適合立即探索</div><div class="sub">你有明確想釐清的方向，很適合直接找一位引路人好好聊聊。</div></div></div>'+
         '<div class="st'+(R.green?'':' on warn')+'"><span class="dot" style="background:#E0B44C"></span><div><div class="lbl">建議先陪你慢慢來</div><div class="sub">需求還有點模糊也沒關係——先加 LINE，我們偶爾傳點認識自己的小內容陪你，等你更清楚了再幫你配引路人，不急著約。</div></div></div>'+
       '</div></div>'+
+    (R.green?'':'<div id="nx-box"></div>')+
     '<a class="cta" id="line-go" href="#" target="_blank" rel="noopener">'+ctaText+'</a>'+
     '<div class="rmini">送出後我們會收到你的類型與方向，為你配對最適合的引路人。查看<span class="policy-link" id="ptoggle">《個資使用告知》</span></div>'+
     '<div class="policy" id="policy">'+policyMarkup()+'</div>'+
@@ -400,6 +402,8 @@ function bind(){
     var lineHref='https://line.me/R/oaMessage/'+encodeURIComponent(CONFIG.lineOaId)+'/?'+encodeURIComponent(msg);
     lg.setAttribute('href',lineHref);
     fillQuizRec(R,lineHref).then(function(){ var a=app.querySelector('#match-help a'); if(a) a.addEventListener('click',function(){ saveLead(); }); });
+    // 狀態不錯（漫遊者／黃燈）：給「想再多認識自己一點？」的下一步
+    if(window.RWNext){ RWNext.markDone('quiz'); var nxb=app.querySelector('#nx-box'); if(nxb) RWNext.mount(nxb,{current:'quiz',prefs:S.prefs}); }
     lg.onclick=function(){saveLead();};
   }
   var sh=app.querySelector('#share'); if(sh)sh.onclick=function(){  // 分享圖卡（LINE・IG）
