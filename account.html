@@ -182,13 +182,20 @@
   .gc-olist{margin-top:6px}.gc-olist .orow{padding:9px 11px}
   .gtg{flex:none;width:42px;height:24px;border-radius:999px;background:#E2D6C2;position:relative;border:0;cursor:pointer;padding:0}
   .gtg::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.15s}
-  .gtg.on{background:#7FBF97}.gtg.on::after{left:21px}.gtg:disabled{opacity:.5}
+  .gtg.on{background:var(--rainbow)}.gtg.on::after{left:21px}.gtg:disabled{opacity:.5}
   .gset-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #EFE3CE;font-size:13.5px;color:var(--ink);text-align:left}
   .gset-row:last-child{border-bottom:0}.gset-row small{display:block;font-size:11.5px;color:var(--soft)}
   .gcap-in{width:66px;box-sizing:border-box;font:inherit;font-size:14px;text-align:center;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:5px 6px;margin:0 4px}
   .gcap-in:disabled{opacity:.45}
-  .gmeter{height:10px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin:6px 0 4px}.gmeter i{display:block;height:100%;background:var(--rainbow)}.gmeter.full i{background:#D99A9A}
-  .gmeter-h{display:flex;justify-content:space-between;font-size:13px;color:var(--brush);font-weight:500;margin-top:10px}
+  .gmeter{height:11px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin:5px 0 2px}.gmeter i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
+  .gfull-b{display:inline-block;font-size:11px;font-weight:600;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:0 8px;margin-left:6px;line-height:1.7;vertical-align:1px}
+  .gcap-ic{background:#EFE6F6!important}
+  .gcap-mini{display:block;height:6px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin-top:6px}.gcap-mini i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
+  .gcap-day{display:grid;grid-template-columns:78px 1fr 64px;gap:8px;align-items:center;font-size:13px;padding:4px 0}
+  .gcap-day b{font-weight:500;color:var(--brush)}.gcap-day .m{height:8px;border-radius:999px;background:#F1E7D6;overflow:hidden}.gcap-day .m i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
+  .gcap-day span:last-child{text-align:right;color:var(--soft);font-size:12px;white-space:nowrap}
+  .gcap-save{display:block;margin:12px auto 0;border:0;background:var(--rainbow);color:#4A3A2A;font:inherit;font-weight:500;border-radius:999px;padding:8px 26px;font-size:14px;cursor:pointer}.gcap-save:disabled{opacity:.6}
+  .gmeter-h{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--brush);font-weight:500;margin-top:10px}.gmeter-h small{font-weight:400;color:var(--soft);font-size:12.5px}
   .gfull{font-size:12.5px;color:#B4566E;background:#FBE7E7;border-radius:10px;padding:7px 11px;margin-top:8px;line-height:1.6;text-align:left}
   .grole{font:inherit;font-size:13.5px;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:6px 12px;cursor:pointer;margin:0 6px 6px 0;text-align:left;line-height:1.35}
   .grole small{display:block;font-size:11px;color:var(--soft)}.grole.on{background:var(--brush);border-color:var(--brush);color:#fff}.grole.on small{color:#EBDCC8}
@@ -430,8 +437,7 @@
   </div>
 
   <div class="gsec-lab">我的開放時間</div>
-  <div class="gbox" id="g-caps" style="padding:12px 16px;display:none;margin-bottom:12px"></div>
-  <div class="gbox" style="padding:14px 16px"><div id="sl-editor"></div></div>
+  <div class="gbox" style="padding:14px 16px"><div id="g-caps" style="display:none;margin-bottom:8px"></div><div id="sl-editor"></div></div>
 
   <div class="gsec-lab">我的方案</div>
   <div class="gbox" style="padding:14px 16px">
@@ -494,7 +500,7 @@
 </div></div>
 <script src="supabase-config.js"></script>
 <script src="area.js?v=20261108"></script>
-<script src="slot-ui.js?v=20261108"></script>
+<script src="slot-ui.js?v=20261109"></script>
 <script src="course-ui.js?v=20261108c"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -1071,23 +1077,44 @@ function gpMinHtml(p){
 // 接案上限：每月最多幾小時、每天最多幾小時（SQL：my_guide_caps、set_my_caps）
 var GNAME='';
 function hrs(min){ var h=Math.round(Number(min||0)/6)/10; return (h%1?h.toFixed(1):String(h)); }
+var GCAP_OPEN=false, GCAP_DATA=null;
 async function loadGuideCaps(){
   var box=$('#g-caps'); if(!box) return;
   var c=null; try{ var r=await db.rpc('my_guide_caps'); if(!r.error && r.data) c=r.data; }catch(e){}
+  GCAP_DATA=c;
   if(!c){ box.style.display='none'; return; }
-  box.style.display='block';
+  box.style.display='block'; drawGuideCaps();
+}
+// 接案上限：跟「可預約時間」「已開放時段」一樣的收合；平常只看摘要＋小彩虹條
+function drawGuideCaps(){
+  var box=$('#g-caps'), c=GCAP_DATA; if(!box||!c) return;
   var cm=c.cap_month_hours, cd=c.cap_day_hours, mn=Number(c.min_minutes)||60, ms=c.months||{}, ds=c.days||{};
-  var mu=Number(ms[c.month]||0), nu=Number(ms[c.next_month]||0);
-  var fullDays=Object.keys(ds).filter(function(k){ return cd!=null && k>=c.today && Number(ds[k])+mn>cd*60; }).sort();
-  var mlab=function(k){ return Number(String(k).slice(5,7))+' 月'; }, dlab=function(k){ return Number(k.slice(5,7))+'/'+Number(k.slice(8,10)); };
-  var meter=function(lab,used,cap){ var full=cap!=null && used+mn>cap*60; return '<div class="gmeter-h"><span>'+lab+'</span><span>已接 '+hrs(used)+(cap!=null?' / '+cap:'')+' 小時'+(full?'・已滿':'')+'</span></div>'+(cap!=null?'<div class="gmeter'+(full?' full':'')+'"><i style="width:'+Math.min(100,used/(cap*60)*100)+'%"></i></div>':''); };
-  box.innerHTML='<div style="text-align:left"><b style="color:var(--brush);font-size:14.5px">接案上限</b><div style="font-size:12px;color:var(--soft)">容易累的話設上限，到了就自動關掉剩下的時段，客人看不到</div></div>'+
-    '<div class="gset-row"><span>每個月最多<input class="gcap-in" id="cap-m" type="number" min="1" max="744" step="0.5" value="'+(cm!=null?cm:12)+'"'+(cm==null?' disabled':'')+'>小時</span><button type="button" class="gtg'+(cm!=null?' on':'')+'" id="cap-m-on" aria-label="每月上限"></button></div>'+
-    '<div class="gset-row"><span>每一天最多<input class="gcap-in" id="cap-d" type="number" min="0.5" max="24" step="0.5" value="'+(cd!=null?cd:3)+'"'+(cd==null?' disabled':'')+'>小時</span><button type="button" class="gtg'+(cd!=null?' on':'')+'" id="cap-d-on" aria-label="每天上限"></button></div>'+
-    '<div style="font-size:11.5px;color:var(--soft);text-align:left;margin-top:6px">時數照方案時長算（在下面「我的方案」可以改）；算已預約＋已完成＋未出席，客人取消的不算</div>'+
-    meter(mlab(c.month),mu,cm)+meter(mlab(c.next_month),nu,cm)+
-    (fullDays.length?'<div class="gfull">已到每天上限：'+fullDays.map(dlab).join('、')+'（這幾天剩下的時段已關閉）</div>':'')+
-    '<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap"><button class="lo" id="cap-save" style="margin-top:0;padding:8px 18px;font-size:13px">儲存上限</button><span id="cap-msg" style="font-size:12px"></span></div>';
+  var mu=Number(ms[c.month]||0), nu=Number(ms[c.next_month]||0), WD7='日一二三四五六';
+  var fullM=cm!=null && mu+mn>cm*60;
+  var dkeys=Object.keys(ds).filter(function(k){ return k>=c.today; }).sort();
+  var fullD=cd!=null?dkeys.filter(function(k){ return Number(ds[k])+mn>cd*60; }).length:0;
+  var mlab=function(k){ return Number(String(k).slice(5,7))+' 月'; };
+  var sum=(cm==null&&cd==null)?'還沒設定上限（不限）':[cm!=null?'每月 '+cm+' 小時':'',cd!=null?'每天 '+cd+' 小時':''].filter(Boolean).join('・')+'・'+mlab(c.month)+'已接 '+hrs(mu)+' 小時';
+  var badge=fullM?'<span class="gfull-b">本月已滿</span>':(fullD?'<span class="gfull-b">'+fullD+' 天已滿</span>':'');
+  var pct=function(u,cap){ return Math.min(100,u/(cap*60)*100); };
+  var h='<button type="button" class="rs-fold'+(GCAP_OPEN?' open':'')+'" id="gcap-fold"><span class="rs-fic gcap-ic">⏳</span><span class="rs-fm"><b>接案上限'+badge+'</b><small>'+sum+'</small>'+(!GCAP_OPEN&&cm!=null?'<span class="gcap-mini"><i style="width:'+pct(mu,cm)+'%"></i></span>':'')+'</span><span class="rs-fgo">'+(GCAP_OPEN?'收起 ▴':'設定 ▾')+'</span></button>';
+  if(GCAP_OPEN){
+    h+='<div class="rs-fbody" style="text-align:left"><div style="font-size:12px;color:var(--soft)">容易累的話設上限，到了就自動關掉剩下的時段，客人看不到</div>'+
+      '<div class="gset-row"><span>每個月最多<input class="gcap-in" id="cap-m" type="number" min="1" max="744" step="0.5" value="'+(cm!=null?cm:12)+'"'+(cm==null?' disabled':'')+'>小時</span><button type="button" class="gtg'+(cm!=null?' on':'')+'" id="cap-m-on" aria-label="每月上限"></button></div>'+
+      '<div class="gset-row"><span>每一天最多<input class="gcap-in" id="cap-d" type="number" min="0.5" max="24" step="0.5" value="'+(cd!=null?cd:3)+'"'+(cd==null?' disabled':'')+'>小時</span><button type="button" class="gtg'+(cd!=null?' on':'')+'" id="cap-d-on" aria-label="每天上限"></button></div>';
+    [[c.month,mu],[c.next_month,nu]].forEach(function(x){ var f=cm!=null && x[1]+mn>cm*60;
+      h+='<div class="gmeter-h"><span>'+mlab(x[0])+(f?'<span class="gfull-b">已滿</span>':'')+'</span><small>已接 '+hrs(x[1])+(cm!=null?' / '+cm:'')+' 小時</small></div>'+(cm!=null?'<div class="gmeter"><i style="width:'+pct(x[1],cm)+'%"></i></div>':''); });
+    if(cd!=null && dkeys.length){
+      h+='<div class="gmeter-h"><span>接下來有接案的日子</span><small>每天最多 '+cd+' 小時</small></div>'+dkeys.slice(0,14).map(function(k){
+        var u=Number(ds[k]), f=u+mn>cd*60, d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10));
+        return '<div class="gcap-day"><b>'+(d.getMonth()+1)+'/'+d.getDate()+'（'+WD7[d.getDay()]+'）</b><span class="m"><i style="width:'+pct(u,cd)+'%"></i></span><span>'+(f?'<span class="gfull-b" style="margin:0">已滿</span>':hrs(u)+' / '+cd+' 小時')+'</span></div>'; }).join('');
+    }
+    h+='<div style="font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.7">時數照方案時長算（在「我的方案」可以改）；算已預約＋已完成＋未出席，客人取消的不算</div>'+
+      '<button type="button" class="gcap-save" id="cap-save">儲存上限</button><div id="cap-msg" style="font-size:12px;text-align:center;min-height:1.2em;margin-top:4px"></div></div>';
+  }
+  box.innerHTML=h;
+  $('#gcap-fold').onclick=function(){ GCAP_OPEN=!GCAP_OPEN; drawGuideCaps(); };
+  if(!GCAP_OPEN) return;
   [['m','#cap-m'],['d','#cap-d']].forEach(function(x){ var t=$('#cap-'+x[0]+'-on'), inp=$(x[1]); t.onclick=function(){ t.classList.toggle('on'); inp.disabled=!t.classList.contains('on'); }; });
   $('#cap-save').onclick=async function(){
     var b=this, msg=$('#cap-msg'), m=$('#cap-m-on').classList.contains('on')?Number($('#cap-m').value):null, d=$('#cap-d-on').classList.contains('on')?Number($('#cap-d').value):null;
