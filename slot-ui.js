@@ -38,6 +38,8 @@ var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;co
   '.rs-plc button.on{background:#E9F3EC;border-color:#8CC49A;color:#2F6B4C;font-weight:500}'+
   '.rs-tm{display:flex;flex-wrap:wrap;gap:7px}.rs-tm span{font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:7px 12px;cursor:pointer;user-select:none}'+
   '.rs-tm span.on{background:var(--rainbow);color:#4A3A2A;border-color:transparent;font-weight:500}.rs-tm span.has{background:#F3EFE6;color:#B5A88E;cursor:default}'+
+  '.rs-tm span.has i{font-style:normal;font-size:10.5px;margin-left:4px;color:#A9967E}.rs-plc button .c{display:inline-block;min-width:18px;font-size:11px;font-weight:600;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:0 6px;margin-left:5px}'+
+  '.rs-sum{font-size:12.5px;color:var(--brush)}'+
   '.rs-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}'+
   '.rs-pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:6px 10px 6px 12px}'+
   '.rs-pill.bk{background:#F3EFE6;color:#8E8065}.rs-pill .rm{color:#C0506A;font-size:15px;cursor:pointer;line-height:1}.rs-pill .bkt{font-size:11px;color:#8E8065;background:#E7DEC9;border-radius:999px;padding:1px 8px}'+
@@ -71,7 +73,11 @@ function css(){ if(document.getElementById('rs-css')) return; var s=document.cre
    openAdd       （選用）true＝「可預約時間」一開始就打開 */
 function editor(el,api){
   css();
-  var t0=new Date(), S={rows:[], editable:true, all:[], date:today(), pick:[], view:'', times:{}, cy:t0.getFullYear(), cm:t0.getMonth()+1, openA:!!(api&&api.openAdd), openB:false};
+  var t0=new Date(), S={rows:[], editable:true, all:[], date:today(), pick:[], view:'', times:{}, tp:{}, tab:'', cy:t0.getFullYear(), cm:t0.getMonth()+1, openA:!!(api&&api.openAdd), openB:false};
+  // 有好幾個地點時：線上視訊和各地區「分開選時段」；S.tp = {地點: {時間:true}}，同一個時間只能給一個地點
+  function multi(){ return S.all.length>1; }
+  function cnt(v){ return Object.keys(S.tp[v]||{}).length; }
+  function nPicked(){ return multi()?S.all.reduce(function(a,x){ return a+cnt(x.v); },0):Object.keys(S.times).length; }
   el.innerHTML='<div class="rs-empty">載入中…</div>';
   function msg(t,c){ var m=el.querySelector('[data-rs-msg]'); if(!m) return; m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },2200); }
   function byDay(){ var o={}; S.rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var k=dayKey(p); (o[k]=o[k]||[]).push({id:s.id, t:p2(p.h)+':'+p2(p.mi), taken:!!s.taken, places:s.places||null}); });
@@ -103,15 +109,26 @@ function editor(el,api){
               return x.taken ? '<span class="rs-pill bk">'+x.t+' '+tagHtml(x.places,S.all)+'<span class="bkt">已被預約</span></span>'
                              : '<span class="rs-pill">'+x.t+' '+tagHtml(x.places,S.all)+(x.id?'<span class="rm" data-rs-rm="'+esc(x.id)+'" title="刪除這個時段">&times;</span>':'')+'</span>'; }).join('')+'</div>';
           }
-          if(S.all.length>1){
-            h+='<div class="rs-lab2">這些時段可以約哪裡？<small>可以複選；都不選＝全部地點</small></div><div class="rs-plc">'+
-              S.all.map(function(x){ var on=S.pick.indexOf(x.v)>=0; return '<button type="button" data-rs-pl="'+esc(x.v)+'" class="'+(on?'on':'')+'">'+(on?'✓ ':'')+esc(x.label)+'</button>'; }).join('')+'</div>';
-          }
-          h+='<div class="rs-lab2">要開哪些時段？<small>點選，可以複選；灰色＝已經開了</small></div><div class="rs-tm">';
           var have={}; D.forEach(function(x){ have[x.t]=true; });
-          for(var hh=8;hh<23;hh++){ for(var mm=0;mm<60;mm+=30){ var v=p2(hh)+':'+p2(mm); h+=have[v]?'<span class="has">'+v+'</span>':'<span data-rs-t="'+v+'" class="'+(S.times[v]?'on':'')+'">'+v+'</span>'; } }
-          var nPick=Object.keys(S.times).length;
-          h+='</div><div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap"><button type="button" class="rs-go" data-rs-add>'+(nPick?'新增 '+nPick+' 個時段':'新增時段')+'</button><span data-rs-msg style="font-size:12px"></span></div></div>';
+          if(multi()){
+            if(!S.tab || !S.all.some(function(x){ return x.v===S.tab; })) S.tab=S.all[0].v;
+            var tabL=(S.all.filter(function(x){ return x.v===S.tab; })[0]||{}).label||'';
+            h+='<div class="rs-lab2">先選地點，再選這個地點要開的時段<small>線上和各地區分開選</small></div><div class="rs-plc">'+
+              S.all.map(function(x){ var c=cnt(x.v); return '<button type="button" data-rs-tab="'+esc(x.v)+'" class="'+(x.v===S.tab?'on':'')+'">'+esc(x.label)+(c?'<span class="c">'+c+'</span>':'')+'</button>'; }).join('')+'</div>';
+            var other={}; S.all.forEach(function(x){ if(x.v===S.tab) return; Object.keys(S.tp[x.v]||{}).forEach(function(t){ other[t]=x.v; }); });
+            var mine=S.tp[S.tab]||{};
+            h+='<div class="rs-lab2">「'+esc(tabL)+'」要開哪些時段？<small>點選，可以複選；灰色＝已經開了或選給別的地點</small></div><div class="rs-tm">';
+            for(var hh=8;hh<23;hh++){ for(var mm=0;mm<60;mm+=30){ var v=p2(hh)+':'+p2(mm);
+              h+=have[v]?'<span class="has">'+v+'</span>':other[v]?'<span class="has">'+v+'<i>'+esc(short(other[v]))+'</i></span>':'<span data-rs-t="'+v+'" class="'+(mine[v]?'on':'')+'">'+v+'</span>'; } }
+            var sum=S.all.filter(function(x){ return cnt(x.v); }).map(function(x){ return esc(short(x.v))+' '+cnt(x.v)+' 個'; }).join('・');
+            h+='</div>'+(sum?'<div class="rs-sum" style="margin-top:10px">這次要開：'+sum+'</div>':'');
+          } else {
+            h+='<div class="rs-lab2">要開哪些時段？<small>點選，可以複選；灰色＝已經開了</small></div><div class="rs-tm">';
+            for(var hh2=8;hh2<23;hh2++){ for(var mm2=0;mm2<60;mm2+=30){ var v2=p2(hh2)+':'+p2(mm2); h+=have[v2]?'<span class="has">'+v2+'</span>':'<span data-rs-t="'+v2+'" class="'+(S.times[v2]?'on':'')+'">'+v2+'</span>'; } }
+            h+='</div>';
+          }
+          var nPick=nPicked();
+          h+='<div style="display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap"><button type="button" class="rs-go" data-rs-add>'+(nPick?'新增 '+nPick+' 個時段':'新增時段')+'</button><span data-rs-msg style="font-size:12px"></span></div></div>';
         }
         h+='</div>';
       }
@@ -133,27 +150,33 @@ function editor(el,api){
       }
       h+='</div>';
     }
-    h+='<div class="rs-note">'+(S.all.length>1?'・時段後面的小標籤是地點；同一個時段可以同時開好幾個地點（例如三重＋線上）<br>・以前排好的時段顯示「全部地點」，客人選哪個地點都能約<br>・一個時段被約走，其他地點也會一起變成已被預約<br>':'')+
+    h+='<div class="rs-note">'+(S.all.length>1?'・線上視訊和各地區分開選時段；同一個時間只能開一個地點<br>・時段後面的小標籤是地點；以前排好的時段顯示「全部地點」，客人選哪個地點都能約<br>':'')+
       '・客人預約時只能從這裡開放的時段挑'+(S.editable?'':'<br><span style="color:#B07A2E">⚠️ 目前只能檢視（請先在 Supabase 執行時段的 SQL）</span>')+'</div>';
     el.innerHTML=h;
     var fa=el.querySelector('[data-rs-fa]'); if(fa) fa.onclick=function(){ S.openA=!S.openA; draw(); };
     var fb=el.querySelector('[data-rs-fb]'); if(fb) fb.onclick=function(){ S.openB=!S.openB; draw(); };
-    el.querySelectorAll('[data-rs-d]').forEach(function(b){ b.onclick=function(){ S.date=b.getAttribute('data-rs-d'); S.times={}; draw(); }; });
+    el.querySelectorAll('[data-rs-d]').forEach(function(b){ b.onclick=function(){ S.date=b.getAttribute('data-rs-d'); S.times={}; S.tp={}; draw(); }; });
+    el.querySelectorAll('[data-rs-tab]').forEach(function(b){ b.onclick=function(){ S.tab=b.getAttribute('data-rs-tab'); draw(); }; });
     el.querySelectorAll('[data-rs-m]').forEach(function(b){ b.onclick=function(){ S.cm+=+b.getAttribute('data-rs-m'); if(S.cm<1){ S.cm=12; S.cy--; } if(S.cm>12){ S.cm=1; S.cy++; } draw(); }; });
     var vs=el.querySelector('[data-rs-view]'); if(vs) vs.onchange=function(){ S.view=vs.value; draw(); };
     el.querySelectorAll('[data-rs-pl]').forEach(function(b){ b.onclick=function(){ var v=b.getAttribute('data-rs-pl'), i=S.pick.indexOf(v); if(i>=0) S.pick.splice(i,1); else S.pick.push(v); draw(); }; });
-    el.querySelectorAll('[data-rs-t]').forEach(function(c){ c.onclick=function(){ var v=c.getAttribute('data-rs-t'); if(S.times[v]) delete S.times[v]; else S.times[v]=true; c.classList.toggle('on',!!S.times[v]); var ab2=el.querySelector('[data-rs-add]'), n2=Object.keys(S.times).length; if(ab2) ab2.textContent=n2?'新增 '+n2+' 個時段':'新增時段'; }; });
+    el.querySelectorAll('[data-rs-t]').forEach(function(c){ c.onclick=function(){ var v=c.getAttribute('data-rs-t');
+      if(multi()){ var m=S.tp[S.tab]=S.tp[S.tab]||{}; if(m[v]) delete m[v]; else m[v]=true; draw(); return; }
+      if(S.times[v]) delete S.times[v]; else S.times[v]=true; c.classList.toggle('on',!!S.times[v]); var ab2=el.querySelector('[data-rs-add]'), n2=Object.keys(S.times).length; if(ab2) ab2.textContent=n2?'新增 '+n2+' 個時段':'新增時段'; }; });
     el.querySelectorAll('[data-rs-rm]').forEach(function(x){ x.onclick=async function(){
       if(!confirm('刪除這個開放時段？')) return;
       try{ await api.del(x.getAttribute('data-rs-rm')); await reload(); if(api.changed) api.changed(); }catch(e){ alert('刪除失敗：'+((e&&e.message)||'')); } }; });
     var ab=el.querySelector('[data-rs-add]'); if(ab) ab.onclick=async function(){
-      var picked=Object.keys(S.times).sort();
       if(!S.date){ msg('請先選日期','#C0506A'); return; }
-      if(!picked.length){ msg('請點選要開放的時段','#C0506A'); return; }
+      // 每個地點各自一批（線上一批、三重一批…）；只有一個地點時照舊
+      var groups=multi()?S.all.filter(function(x){ return cnt(x.v); }).map(function(x){ return {t:Object.keys(S.tp[x.v]).sort(), pl:[x.v]}; })
+                        :[{t:Object.keys(S.times).sort(), pl:S.pick.slice()}].filter(function(g){ return g.t.length; });
+      if(!groups.length){ msg('請點選要開放的時段','#C0506A'); return; }
       ab.disabled=true; msg('新增中…');
-      try{ var n=await api.add(picked.map(function(t){ return S.date+'T'+t; }), S.pick.slice());
-        S.times={}; S.view=S.date; await reload(); msg('已新增 '+(n||0)+' 個時段','#4F8E6E'); if(api.changed) api.changed(); }
-      catch(e){ ab.disabled=false; msg('新增失敗：'+((e&&e.message)||''),'#C0506A'); }
+      var n=0, done=0;
+      try{ for(var gi=0;gi<groups.length;gi++){ n+=Number(await api.add(groups[gi].t.map(function(t){ return S.date+'T'+t; }), groups[gi].pl))||0; done++; }
+        S.times={}; S.tp={}; S.view=S.date; await reload(); msg('已新增 '+n+' 個時段','#4F8E6E'); if(api.changed) api.changed(); }
+      catch(e){ if(done){ S.tp={}; S.times={}; await reload(); } var ab3=el.querySelector('[data-rs-add]'); if(ab3) ab3.disabled=false; msg((done?'部分新增成功，':'')+'新增失敗：'+((e&&e.message)||''),'#C0506A'); }
     };
   }
   async function reload(){
