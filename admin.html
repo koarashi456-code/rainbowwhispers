@@ -68,6 +68,7 @@
   .gloc-area{display:flex;gap:6px}.gloc-area select{flex:1 1 110px;min-width:0;width:auto}
   .gloc-add{font:inherit;font-size:13px;margin-top:10px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:7px 16px;cursor:pointer}
   .gloc-tip{font-size:11.5px;color:var(--soft);margin-top:8px;line-height:1.6}
+  .gloc-tr{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.gloc-tr select{flex:none;width:auto}.gloc-tr input{flex:1;min-width:0}.gloc-tr .gloc-walk{flex:none;width:62px;text-align:center}.gloc-tr span{flex:none}
   .gloc-empty{font-size:12.5px;color:var(--soft);padding:8px 0 2px}
   .notes-l textarea,.notes-l input{width:100%}
   .notes-l textarea{min-height:44px;resize:vertical}
@@ -658,7 +659,7 @@
 
 <div class="sp-mask" id="xf-mask"><div class="sp-box" id="xf-box" role="dialog" aria-label="轉讓課程"></div></div>
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261108"></script>
+<script src="area.js?v=20261109"></script>
 <script src="slot-ui.js?v=20261109"></script>
 <script src="course-ui.js?v=20261108c"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1206,14 +1207,14 @@ function guideLocs(g){
     L=RWArea.parseList(g.region).map(function(a,i){ return {area:a, address:i?'':(g.address||''), note:i?'':(g.checkin_note||'')}; });
     if(!L.length && String(g.address||'').trim()) L=[{area:'', address:g.address||'', note:g.checkin_note||''}];
   }
-  return L.map(function(x){ return {area:String((x&&x.area)||''), address:String((x&&x.address)||''), note:String((x&&x.note)||'')}; });
+  return L.map(function(x){ x=x||{}; return {area:String(x.area||''), address:String(x.address||''), note:String(x.note||''), t_type:String(x.t_type||'捷運'), t_station:String(x.t_station||''), t_walk:(x.t_walk==null||x.t_walk==='')?'':String(x.t_walk), t_tip:String(x.t_tip||'')}; });
 }
 function bindGuideLocs(el,id){
   var box=el.querySelector('[data-glocs]'), add=el.querySelector('[data-gloc-add]'); if(!box || !window.RWArea) return;
   var L=guideLocs(guideById(id));
   function msg(t,c){ var s=el.querySelector('[data-saved]'); if(!s) return; s.textContent=t; s.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(s.textContent===t) s.textContent=''; },1400); }
   async function save(){
-    var keep=L.filter(function(x){ return x.area || x.address.trim() || x.note.trim(); }).map(function(x){ return {area:x.area, address:x.address.trim(), note:x.note.trim()}; });
+    var keep=L.filter(function(x){ return x.area || x.address.trim() || x.note.trim() || x.t_station.trim() || x.t_tip.trim(); }).map(function(x){ var w=parseInt(x.t_walk,10); return {area:x.area, address:x.address.trim(), note:x.note.trim(), t_type:x.t_type||'捷運', t_station:x.t_station.trim(), t_walk:(w>0?Math.min(w,120):null), t_tip:x.t_tip.trim()}; });
     var areas=[]; keep.forEach(function(x){ if(x.area && areas.indexOf(x.area)<0) areas.push(x.area); });
     var first=keep[0]||{};
     var patch={locations:keep, region:areas.join('、')||null, address:first.address||null, checkin_note:first.note||null};
@@ -1235,6 +1236,9 @@ function bindGuideLocs(el,id){
         '<div class="gloc-l">地區（公開顯示）</div><div class="gloc-area" data-gloc-area></div>'+
         '<label class="notes-l">完整地址（不公開，付款成功後才給客人）<input class="in" data-gloc-f="address" value="'+esc(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓"></label>'+
         '<label class="notes-l">報到提醒<input class="in" data-gloc-f="note" value="'+esc(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」"></label>'+
+        '<div class="gloc-l" style="margin-top:10px">附近交通（公開）</div><div class="gloc-tr"><select class="in" data-gloc-f="t_type">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
+          '<input class="in" data-gloc-f="t_station" list="rw-stations" value="'+esc(x.t_station)+'" placeholder="站名，例：三重站"><span>走路</span><input class="in gloc-walk" data-gloc-f="t_walk" type="number" min="1" max="120" value="'+esc(x.t_walk)+'" placeholder="5"><span>分</span></div>'+
+        '<label class="notes-l">交通補充（選填）<input class="in" data-gloc-f="t_tip" value="'+esc(x.t_tip)+'" placeholder="例：附近有停車場、公車 306 重新路口站"></label>'+
       '</div>';
     }).join(''):'<div class="gloc-empty">還沒有實體地點（只做線上的話可以不用加）</div>';
     box.querySelectorAll('.gloc').forEach(function(row){
@@ -1248,7 +1252,8 @@ function bindGuideLocs(el,id){
       row.querySelector('[data-gloc-rm]').onclick=function(){ var x=L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; L.splice(i,1); draw(); save(); };
     });
   }
-  if(add) add.onclick=function(){ L.push({area:'',address:'',note:''}); draw(); var last=box.querySelector('.gloc:last-child select'); if(last) last.focus(); };
+  if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
+  if(add) add.onclick=function(){ L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); draw(); var last=box.querySelector('.gloc:last-child select'); if(last) last.focus(); };
   draw();
 }
 // 引路人角色（測驗配對）、接案上限（SQL：guides.roles、cap_month_hours、cap_day_hours）
