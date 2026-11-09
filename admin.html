@@ -1389,7 +1389,7 @@ function txFiltered(){
     if(fg && t.guide_id!==fg) return false;
     if(fm && t.method!==fm) return false;
     if(!inTxRange(t)) return false;
-    if(q){ var c=custById(t.customer_id); var hay=[(c?custLabel(c):''),t.guest_name,t.guest_contact,(isTopup(t)?'儲值':guideName(t.guide_id)),t.service,t.order_ref,t.notes].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
+    if(q){ var c=custById(t.customer_id); var hay=[(c?custLabel(c):goneCust(t)),t.guest_name,t.guest_contact,(isTopup(t)?'儲值':guideName(t.guide_id)),t.service,t.order_ref,t.notes].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
     return true;
   });
   rows.sort(function(a,b){
@@ -1439,7 +1439,7 @@ function topupRow(t){
   return '<tr data-id="'+t.id+'" data-kind="topup" class="tp-row">'+
     '<td class="ck"><input type="checkbox" class="tx-ck"></td>'+
     '<td class="muted">'+fmtDate(t.created_at)+'</td>'+
-    '<td>'+esc(c?custLabel(c):'(已刪客戶)')+'</td>'+
+    '<td>'+esc(c?custLabel(c):goneCust(t))+'</td>'+
     '<td class="muted">—</td>'+
     '<td><span class="status-badge st-topup">儲值</span></td>'+
     '<td class="num"><input class="tin amt" data-f="amount" type="number" value="'+esc(t.amount)+'"></td>'+
@@ -1454,7 +1454,7 @@ function topupRow(t){
 function txRow(t){
   if(isTopup(t)) return topupRow(t);
   var c=custById(t.customer_id);
-  var cname=c?custLabel(c):(t.guest_name?t.guest_name+'（訪客）':'(已刪客戶)');
+  var cname=c?custLabel(c):goneCust(t);
   var mOpt=['現金','刷卡','匯款','儲值'].map(function(m){return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>';}).join('');
   var sOpt=['已預約','已完成','未出席','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('');
   return '<tr data-id="'+t.id+'">'+
@@ -1618,7 +1618,7 @@ function renderReport(){
     // 與「交易紀錄」同一份資料、同樣欄位（唯讀、不打勾）；交易刪除/修改後報表跟著變
     if(isM()){  // 手機：條列，點一筆看交易明細
       h+=gg.items.map(function(t){
-        var c=custById(t.customer_id), cname=c?adName(c):(t.guest_name?esc(t.guest_name)+'（訪客）':'(已刪客戶)');
+        var c=custById(t.customer_id), cname=c?adName(c):esc(goneCust(t));
         return '<button type="button" class="m-row" data-txid="'+t.id+'"><span class="mn"><b>'+cname+'</b>　'+esc(String(t.service||'—').replace(/^商品：/,''))+'<small>'+(t.appointment_at?fmtAppt(t.appointment_at):fmtDate(t.created_at))+'・'+esc(t.method||'—')+'</small></span><span class="rt"><span class="am">'+money(t.amount)+'</span>'+statusBadge(isShopTx(t)?shopStLabel(t.status):t.status)+'</span><span class="go">›</span></button>';
       }).join('');
     } else {
@@ -1627,7 +1627,7 @@ function renderReport(){
         '<th>付款</th><th>狀態</th><th>訂單編號</th><th>末5碼</th><th>下單日</th><th>備註</th></tr></thead><tbody>'+
         gg.items.map(function(t){
           var c=custById(t.customer_id);
-          var cname=c?custLabel(c):(t.guest_name?t.guest_name+'（訪客）':'(已刪客戶)');
+          var cname=c?custLabel(c):goneCust(t);
           return '<tr>'+
             '<td class="muted">'+(t.appointment_at?fmtAppt(t.appointment_at):'未定')+'</td>'+
             '<td>'+esc(cname)+'</td>'+
@@ -1743,7 +1743,7 @@ function renderShopOrders(){
     rows.map(function(t){
       var c=custById(t.customer_id);
       var opt=SHOP_ST.map(function(x){ return '<option value="'+x[0]+'"'+(t.status===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('');
-      return '<tr data-id="'+t.id+'"><td class="muted">'+fmtDate(t.created_at)+'</td><td>'+esc(c?custLabel(c):'(已刪客戶)')+'</td><td>'+esc(String(t.service).replace(/^商品：/,''))+'</td><td class="num">'+money(t.amount)+'</td><td>'+esc(t.method||'—')+'</td><td><select class="tin" data-sost>'+opt+'</select></td><td class="ref">'+esc(t.order_ref||'—')+'</td><td class="ref">'+esc(t.pay_last5||'—')+'</td><td style="font-size:12px;color:var(--soft);min-width:220px">'+esc(String(t.notes||'').replace(/^［商品訂單］/,''))+'</td><td><button class="txdel" data-sodel title="刪除">✕</button></td></tr>';
+      return '<tr data-id="'+t.id+'"><td class="muted">'+fmtDate(t.created_at)+'</td><td>'+esc(c?custLabel(c):goneCust(t))+'</td><td>'+esc(String(t.service).replace(/^商品：/,''))+'</td><td class="num">'+money(t.amount)+'</td><td>'+esc(t.method||'—')+'</td><td><select class="tin" data-sost>'+opt+'</select></td><td class="ref">'+esc(t.order_ref||'—')+'</td><td class="ref">'+esc(t.pay_last5||'—')+'</td><td style="font-size:12px;color:var(--soft);min-width:220px">'+esc(String(t.notes||'').replace(/^［商品訂單］/,''))+'</td><td><button class="txdel" data-sodel title="刪除">✕</button></td></tr>';
     }).join('')+'</tbody></table></div><div class="txsaved" id="so-saved"></div>';
   box.querySelectorAll('tr[data-id]').forEach(function(tr){
     var id=tr.getAttribute('data-id');
@@ -1795,14 +1795,14 @@ function renderTopups(){
   if(!rows.length){ box.innerHTML='<div class="muted" style="padding:24px;text-align:center">'+(TOPUPS.length?'沒有符合的儲值紀錄':'還沒有儲值紀錄')+'</div>'; return; }
   if(isM()){
     box.innerHTML='<div class="m-list">'+rows.map(function(t){ var c=custById(t.customer_id);
-      return '<button type="button" class="m-row" data-id="'+t.id+'"><span class="mn"><b>'+(c?adName(c):'(已刪客戶)')+'</b>　'+(isCouponTopup(t)?'優惠折抵':'儲值')+'<small>'+fmtDate(t.created_at)+'・'+esc(isCouponTopup(t)?'系統':t.method||'')+'・餘額 '+money(custAgg(t.customer_id).balance)+'</small></span><span class="rt"><span class="am" style="color:#3F7A5E">+'+money(t.amount)+'</span></span><span class="go">›</span></button>'; }).join('')+'</div>';
+      return '<button type="button" class="m-row" data-id="'+t.id+'"><span class="mn"><b>'+(c?adName(c):esc(goneCust(t)))+'</b>　'+(isCouponTopup(t)?'優惠折抵':'儲值')+'<small>'+fmtDate(t.created_at)+'・'+esc(isCouponTopup(t)?'系統':t.method||'')+'・餘額 '+money(custAgg(t.customer_id).balance)+'</small></span><span class="rt"><span class="am" style="color:#3F7A5E">+'+money(t.amount)+'</span></span><span class="go">›</span></button>'; }).join('')+'</div>';
     box.querySelectorAll('.m-row').forEach(function(r){ r.onclick=function(){ openTopupDetail(r.getAttribute('data-id')); }; });
     return;
   }
   var mOpt=function(t){ return ['現金','刷卡','匯款'].map(function(m){ return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>'; }).join(''); };
   box.innerHTML='<div class="txtable-wrap"><table class="txt"><thead><tr><th>儲值日期</th><th>客戶</th><th style="text-align:right">金額</th><th>方式</th><th style="text-align:right">目前餘額</th><th>備註</th><th></th></tr></thead><tbody>'+
     rows.map(function(t){ var c=custById(t.customer_id), cp=isCouponTopup(t);
-      return '<tr data-id="'+t.id+'" data-kind="topup"><td class="muted">'+fmtDate(t.created_at)+'</td><td>'+(c?adName(c):'(已刪客戶)')+'</td>'+
+      return '<tr data-id="'+t.id+'" data-kind="topup"><td class="muted">'+fmtDate(t.created_at)+'</td><td>'+(c?adName(c):esc(goneCust(t)))+'</td>'+
         '<td class="num">'+(cp?'<span style="color:#3F7A5E">+'+money(t.amount)+'</span>':'<input class="tin amt" data-f="amount" type="number" value="'+esc(t.amount)+'">')+'</td>'+
         '<td>'+(cp?tpMethodLabel(t):'<select class="tin" data-f="method">'+mOpt(t)+'</select>')+'</td>'+
         '<td class="num">'+money(custAgg(t.customer_id).balance)+'</td>'+
@@ -1903,6 +1903,14 @@ async function softDelete(tbl,id,arr,quiet){
   return true;
 }
 function cAny(id){ return custById(id) || DEL.customers.find(function(x){return x.id===id;}); }
+// 客人不在名單裡時顯示誰：被刪到刪除紀錄的客人、被永久刪除（SQL 留下的 customer_snapshot）、訪客
+function goneCust(t){
+  var d=t&&t.customer_id?DEL.customers.find(function(x){ return x.id===t.customer_id; }):null;
+  if(d) return custLabel(d)+'（已刪除）';
+  if(t&&t.customer_snapshot) return t.customer_snapshot+'（帳號已刪除）';
+  if(t&&t.guest_name) return t.guest_name+'（訪客）';
+  return '(已刪客戶)';
+}
 function renderTrash(){
   var list=document.getElementById('trashlist'); if(!list) return;
   var items=[];
@@ -1926,7 +1934,7 @@ function renderTrash(){
       render(); renderGuides(); renderTx(); renderReport(); renderTrash(); fillSelects();
     };
     row.querySelector('[data-purge]').onclick=async function(){
-      if(!confirm('永久刪除這筆？這次真的無法還原。'))return;
+      if(!confirm(tbl==='customers'?'永久刪除這位客戶？\n他的交易、儲值紀錄會留著（客戶欄顯示「帳號已刪除」）。這次真的無法還原。':'永久刪除這筆？這次真的無法還原。'))return;
       var r=await db.from(tbl).delete().eq('id',id);
       if(r.error){ alert('刪除失敗：'+r.error.message); return; }
       var i=DEL[tbl].findIndex(function(x){return x.id===id;}); if(i>=0)DEL[tbl].splice(i,1);
@@ -2131,7 +2139,7 @@ function drawCalDetail(){
   var items=calBookings().filter(function(t){ return dayKeyOf(t.appointment_at)===k; }).sort(function(a,b){ return String(a.appointment_at).localeCompare(String(b.appointment_at)); });
   var h='<div class="acal-dt">'+(+pr[1])+'/'+(+pr[2])+'（'+w+'）'+(k===gsToday()?'　今天':'')+'　共 '+items.filter(calLive).length+' 筆</div>';
   h+=items.length?items.map(function(t){
-    var c=custById(t.customer_id), cname=c?adName(c):(t.guest_name?esc(t.guest_name)+'（訪客）':'(已刪客戶)'), col=calColor(t.guide_id);
+    var c=custById(t.customer_id), cname=c?adName(c):esc(goneCust(t)), col=calColor(t.guide_id);
     var sub=[esc(t.method||''), (t.method==='匯款'&&t.pay_last5)?'末五碼 '+esc(t.pay_last5):'', esc(t.order_ref||'')].filter(Boolean).join('・');
     return '<button type="button" class="acal-it'+(calLive(t)?'':' off')+'" data-txid="'+t.id+'"><span class="t">'+hmOf(t.appointment_at)+'</span><span class="m"><span class="acal-gp" style="background:'+col+'3A">'+esc(t.guide_id?guideName(t.guide_id):'未指定')+'</span>'+cname+'　'+esc(t.service||'')+(sub?'<small>'+sub+'</small>':'')+'</span>'+statusBadge(t.status)+'<span class="acal-go">›</span></button>';
   }).join(''):'<div class="acal-empty">這天沒有預約</div>';
@@ -2238,7 +2246,7 @@ function openTxDetail(id,kind){
 }
 function txDetailHtml(t){
   var tp=isTopup(t), c=custById(t.customer_id);
-  var cname=c?adName(c):(t.guest_name?esc(t.guest_name)+'（訪客）':'(已刪客戶)');
+  var cname=c?adName(c):esc(goneCust(t));
   function sel(f,opts,cur){ return '<select class="in" data-f="'+f+'">'+opts.map(function(o){ return '<option'+(cur===o?' selected':'')+'>'+o+'</option>'; }).join('')+'</select>'; }
   var notes=mF('備註','<input class="in" data-f="notes" value="'+esc(t.notes)+'" placeholder="—">');
   var h='<div class="m-card" data-id="'+t.id+'"'+(tp?' data-kind="topup"':'')+'><div class="hd"><b>'+cname+'　'+(tp?'儲值':esc(t.service||'—'))+'</b><span class="am">'+(tp?'+':'')+money(t.amount)+'</span></div>';
@@ -2263,19 +2271,19 @@ function txDetailHtml(t){
 }
 function txMRow(t){
   var tp=isTopup(t), c=custById(t.customer_id);
-  var cname=c?adName(c):(t.guest_name?esc(t.guest_name)+'（訪客）':'(已刪客戶)');
+  var cname=c?adName(c):esc(goneCust(t));
   var sub=tp?fmtFull(t.created_at)+'・'+esc(t.method||''):esc(guideName(t.guide_id))+'・'+(t.appointment_at?fmtAppt(t.appointment_at):'未定時間');
   return '<button type="button" class="m-row" data-id="'+t.id+'"'+(tp?' data-kind="topup"':'')+'><span class="mn"><b>'+cname+'</b>　'+(tp?'儲值':esc(t.service||'—'))+'<small>'+sub+'</small></span><span class="rt"><span class="am"'+(tp?' style="color:#3F7A5E"':'')+'>'+(tp?'+':'')+money(t.amount)+'</span>'+(tp?'<span class="status-badge st-topup">儲值</span>':statusBadge(t.status))+'</span><span class="go">›</span></button>';
 }
 function soMRow(t){
   var c=custById(t.customer_id);
-  return '<button type="button" class="m-row" data-id="'+t.id+'"><span class="mn"><b>'+(c?adName(c):'(已刪客戶)')+'</b><small>'+esc(String(t.service).replace(/^商品：/,''))+'</small><small>'+fmtDate(t.created_at)+(t.order_ref?'・'+esc(t.order_ref):'')+'</small></span><span class="rt"><span class="am">'+money(t.amount)+'</span>'+statusBadge(shopStLabel(t.status))+'</span><span class="go">›</span></button>';
+  return '<button type="button" class="m-row" data-id="'+t.id+'"><span class="mn"><b>'+(c?adName(c):esc(goneCust(t)))+'</b><small>'+esc(String(t.service).replace(/^商品：/,''))+'</small><small>'+fmtDate(t.created_at)+(t.order_ref?'・'+esc(t.order_ref):'')+'</small></span><span class="rt"><span class="am">'+money(t.amount)+'</span>'+statusBadge(shopStLabel(t.status))+'</span><span class="go">›</span></button>';
 }
 function openSoDetail(id,backTab){
   var t=TX.find(function(x){ return x.id===id; }); if(!t) return;
   var c=custById(t.customer_id);
   var opt=SHOP_ST.map(function(x){ return '<option value="'+x[0]+'"'+(t.status===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('');
-  var h='<div class="m-card"><div class="hd"><b>'+(c?adName(c):'(已刪客戶)')+'</b><span class="am">'+money(t.amount)+'</span></div>'
+  var h='<div class="m-card"><div class="hd"><b>'+(c?adName(c):esc(goneCust(t)))+'</b><span class="am">'+money(t.amount)+'</span></div>'
     +mF('品項',esc(String(t.service).replace(/^商品：/,'')))+mF('下單時間',fmtDate(t.created_at))+mF('付款',esc(t.method||'—'))
     +mF('狀態','<select class="in" data-sost>'+opt+'</select>')+mF('訂單編號',esc(t.order_ref||'—'))+mF('末五碼',esc(t.pay_last5||'—'))
     +mF('收件資訊／備註',esc(String(t.notes||'').replace(/^［商品訂單］/,'')||'—'))
