@@ -10,23 +10,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=20261119">
 <style>
-  .wrap{max-width:460px;margin:0 auto;padding:24px 18px 46px}
+  .wrap{max-width:460px;margin:0 auto;padding:14px 16px 34px}
   .serif{font-family:"Noto Serif TC",serif}
   /* 進度 */
-  .bar{height:5px;border-radius:999px;background:var(--tint);overflow:hidden;margin-bottom:12px}
+  .bar{height:5px;border-radius:999px;background:var(--tint);overflow:hidden;margin-bottom:8px}
   .bar>i{display:block;height:100%;background:linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border-radius:999px;transition:width .4s ease}
-  .step-no{color:var(--soft);font-size:13px;margin-bottom:12px}
+  .step-no{color:var(--soft);font-size:13px;margin-bottom:8px}
   /* 首頁 */
-  .intro{text-align:center;padding:28px 4px}
-  .intro .ring{width:104px;height:104px;border-radius:50%;margin:0 auto 20px;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
+  .intro{text-align:center;padding:10px 4px}
+  .intro .ring{width:104px;height:104px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
   .intro .ring>div{width:76px;height:76px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center}
-  .intro h1{font-family:"Noto Serif TC",serif;font-size:26px;font-weight:600;color:var(--brush);margin-bottom:14px;line-height:1.5}
-  .intro p{font-size:15px;color:var(--soft);line-height:1.9;margin-bottom:8px}
-  .intro .go{display:inline-block;margin-top:22px;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:16px;padding:14px 40px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
+  .intro h1{font-family:"Noto Serif TC",serif;font-size:26px;font-weight:600;color:var(--brush);margin-bottom:10px;line-height:1.45}
+  .intro p{font-size:15px;color:var(--soft);line-height:1.75;margin-bottom:6px}
+  .intro .go{display:inline-block;margin-top:16px;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:16px;padding:14px 40px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
   /* 題目 */
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px;box-shadow:0 8px 30px -18px rgba(120,90,60,.28)}
-  .q{font-size:18px;font-weight:500;line-height:1.6;color:var(--ink);margin-bottom:4px}
-  .opt{display:block;width:100%;text-align:left;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:11px;cursor:pointer;transition:all .16s}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 12px;box-shadow:0 8px 30px -18px rgba(120,90,60,.28)}
+  .q{font-size:18px;font-weight:500;line-height:1.55;color:var(--ink);margin-bottom:2px}
+  .opt{display:block;width:100%;text-align:left;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 15px;margin-top:8px;cursor:pointer;transition:all .16s}
   .opt:hover{border-color:var(--brush);background:var(--tint)}
   .opt.sel{border-color:var(--brush);background:var(--brush);color:#fff}
   .opt.prev{border-color:var(--brush);background:var(--tint)}
@@ -34,23 +34,23 @@
   @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   /* 結果 */
   .kicker{font-size:12px;letter-spacing:.22em;color:var(--accent);text-align:center}
-  .rhero{text-align:center;padding:8px 0 20px}
-  .rring{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
+  .rhero{text-align:center;padding:4px 0 12px}
+  .rring{width:92px;height:92px;border-radius:50%;margin:0 auto 10px;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
   .rring>div{width:66px;height:66px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center}
   .rring svg{width:32px;height:32px}
   .tname{font-family:"Noto Serif TC",serif;font-size:32px;font-weight:600;color:var(--brush);margin:8px 0 2px;letter-spacing:.06em}
-  .ten{font-size:11px;letter-spacing:.28em;color:#B09A7C;margin-bottom:14px}
+  .ten{font-size:11px;letter-spacing:.28em;color:#8F7550;margin-bottom:10px}
   .tdesc{font-size:14.5px;color:var(--ink);text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-  .rsec{padding:20px 0;border-top:1px solid var(--line)}
+  .rsec{padding:14px 0;border-top:1px solid var(--line)}
   .rh2{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush);text-align:center;margin-bottom:6px}
   .dirpill{display:block;text-align:center;font-family:"Noto Serif TC",serif;font-size:20px;color:var(--brush);margin:8px 0}
   .rp{font-size:14px;color:var(--soft);text-align:center}
-  .dim{display:flex;align-items:center;gap:10px;margin:10px 0}
+  .dim{display:flex;align-items:center;gap:10px;margin:7px 0}
   .dim .name{width:64px;font-size:13px;color:var(--ink);flex:none}
   .dim .dbar{flex:1;height:9px;border-radius:999px;background:#EFE6D4;overflow:hidden}
   .dim .dbar>i{display:block;height:100%;border-radius:999px;background:var(--rainbow);transition:width .6s ease}
   .dim .val{width:30px;text-align:right;font-size:12.5px;color:var(--soft);flex:none;font-variant-numeric:tabular-nums}
-  .tcard{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
+  .tcard{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:10px}
   .tring{width:52px;height:52px;border-radius:50%;flex:none;background:conic-gradient(from 160deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F6C9B9);display:flex;align-items:center;justify-content:center}
   .tring>div{width:38px;height:38px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center}
   .tring svg{width:20px;height:20px}
@@ -67,21 +67,28 @@
   .trec .trgo{flex:none;font-size:12.5px;color:#B5713F}
   .trec img{flex:none;width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--tint)}
   .tsoon{display:inline-block;font-size:11px;color:#8A6A44;background:var(--tint);border-radius:999px;padding:2px 10px;margin-top:8px}
-  .states{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .states{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   .st{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;opacity:.5}
   .st.on{opacity:1;border-color:#BEDCC6;background:#F3F9F4}
   .st.on.warn{border-color:#E7D4A6;background:#FBF6E9}
   .dot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:4px}
   .st .lbl{font-size:14px;font-weight:500;color:var(--brush)}
   .st .sub{font-size:12.5px;color:var(--soft);margin-top:1px}
-  .cta{display:block;text-align:center;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:15.5px;padding:15px;border-radius:999px;text-decoration:none;margin-top:22px;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
+  .cta{display:block;text-align:center;background:var(--rainbow);color:#4A3A2A;font-weight:500;font-size:15.5px;padding:15px;border-radius:999px;text-decoration:none;margin-top:16px;box-shadow:0 8px 20px -10px rgba(150,120,160,.5)}
   .rmini{font-size:12px;color:#B6A283;text-align:center;margin-top:10px}
-  .ractions{display:flex;gap:10px;margin-top:16px}
+  .ractions{display:flex;gap:10px;margin-top:12px}
   .btn-ghost{flex:1;font:inherit;font-size:14px;color:var(--brush);background:none;border:1.5px solid var(--line);border-radius:999px;padding:11px 0;cursor:pointer}
   .btn-line{flex:1;font:inherit;font-size:14px;font-weight:500;color:#fff;background:#06C755;border:none;border-radius:999px;padding:11px 0;cursor:pointer}
   .policy-link{color:var(--brush);text-decoration:underline;cursor:pointer}
   .policy{display:none;font-size:12px;color:var(--soft);background:var(--tint);border-radius:10px;padding:12px 14px;margin-top:10px;line-height:1.7;text-align:left}
   .policy h4{font-size:12.5px;color:var(--brush);margin-bottom:4px}
+  /* 測驗頁：上下間距收緊（只在這頁） */
+  .card .rw-back{margin-top:6px}
+  .card .pf-q{margin:12px 0 6px}
+  .card .pf-hint{margin-top:4px}
+  .card .pf-err{margin-top:6px}
+  .card .pf-note{margin-top:6px}
+  .rh2{margin-bottom:4px}
 </style>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -287,8 +294,8 @@ function render(){
       '<div class="ring"><div><svg width="30" height="30" style="width:30px;height:30px;display:block" viewBox="0 0 24 24" fill="none" stroke="#D6B092" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5c.5 4 2.5 6 6.5 6.5-4 .5-6 2.5-6.5 6.5-.5-4-2.5-6-6.5-6.5 4-.5 6-2.5 6.5-6.5Z"/></svg></div></div>'+
       '<h1>找到屬於你的<br>心靈方向</h1>'+
       '<p>每個人面對人生的方式都不一樣。<br>有些人需要答案，有些人需要理解自己，<br>有些人只是想知道：「我現在到底怎麼了？」</p>'+
-      '<p style="margin-top:12px">透過幾個簡單的直覺選擇，<br>彩之語陪你找到目前最適合自己的探索方向。</p>'+
-      '<p style="margin-top:12px;font-size:13px">沒有標準答案，第一直覺就是你的答案。</p>'+
+      '<p style="margin-top:8px">透過幾個簡單的直覺選擇，<br>彩之語陪你找到目前最適合自己的探索方向。</p>'+
+      '<p style="margin-top:8px;font-size:13px">沒有標準答案，第一直覺就是你的答案。</p>'+
       '<button class="go" id="start">開始探索　→</button></div>';
   } else if(S.step>=1 && S.step<=20){
     var Q=QUESTIONS[S.step-1], pct=Math.round(S.step/21*100);
@@ -301,7 +308,7 @@ function render(){
       '<div class="card fade"><div class="q">最後一題：讓我們幫你配得更準</div>'+
       '<div style="font-size:13px;color:var(--soft)">選好之後，推薦的引路人會符合你的地區、預算和方式。</div>'+
       RWMatch.formHTML()+'<div class="pf-err" id="pf-err"></div>'+
-      '<button class="opt" id="pf-go" style="text-align:center;background:var(--rainbow);border:0;color:#4A3A2A;font-weight:500;margin-top:14px">看我的結果　→</button>'+
+      '<button class="opt" id="pf-go" style="text-align:center;background:var(--rainbow);border:0;color:#4A3A2A;font-weight:500;margin-top:10px">看我的結果　→</button>'+
       '<div class="pf-note">這三題只用來幫你配對引路人，不會公開。</div>'+
       '<button class="rw-back" id="q-back">‹ 上一頁</button></div>';
   } else {
