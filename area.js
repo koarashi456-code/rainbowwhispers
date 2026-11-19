@@ -123,6 +123,7 @@ function forDb(p){ if(!p) return null; var b=bOf(p.budget), m=mOf(p.mode), o={ar
 var CSS='.pf-q{font-size:14.5px;font-weight:500;color:var(--brush);margin:18px 0 8px;text-align:left}.pf-q small{font-weight:400;color:var(--soft);font-size:12px;margin-left:4px}'+
   '.pf-area{display:flex;gap:8px}.pf-sel{flex:1;min-width:0;font:inherit;font-size:15px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:11px 10px;outline:none}.pf-sel:disabled{opacity:.55}'+
   '.pf-hint{font-size:12.5px;color:var(--soft);margin-top:6px;text-align:left}'+
+  '.pf-one{display:block;width:100%;box-sizing:border-box;cursor:pointer}.pf-sel.empty{color:#8F7550}.pf-roles2{display:flex;flex-direction:column;gap:8px}'+
   '.pf-chips{display:flex;flex-wrap:wrap;gap:8px}.pf-chip{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}.pf-chip.on{background:var(--brush);border-color:var(--brush);color:#fff}'+
   '.pf-chip.rl{text-align:left;border-radius:14px;padding:7px 12px;line-height:1.35}.pf-chip.rl small{display:block;font-size:12px;opacity:.75;margin-top:1px}'+
   '.pf-err{font-size:12.5px;color:#C0506A;min-height:1.2em;margin-top:10px;text-align:center}.pf-note{font-size:12px;color:var(--soft);text-align:center;margin-top:10px}'+
@@ -133,13 +134,16 @@ var CSS='.pf-q{font-size:14.5px;font-weight:500;color:var(--brush);margin:18px 0
   '.mt-soft{font-size:12.5px;color:var(--soft);text-align:center;margin-top:12px}.mt-soft a{color:#3F7A5E;text-decoration:underline}';
 function injectCss(){ if(document.getElementById('rw-match-css')) return; var s=document.createElement('style'); s.id='rw-match-css'; s.textContent=CSS; document.head.appendChild(s); }
 
+function pfOpt(v,t){ return '<option value="'+v+'">'+t+'</option>'; }
 function formHTML(){
   // 沒登入會員的人，先填暱稱（必填）
   var nick=(window.rwMemberToken && window.rwMemberToken())?'':'<div class="pf-q">你的暱稱 <small style="color:#C98A6A">必填</small></div><input class="pf-sel" data-pf-nick maxlength="20" placeholder="想讓我們怎麼稱呼你？" style="width:100%;box-sizing:border-box" autocomplete="nickname">';
   return nick+'<div class="pf-q">① 你住在哪裡？<small data-pf-from></small></div><div class="pf-area" data-pf-area></div><div class="pf-hint">先選縣市，再選區（鄉鎮市）；住國外選「海外」</div>'+
-    '<div class="pf-q">② 一次諮詢，你能接受的預算？</div><div class="pf-chips" data-pf-g="budget">'+BUDGETS.map(function(b){ return '<button type="button" class="pf-chip" data-k="'+b.k+'">'+b.t+'</button>'; }).join('')+'</div>'+
-    '<div class="pf-q">③ 想用什麼方式？</div><div class="pf-chips" data-pf-g="mode">'+MODES.map(function(m){ return '<button type="button" class="pf-chip" data-k="'+m.k+'">'+m.t+'</button>'; }).join('')+'</div>'+
-    '<div class="pf-q">④ 你希望你的引路人像什麼角色？<small>可以選 1～2 個</small></div><div class="pf-chips" data-pf-roles>'+ROLES.map(function(r){ return '<button type="button" class="pf-chip rl" data-k="'+r.k+'">'+r.t+'<small>'+r.s+'</small></button>'; }).join('')+'</div>';
+    '<div class="pf-q">② 一次諮詢，你能接受的預算？</div><select class="pf-sel pf-one" data-pf-s="budget" aria-label="預算"><option value="">請選擇預算</option>'+BUDGETS.map(function(b){ return pfOpt(b.k,b.t); }).join('')+'</select>'+
+    '<div class="pf-q">③ 想用什麼方式？</div><select class="pf-sel pf-one" data-pf-s="mode" aria-label="方式"><option value="">請選擇方式</option>'+MODES.map(function(m){ return pfOpt(m.k,m.t); }).join('')+'</select>'+
+    '<div class="pf-q">④ 你希望你的引路人像什麼角色？<small>可以選 1～2 個</small></div><div class="pf-roles2" data-pf-roles>'+
+      '<select class="pf-sel pf-one" data-pf-r="0" aria-label="第一個角色"><option value="">請選擇角色</option>'+ROLES.map(function(r){ return pfOpt(r.k,r.t+'（'+r.s+'）'); }).join('')+'</select>'+
+      '<select class="pf-sel pf-one" data-pf-r="1" aria-label="第二個角色"><option value="">第二個角色（可不選）</option>'+ROLES.filter(function(r){ return r.k!=='any'; }).map(function(r){ return pfOpt(r.k,r.t+'（'+r.s+'）'); }).join('')+'</select></div>';
 }
 // 把三題掛到 box 裡；回傳 {get(), check()}：check() 沒填完會顯示提示並回傳 null
 function mount(box,errEl){
@@ -147,16 +151,25 @@ function mount(box,errEl){
   var p=loadLocal(), cur={area:p.area||'', budget:p.budget||'', mode:p.mode||'', nick:p.nick||'', roles:Array.isArray(p.roles)?p.roles.filter(function(k){ return rOf(k); }).slice(0,2):[]};
   var nk=box.querySelector('[data-pf-nick]'); if(nk){ nk.value=cur.nick; nk.addEventListener('input',function(){ cur.nick=nk.value.trim(); saveLocal(cur); if(errEl) errEl.textContent=''; }); }
   var pk=picker(box.querySelector('[data-pf-area]'),{cls:'pf-sel',value:cur.area,onChange:function(v){ cur.area=v; saveLocal(cur); if(errEl) errEl.textContent=''; }});
-  function drawChips(){ box.querySelectorAll('[data-pf-g]').forEach(function(g){ var f=g.getAttribute('data-pf-g'); g.querySelectorAll('.pf-chip').forEach(function(c){ c.classList.toggle('on',c.getAttribute('data-k')===cur[f]); }); }); }
-  box.querySelectorAll('[data-pf-g]').forEach(function(g){ g.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; cur[g.getAttribute('data-pf-g')]=c.getAttribute('data-k'); saveLocal(cur); drawChips(); if(errEl) errEl.textContent=''; }); });
-  drawChips();
-  var rb=box.querySelector('[data-pf-roles]');
-  function drawRoles(){ if(rb) rb.querySelectorAll('.pf-chip').forEach(function(c){ c.classList.toggle('on',cur.roles.indexOf(c.getAttribute('data-k'))>=0); }); }
-  if(rb) rb.addEventListener('click',function(e){ var c=e.target.closest('.pf-chip'); if(!c) return; var k=c.getAttribute('data-k'), i=cur.roles.indexOf(k);
-    if(errEl) errEl.textContent='';
-    if(k==='any') cur.roles=i>=0?[]:['any'];
-    else { cur.roles=cur.roles.filter(function(x){ return x!=='any'; }); var j=cur.roles.indexOf(k); if(j>=0) cur.roles.splice(j,1); else if(cur.roles.length>=2){ if(errEl) errEl.textContent='角色最多選 2 個'; return; } else cur.roles.push(k); }
-    saveLocal(cur); drawRoles(); });
+  function mark(s){ s.classList.toggle('empty',!s.value); }
+  // ② 預算、③ 方式：下拉選單
+  box.querySelectorAll('[data-pf-s]').forEach(function(s){ var f=s.getAttribute('data-pf-s');
+    s.value=cur[f]||''; if(s.value!==(cur[f]||'')){ s.value=''; cur[f]=''; } mark(s);
+    s.addEventListener('change',function(){ cur[f]=s.value; saveLocal(cur); mark(s); if(errEl) errEl.textContent=''; }); });
+  // ④ 角色：第一個必選；第二個可不選（選「都可以」就不用第二個）
+  if(cur.roles.indexOf('any')>=0) cur.roles=['any'];
+  var rb=box.querySelector('[data-pf-roles]'), r1=rb&&rb.querySelector('[data-pf-r="0"]'), r2=rb&&rb.querySelector('[data-pf-r="1"]');
+  function drawRoles(){ if(!rb) return; var a=cur.roles[0]||'', b=cur.roles[1]||'';
+    [].forEach.call(r2.options,function(o){ var same=!!o.value && o.value===a; o.disabled=same; o.hidden=same; });
+    r1.value=a; if(r1.value!==a){ r1.value=''; cur.roles=[]; a=''; b=''; }
+    r2.value=b; if(r2.value!==b){ r2.value=''; cur.roles=a?[a]:[]; }
+    r2.style.display=(a && a!=='any')?'':'none'; mark(r1); mark(r2); }
+  if(rb){
+    r1.addEventListener('change',function(){ var a=r1.value, b=cur.roles[1];
+      cur.roles=!a?[]:a==='any'?['any']:(b && b!==a?[a,b]:[a]); saveLocal(cur); drawRoles(); if(errEl) errEl.textContent=''; });
+    r2.addEventListener('change',function(){ var a=cur.roles[0], b=r2.value;
+      cur.roles=a?(b && b!==a?[a,b]:[a]):[]; saveLocal(cur); drawRoles(); if(errEl) errEl.textContent=''; });
+  }
   drawRoles();
   // 會員登入中、還沒選過地區 → 帶入會員資料的地區
   if(!cur.area && window.SUPA && window.rwMemberToken && window.rwMemberToken()){
