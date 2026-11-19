@@ -1183,7 +1183,7 @@ function drawGuideLocs(){
     if(!GLOC.L.length) h+='<div class="glc-none">還沒有實體地點（只做線上可以不用加）</div>';
     GLOC.L.forEach(function(x,i){
       var on=GLOC.edit===i;
-      h+='<button type="button" class="glc-row'+(on?' on':'')+'" data-ed="'+i+'"><span class="ic">📍</span><span class="m">'+glocLine(x)+'</span><span class="glc-go">'+(on?'收起':'<span class="w">編輯 </span>›')+'</span></button>';
+      h+='<button type="button" class="glc-row'+(on?' on':'')+'" data-ed="'+i+'"><span class="m">'+glocLine(x)+'</span><span class="glc-go">'+(on?'收起':'<span class="w">編輯 </span>›')+'</span></button>';
       if(on) h+='<div class="glc-ed" data-i="'+i+'">'+
         '<div class="glc-l">地區</div><div class="glc-area" data-area></div>'+
         '<div class="glc-l">地址<small>不公開</small></div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
@@ -1196,7 +1196,7 @@ function drawGuideLocs(){
     h+='</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>';
     // 線上視訊
     var von=GLOC.edit==='video';
-    h+='<div class="glc-h">線上視訊</div><div class="glc-list"><button type="button" class="glc-row'+(von?' on':'')+'" data-ed="video"><span class="ic">🎥</span><span class="m"><b>'+(GLOC.app?escA(GLOC.app):'<span class="glc-no off">沒有提供線上</span>')+'</b>'+
+    h+='<div class="glc-h">線上視訊</div><div class="glc-list"><button type="button" class="glc-row'+(von?' on':'')+'" data-ed="video"><span class="m"><b>'+(GLOC.app?escA(GLOC.app):'<span class="glc-no off">沒有提供線上</span>')+'</b>'+
       (GLOC.app?'<small>'+(GLOC.mode==='fixed'?'固定連結，預約成功就給客人':'每次當天傳連結給客人')+'</small>':'')+'</span><span class="glc-go">'+(von?'收起':'編輯 ›')+'</span></button>';
     if(von) h+='<div class="glc-ed">'+
       '<div class="glc-l" style="margin-top:0">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">不提供線上</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
