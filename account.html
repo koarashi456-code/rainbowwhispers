@@ -279,6 +279,21 @@
   .gx-amt{font-size:14px;font-weight:600;color:var(--brush)}
   .gx-go{flex:none;color:#C2A878;font-size:20px}
   .gx-note-dot{font-size:11px;color:#B5713F}
+  /* 客戶列表像筆記本：一人一行，淡淡橫線＋左邊紅色邊線（點進去看明細時不畫線） */
+  #g-members.nb-cust{position:relative}
+  #g-members.nb-cust::before{content:"";position:absolute;top:0;bottom:0;left:90px;width:1px;background:#F0CFCA;pointer-events:none}
+  #g-members.nb-cust.gx-mode::before{display:none}
+  #g-members.nb-cust>.grow.gx{padding:0;border-top:1px solid #EEE4D3}
+  #g-members.nb-cust>.grow.gx:first-child{border-top:0}
+  #g-members.nb-cust .gx-sum{min-height:46px;padding:0;gap:8px}
+  #g-members.nb-cust .gx-main{display:flex;align-items:center;gap:12px;font-size:13.5px}
+  #g-members.nb-cust .gx-main b{flex:none;width:68px;display:flex;align-items:center;gap:2px;min-width:0}
+  #g-members.nb-cust .gx-main b .gc-dname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g-members.nb-cust .gx-main small{flex:1;min-width:0;margin:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g-members.nb-cust .gx-pk{flex:none;font-size:11px;color:#6E4F9E;background:#EFE6F6;border-radius:999px;padding:1px 7px;white-space:nowrap}
+  #g-members.nb-cust .gx-amt{font-size:13.5px;font-variant-numeric:tabular-nums}
+  #g-members.nb-cust .gx-go{font-size:17px}
+  .gc-olist.nb-list{margin-top:6px}.gc-olist.nb-list::before{left:86px}
   .gx-det{display:none}
   .gx.open .gx-sum{display:none}
   .gx.open .gx-det{display:block}
@@ -508,7 +523,7 @@
   <div class="gsec-lab">客戶管理</div>
   <div id="g-remind" style="display:none;margin-bottom:10px"></div>
   <input class="g-search" data-target="g-members" type="search" placeholder="搜尋 姓名／電話／信箱／地區／備註…">
-  <div class="gbox" id="g-members"></div>
+  <div class="gbox nb-cust" id="g-members"></div>
 
   <button class="lo" id="g-logout" style="margin-top:22px">登出</button>
 </div>
@@ -921,10 +936,14 @@ async function loadGuideCustomers(){
       if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
       else if(bd){ d=(bd.getMonth()+1)+'/'+String(bd.getDate()).padStart(2,'0'); sub='購買'; } else { d='—'; sub='未定時間'; }
       var sp=gSplit(o.service);
-      return '<button type="button" class="orow gc-orow" data-ref="'+escA(o.order_ref||'')+'"><span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'+'<span class="om"><div class="t">'+escA(String(sp.plan||'—').replace(/^課程購買：/,''))+'</div><div class="s">'+(buy?'課程購買（套裝課程）':(sp.place?escA(sp.place):(o.amount===0?'用課程堂數':'')))+'</div></span>'+'<span class="oright"><div class="a">'+(o.amount===0&&!buy?'1 堂':money(o.amount))+'</div><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
+      var tm=buy?'購買':(p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):''), pl=String(sp.plan||'—').replace(/^課程購買：/,'').replace(/（[^）]*）$/,'');
+      return '<button type="button" class="orow gc-orow nb-row'+((o.status==='已取消'||o.status==='已退費')?' dim':'')+'" data-ref="'+escA(o.order_ref||'')+'"><span class="nb-d"><b>'+d+'</b>'+tm+'</span>'
+        +'<span class="nb-s" style="color:var(--ink)">'+escA(pl)+(buy?'<span style="color:var(--soft)">｜套裝課程</span>':sp.place?'<span style="color:var(--soft)">｜'+escA(sp.place.replace(/（實體）$/,''))+'</span>':'')+'</span>'
+        +'<span class="nb-a">'+(o.amount===0&&!buy?'1 堂':money(o.amount))+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></button>';
     }).join('');
     var lastO=(m.orders||[])[0], recHint=(m.orders||[]).length+' 筆・合計 '+money(m.spend);
-    var sum='<span class="gx-main"><b class="gc-dname">'+gcName(m.alias,m.name)+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
+    var lp=lastO&&wpart(lastO.appointment_at);
+    var sum='<span class="gx-main"><b><span class="gc-dname">'+gcName(m.alias,m.name)+'</span>'+(m.note?'<span class="gx-note-dot" title="有備註">✎</span>':'')+'</b><small>'+(m.bookings||0)+' 次'+(lp?'・最近 '+lp.mo+'/'+String(lp.d).padStart(2,'0'):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
       +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span><span class="grow-amt">'+money(m.spend)+'</span></div>'
       +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
@@ -932,7 +951,7 @@ async function loadGuideCustomers(){
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div>'
-      +(orders?'<button type="button" class="gc-tog" aria-expanded="false">消費紀錄 <span data-hint="'+escA(recHint)+'">'+escA(recHint)+'・點開 ▾</span></button><div class="olist gc-olist" hidden>'+orders+'</div>':'')+'</div>';
+      +(orders?'<button type="button" class="gc-tog" aria-expanded="false">消費紀錄 <span data-hint="'+escA(recHint)+'">'+escA(recHint)+'・點開 ▾</span></button><div class="olist gc-olist nb-list" hidden>'+orders+'</div>':'')+'</div>';
     return gxRow(sum,det,[m.alias,m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
   bindGx(mx);
@@ -992,7 +1011,7 @@ async function loadGuidePkgs(){
     RWCourse.bind(box,L,{adjust:async function(id,d,at){ var x=await db.rpc('package_adjust',{p_package_id:id,p_delta:d,p_at:at,p_note:null}); if(x.error) throw new Error(x.error.message); }, done:function(){ loadGuidePkgs(); }});
     // 列表那一行也標「課程剩 N 堂」
     var row=card.closest('.gx'), sm=row&&row.querySelector('.gx-main small');
-    if(sm){ var rem=L.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0), t=sm.querySelector('.gx-pk'); if(!t){ t=document.createElement('span'); t.className='gx-pk'; t.style.cssText='color:#6E4F9E'; sm.appendChild(t); } t.textContent='　·　課程剩 '+rem+' 堂'; }
+    if(sm){ var rem=L.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0), t=row.querySelector('.gx-pk'); if(!t){ t=document.createElement('span'); t.className='gx-pk'; sm.parentElement.parentElement.insertBefore(t,sm.parentElement.nextSibling); } t.textContent='剩 '+rem+' 堂'; }
   });
 }
 function custRowG(m){
