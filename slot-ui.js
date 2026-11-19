@@ -140,19 +140,30 @@ function editor(el,api){
       h+='<div class="rs-fbody">';
       if(!days.length){ h+='<div class="rs-empty" style="margin:0">還沒排開放時段。排了之後客人才能從這些時間預約。</div>'; }
       else{
-        h+='<select class="rs-sel" data-rs-view>'+days.map(function(k){ var L=B[k], b=L.filter(function(s){ return s.taken; }).length, pl=[];
-            L.forEach(function(s){ (s.places&&s.places.length?s.places.map(short):['全部地點']).forEach(function(x){ if(pl.indexOf(x)<0) pl.push(x); }); });
-            return '<option value="'+k+'"'+(k===S.view?' selected':'')+'>'+dayLabel(k)+'・'+L.length+' 個時段（'+esc(pl.join('、'))+'）'+(b?'・'+b+' 個已被預約':'')+'</option>'; }).join('')+'</select>';
+        // 看哪一天：月曆（有排時段的日子才能點；右上角數字＝那天開了幾個時段）
+        var vpl=function(k){ var pl=[]; B[k].forEach(function(s){ (s.places&&s.places.length?s.places.map(short):['全部地點']).forEach(function(x){ if(pl.indexOf(x)<0) pl.push(x); }); }); return pl; };
+        if(window.RWCal){
+          var vb=B[S.view].filter(function(s){ return s.taken; }).length;
+          h+='<div data-rs-vcal></div><div class="rs-day-h" style="margin-top:12px">'+dayLabel(S.view)+'<span style="font-size:12.5px;font-weight:400;color:var(--soft)">・'+B[S.view].length+' 個時段（'+esc(vpl(S.view).join('、'))+'）'+(vb?'・'+vb+' 個已被預約':'')+'</span></div>';
+        } else {
+          h+='<select class="rs-sel" data-rs-view>'+days.map(function(k){ var L=B[k], b=L.filter(function(s){ return s.taken; }).length;
+            return '<option value="'+k+'"'+(k===S.view?' selected':'')+'>'+dayLabel(k)+'・'+L.length+' 個時段（'+esc(vpl(k).join('、'))+'）'+(b?'・'+b+' 個已被預約':'')+'</option>'; }).join('')+'</select>';
+        }
         h+='<div class="rs-row">'+B[S.view].map(function(s){
           return s.taken ? '<span class="rs-pill bk">'+s.t+' '+tagHtml(s.places,S.all)+'<span class="bkt">已被預約</span></span>'
                          : '<span class="rs-pill">'+s.t+' '+tagHtml(s.places,S.all)+(S.editable&&s.id?'<span class="rm" data-rs-rm="'+esc(s.id)+'" title="刪除這個時段">&times;</span>':'')+'</span>'; }).join('')+'</div>';
-        h+='<div class="rs-note" style="margin-top:8px">下拉選一天看那天的時段；按 × 刪除（已被預約的不能刪）</div>';
+        h+='<div class="rs-note" style="margin-top:8px">'+(window.RWCal?'點月曆上的日子看那天的時段':'下拉選一天看那天的時段')+'；按 × 刪除（已被預約的不能刪）</div>';
       }
       h+='</div>';
     }
     h+='<div class="rs-note">'+(S.all.length>1?'・線上視訊和各地區分開選時段；同一個時間只能開一個地點<br>・時段後面的小標籤是地點；以前排好的時段顯示「全部地點」，客人選哪個地點都能約<br>':'')+
       '・客人預約時只能從這裡開放的時段挑'+(S.editable?'':'<br><span style="color:#B07A2E">⚠️ 目前只能檢視（請先在 Supabase 執行時段的 SQL）</span>')+'</div>';
     el.innerHTML=h;
+    var vc=el.querySelector('[data-rs-vcal]');
+    if(vc){ var vdm={}; days.forEach(function(k){ var L=B[k], nb=L.filter(function(s){ return s.taken; }).length;
+        vdm[k]={n:L.length, dot:(L.length>nb?'op':''), dot2:(nb?'bk':''), label:L.length+' 個時段'+(nb?'，'+nb+' 個已被預約':'')}; });
+      S.vcal=S.vcal||{};
+      RWCal.mount(vc,{plain:true, days:vdm, sel:S.view, state:S.vcal, legend:[['op','還開放'],['bk','有人預約了']], onPick:function(k){ S.view=k; draw(); }}); }
     var fa=el.querySelector('[data-rs-fa]'); if(fa) fa.onclick=function(){ S.openA=!S.openA; draw(); };
     var fb=el.querySelector('[data-rs-fb]'); if(fb) fb.onclick=function(){ S.openB=!S.openB; draw(); };
     el.querySelectorAll('[data-rs-d]').forEach(function(b){ b.onclick=function(){ S.date=b.getAttribute('data-rs-d'); S.times={}; S.tp={}; draw(); }; });
@@ -175,7 +186,7 @@ function editor(el,api){
       ab.disabled=true; msg('新增中…');
       var n=0, done=0;
       try{ for(var gi=0;gi<groups.length;gi++){ n+=Number(await api.add(groups[gi].t.map(function(t){ return S.date+'T'+t; }), groups[gi].pl))||0; done++; }
-        S.times={}; S.tp={}; S.view=S.date; await reload(); msg('已新增 '+n+' 個時段','#4F8E6E'); if(api.changed) api.changed(); }
+        S.times={}; S.tp={}; S.view=S.date; S.vcal={}; await reload(); msg('已新增 '+n+' 個時段','#4F8E6E'); if(api.changed) api.changed(); }
       catch(e){ if(done){ S.tp={}; S.times={}; await reload(); } var ab3=el.querySelector('[data-rs-add]'); if(ab3) ab3.disabled=false; msg((done?'部分新增成功，':'')+'新增失敗：'+((e&&e.message)||''),'#C0506A'); }
     };
   }

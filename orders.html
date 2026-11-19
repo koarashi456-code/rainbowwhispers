@@ -201,6 +201,7 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="booking-access.js?v=20261119"></script>
+<script src="cal-ui.js?v=20261119"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 function $(s){ return document.querySelector(s); }
@@ -347,10 +348,17 @@ async function openReschedule(ref){
 function drawSlotPick(open,cur){
   var WD=['日','一','二','三','四','五','六'], days=[], by={};
   open.forEach(function(x){ var k=x.w.slice(0,10); if(!by[k]){ by[k]=[]; days.push(x); } by[k].push(x); });
-  if(!RS.date || !by[RS.date]) RS.date=days[0].w.slice(0,10);
-  var h='<div class="rs-lab">選日期</div><div class="rs-chips">'+days.map(function(x){ var k=x.w.slice(0,10); return '<button type="button" class="rs-chip'+(k===RS.date?' on':'')+'" data-d="'+k+'">'+x.p.mo+'/'+x.p.d+' '+WD[new Date(x.p.y,x.p.mo-1,x.p.d).getDay()]+'</button>'; }).join('')+'</div>';
-  h+='<div class="rs-lab">選時段（灰色＝已被約或原本的時間）</div><div class="rs-chips">'+by[RS.date].map(function(x){ var off=x.taken||x.w===cur; return '<button type="button" class="rs-chip'+(off?' off':'')+(x.w===RS.sel?' on':'')+'"'+(off?' disabled':' data-w="'+x.w+'"')+'>'+p2(x.p.h)+':'+p2(x.p.mi)+'</button>'; }).join('')+'</div>';
+  // 選日期：月曆（只有能改的日子可以點；右上角數字＝還剩幾個時段）
+  function freeN(k){ return by[k].filter(function(x){ return !x.taken && x.w!==cur; }).length; }
+  if(!RS.date || !by[RS.date]){ var fd=days.filter(function(x){ return freeN(x.w.slice(0,10))>0; })[0]; RS.date=(fd||days[0]).w.slice(0,10); }
+  var dm={}; days.forEach(function(x){ var k=x.w.slice(0,10), n=freeN(k); dm[k]=n?{n:n,dot:'op',label:'還有 '+n+' 個時段'}:{off:true,dot:'full',label:'沒有可改的時段'}; });
+  RS.cal=RS.cal||{};
+  var sp=RS.date.split('-');
+  var h='<div class="rs-lab">選日期</div><div id="rs-cal"></div>';
+  h+='<div class="rs-lab">選時段・'+(+sp[1])+'/'+(+sp[2])+'（'+WD[new Date(+sp[0],+sp[1]-1,+sp[2]).getDay()]+'）（灰色＝已被約或原本的時間）</div><div class="rs-chips">'+by[RS.date].map(function(x){ var off=x.taken||x.w===cur; return '<button type="button" class="rs-chip'+(off?' off':'')+(x.w===RS.sel?' on':'')+'"'+(off?' disabled':' data-w="'+x.w+'"')+'>'+p2(x.p.h)+':'+p2(x.p.mi)+'</button>'; }).join('')+'</div>';
   $('#rs-pick').innerHTML=h;
+  RWCal.mount($('#rs-cal'),{days:dm, sel:RS.date, state:RS.cal, legend:[['op','可以改（數字＝還剩幾個時段）'],['full','沒有可改的時段']],
+    onPick:function(k){ RS.date=k; RS.sel=''; $('#rs-go').disabled=true; drawSlotPick(open,cur); }});
   $('#rs-pick').querySelectorAll('[data-d]').forEach(function(b){ b.onclick=function(){ RS.date=b.getAttribute('data-d'); RS.sel=''; $('#rs-go').disabled=true; drawSlotPick(open,cur); }; });
   $('#rs-pick').querySelectorAll('[data-w]').forEach(function(b){ b.onclick=function(){ RS.sel=b.getAttribute('data-w'); $('#rs-go').disabled=false; drawSlotPick(open,cur); }; });
 }
