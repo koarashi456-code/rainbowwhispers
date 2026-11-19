@@ -57,7 +57,12 @@ CSS+='.pkc.cmp{padding:10px 12px;border-radius:14px;background:#FFFDF8}'+
   '.pkc.cmp .pkc-more{font-size:12px;padding:4px 0 0}'+
   '.pkc.cmp .pkc-btns{gap:6px;margin-top:8px}.pkc.cmp .pkc-btns>*{flex:none;min-width:0;min-height:36px;padding:0 14px;font-size:13px}'+
   '.pkc.cmp .pkc-btns .pkc-go{background:#fff;border-color:#D9C7A8;color:var(--brush);font-weight:500}'+
-  '.pkc.cmp .pkc-rule{background:none;padding:0;margin-top:8px;font-size:11.5px;line-height:1.6}';
+  '.pkc.cmp .pkc-rule{background:none;padding:0;margin-top:8px;font-size:11.5px;line-height:1.6}.pkc.cmp .pkc-rule b{font-weight:400;color:var(--soft)}'+
+  // 會員（我的課程）：放在列表裡，不要外框；主要按鍵還是彩虹
+  '.pkc.cmp.mem{border:0;background:none;border-radius:0;padding:10px 0;margin:0;border-bottom:1px dashed #EFE3CE}.pkc.cmp.mem:last-child{border-bottom:0}'+
+  '.pkc.cmp.mem .pkc-btns .pkc-go{flex:1;background:var(--rainbow);border-color:transparent;color:#4A3A2A;display:inline-flex;align-items:center;justify-content:center}'+
+  '.pkc.cmp.mem .pkc-btns .pkc-warn{border:0;background:none;color:#B4566E;padding:0 6px}'+
+  '.pkc.cmp .pkc-link{text-align:left;font-size:12px;margin-top:4px}';
 function css(){ if(document.getElementById('pkc-css')) return; var s=document.createElement('style'); s.id='pkc-css'; s.textContent=CSS; document.head.appendChild(s); }
 // 每一堂：網站預約（看訂單狀態）、手動記錄、轉讓
 function sesRows(pk,mode){
@@ -80,10 +85,11 @@ function card(pk,mode){
   var pct=function(x){ return total?Math.max(0,Math.min(100,x*100/total)):0; };
   var right=mode==='member'?esc(pk.guide_name||''):(pk.from_name?'由 '+esc(pk.from_name)+' 轉讓':(ymd(pk.created_at)+' 購買'+(pk.price?' '+money(pk.price):'')));
   if(mode==='member' && pk.from_name) right=esc(pk.guide_name||'')+'<br><small>由 '+esc(pk.from_name)+' 轉讓</small>';
-  var cmp=mode!=='member', h;
+  var cmp=true, h;
   if(cmp){
-    h='<div class="pkc cmp" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span class="rm">剩 <b>'+rem+'</b> / '+total+' 堂</span></div>'+
-      '<div class="pkc-sub">'+right+'・已上 '+used+' 堂'+(bk?'・已預約 '+bk+' 堂':'')+(tr?'・轉出 '+tr+' 堂':'')+'</div>'+
+    var subL=mode==='member'?(esc(pk.guide_name||'')+(pk.from_name?'（由 '+esc(pk.from_name)+' 轉讓）':'')):right;
+    h='<div class="pkc cmp'+(mode==='member'?' mem':'')+'" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span class="rm">剩 <b>'+rem+'</b> / '+total+' 堂</span></div>'+
+      '<div class="pkc-sub">'+subL+'・已上 '+used+' 堂'+(bk?'・已預約 '+bk+' 堂':'')+(tr?'・轉出 '+tr+' 堂':'')+'</div>'+
       '<div class="pkc-bar"><i class="u" style="width:'+pct(used)+'%"></i><i class="b" style="width:'+pct(bk)+'%"></i><i class="x" style="width:'+pct(tr)+'%"></i></div>';
   } else {
   h='<div class="pkc" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span>'+right+'</span></div>'+
@@ -96,7 +102,7 @@ function card(pk,mode){
   else if(rs==='已退費') h+='<div class="pkc-rf done">已退費 '+money(pk.refund_amount)+(pk.refunded_at?'（'+ymd(pk.refunded_at)+'）':'')+'・課程已結束</div>';
   var rows=sesRows(pk,mode);
   if(rows.length){
-    var show=mode==='member'?rows:rows.slice(-2);
+    var show=rows.slice(-2);
     h+='<div class="pkc-ses">'+show.join('')+'</div>';
     if(show.length<rows.length) h+='<button type="button" class="pkc-more" data-pk-all>看全部 '+rows.length+' 筆紀錄</button><div class="pkc-ses" data-pk-allbox style="display:none">'+rows.join('')+'</div>';
   }

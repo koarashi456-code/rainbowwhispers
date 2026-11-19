@@ -69,6 +69,16 @@
   .irow input.iv:focus{color:var(--brush)}
   .irow.link{cursor:pointer} .irow.link .il{color:var(--brush)}
   .chev{color:#C9B79A;font-size:16px}
+  /* 我的帳戶：儲值餘額／我的訂單／我的課程 一行一項，課程點開才看 */
+  .mc-list .irow{min-height:48px;box-sizing:border-box}
+  .mc-list .irow .il{color:var(--ink)}
+  .mc-list .mc-v{display:inline-flex;align-items:center;gap:6px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
+  .mc-list .mc-v .chev{font-weight:400}
+  .mc-list #mc-order-stat{border-bottom:0}
+  .mc-list #mc-pkg-wrap{border-top:1px solid var(--line)}
+  .mc-pkfold{width:100%;font:inherit;background:none;border:0;border-bottom:0!important;text-align:left;color:inherit;cursor:pointer;padding:11px 0}
+  .mc-pkfold .mc-v{font-weight:500;font-size:13.5px}
+  #mc-pkgs{border-top:1px dashed #EFE3CE;padding:2px 0 8px}
   .msaved{font-size:12px;color:#4F8E6E;text-align:right;padding:3px 20px 0;min-height:15px}
   .pwbox{margin:8px 20px 0}
   .pwbox input{width:100%;box-sizing:border-box;font:inherit;font-size:14.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none;margin-bottom:8px;text-align:left}
@@ -456,9 +466,14 @@
     <div class="pmail" id="mc-mail"></div>
     <div class="pbadge">會員</div>
   </div>
-  <div class="stats2">
-    <div class="st"><div class="stic i-a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E4F9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 3v4"/></svg></div><div class="stk">儲值餘額</div><div class="stv" id="mc-balance">$0</div></div>
-    <div class="st" id="mc-order-stat" style="cursor:pointer"><div class="stic i-b"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A5643A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/><path d="M9 11h6M9 15h4"/></svg></div><div class="stk">我的訂單</div><div class="stv" id="mc-order-count">0</div><span class="stcaret">›</span></div>
+  <div class="sec-lab">我的帳戶</div>
+  <div class="info-card mc-list">
+    <div class="irow"><span class="il">儲值餘額</span><span class="iv mc-v" id="mc-balance">$0</span></div>
+    <div class="irow link" id="mc-order-stat" role="link" tabindex="0"><span class="il">我的訂單</span><span class="iv mc-v"><span id="mc-order-count">0</span> 筆<span class="chev">›</span></span></div>
+    <div id="mc-pkg-wrap" style="display:none">
+      <button type="button" class="irow link mc-pkfold" id="mc-pk-fold" aria-expanded="false" aria-controls="mc-pkgs"><span class="il">我的課程</span><span class="iv mc-v"><span id="mc-pk-sum"></span><span class="chev" id="mc-pk-chev">▾</span></span></button>
+      <div id="mc-pkgs" hidden></div>
+    </div>
   </div>
   <div class="promo-card" id="mc-promo" style="display:none">
     <div class="promo-h">會員優惠 <span class="promo-soon">即將開放</span></div>
@@ -467,7 +482,6 @@
       <li>會員限定服務優惠</li>
     </ul>
   </div>
-  <div id="mc-pkg-wrap" style="display:none"><div class="sec-lab">我的課程</div><div id="mc-pkgs"></div></div>
   <div class="sec-lab">基本資料</div>
   <div class="info-card">
     <div class="irow"><span class="il">姓名</span><input class="iv" id="mc-f-name" placeholder="—"></div>
@@ -633,11 +647,17 @@ function enterMember(o){
   loadMyPackages();
 }
 // 會員：我的課程（套裝課程，SQL：my_packages；畫面在 course-ui.js）
+var MC_PK_OPEN=false;
 async function loadMyPackages(){
   var w=$('#mc-pkg-wrap'), box=$('#mc-pkgs'); if(!w||!box||!window.RWCourse) return;
   var L=[]; try{ var r=await db.rpc('my_packages'); if(!r.error && Array.isArray(r.data)) L=r.data; }catch(e){}
   if(!L.length){ w.style.display='none'; return; }
   w.style.display='block'; box.innerHTML=L.map(function(k){ return RWCourse.card(k,'member'); }).join('');
+  // 收合：平常只看「彩虹卡 5 堂課程・剩 4 堂」，點開才看課程卡
+  var remAll=L.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0);
+  $('#mc-pk-sum').textContent=(L.length===1?(L[0].label||'套裝課程'):L.length+' 個課程')+'・剩 '+remAll+' 堂';
+  var fb=$('#mc-pk-fold'); function setPk(on){ MC_PK_OPEN=on; box.hidden=!on; fb.setAttribute('aria-expanded',on); $('#mc-pk-chev').textContent=on?'▴':'▾'; }
+  setPk(MC_PK_OPEN); fb.onclick=function(){ setPk(!MC_PK_OPEN); };
   // 退費（SQL：package_refund_quote、request_package_refund、cancel_package_refund）
   RWCourse.bind(box,L,{
     refund:async function(pk){
@@ -1548,6 +1568,7 @@ $('#seg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
 // 我的訂單卡 → 訂單頁；設定走右上角齒輪
 $('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
+$('#mc-order-stat').onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); location.href='orders.html'; } };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
 // 儲存基本資料（姓名／手機／地區）
 // 地區：縣市＋區兩個下拉（存成「新北市三重區」）
