@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261119">
 <style>
   .admin-bar{position:sticky;top:0;z-index:40;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
   .admin-bar-in{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;gap:10px}
@@ -147,7 +147,7 @@
   .sp-m{flex:1;min-width:0}.sp-m .t{font-size:14.5px;color:var(--brush);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sp-m .s{font-size:12.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sp-r{flex:none;text-align:right}.sp-r .a{font-size:14.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}
-  .sp-st{display:inline-block;margin-top:3px;font-size:11px;padding:1px 8px;border-radius:999px;background:#EDE6DC;color:#8A7659}.sp-st.on{background:#D8ECDF;color:#3F7A5E}
+  .sp-st{display:inline-block;margin-top:3px;font-size:11px;padding:1px 8px;border-radius:999px;background:#EDE6DC;color:#6A5741}.sp-st.on{background:#D8ECDF;color:#3F7A5E}
   .sp-go{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
   .sp-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:90}
   .sp-mask.on{display:flex}
@@ -260,7 +260,7 @@
   .status-badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px}
   .st-book{background:#FBE7CC;color:#A5643A}
   .st-done{background:#D8ECDF;color:#3F7A5E}
-  .st-cancel{background:#EDE6DC;color:#8A7659}
+  .st-cancel{background:#EDE6DC;color:#6A5741}
   .st-noshow{background:#F6DDE3;color:#B4566E}
   .st-refund{background:#F3D9DE;color:#B5566E}
   /* 交易紀錄 Excel 風表格 */
@@ -283,7 +283,7 @@
   #trashlist .trr:last-child{border-bottom:0!important}
   .trh{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer}
   .trh .tr-ck{flex:none;width:16px;height:16px;margin:0}
-  .tbd{flex:none;font-size:10.5px;border-radius:999px;padding:0 7px;background:#EDE6DC;color:#8A7659;white-space:nowrap;line-height:1.7}
+  .tbd{flex:none;font-size:10.5px;border-radius:999px;padding:0 7px;background:#EDE6DC;color:#6A5741;white-space:nowrap;line-height:1.7}
   .tbd.tx{background:#FBE7CC;color:#A5643A}.tbd.tp{background:#E4F2E7;color:#3F7A5E}.tbd.gd{background:#EAE4F7;color:#6E4F9E}
   .trh .tm{flex:1;min-width:0;line-height:1.35}.trh .tm b{display:block;font-size:13.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .trh .tm small{display:block;font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -677,9 +677,10 @@
 
 <div class="sp-mask" id="xf-mask"><div class="sp-box" id="xf-box" role="dialog" aria-label="轉讓課程"></div></div>
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261109"></script>
-<script src="slot-ui.js?v=20261109"></script>
-<script src="course-ui.js?v=20261108c"></script>
+<script src="area.js?v=20261119"></script>
+<script src="cal-ui.js?v=20261119"></script>
+<script src="slot-ui.js?v=20261119"></script>
+<script src="course-ui.js?v=20261119"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -1000,7 +1001,7 @@ function bindCards(){
 /* ===== 引路人管理 ===== */
 function guideName(id){ var g=guideById(id); return g?guideLabel(g):(id?'(已刪引路人)':'—'); }
 function guideState(g){ return g.pending?'待申請':(g.active?'上架中':'已停用'); }
-function guideBadge(g){ if(g.pending) return '<span class="src-badge" style="background:#FBE7CC;color:#A5643A">待申請</span>'; if(!g.active) return '<span class="src-badge" style="background:#EDE6DC;color:#8A7659">已停用</span>'; return '<span class="src-badge" style="background:#D8ECDF;color:#3F7A5E">上架中</span>'; }
+function guideBadge(g){ if(g.pending) return '<span class="src-badge" style="background:#FBE7CC;color:#A5643A">待申請</span>'; if(!g.active) return '<span class="src-badge" style="background:#EDE6DC;color:#6A5741">已停用</span>'; return '<span class="src-badge" style="background:#D8ECDF;color:#3F7A5E">上架中</span>'; }
 function renderGuides(){
   var f=($('#g-filter')||{}).value||'';
   var q=(($('#g-search')||{}).value||'').trim().toLowerCase();
@@ -1145,6 +1146,7 @@ function loadGuideSlots(el,id){
   if(el._slotEd){ el._slotEd.reload(); return; }
   box.style.color='var(--ink)'; box.style.fontSize='';
   el._slotEd=RWSlots.editor(box,{
+    open:true,
     load:async function(){ var r=await fetchGuideSlots(id); return {rows:r.rows, editable:r.editable}; },
     places:async function(){ return adminGuidePlaces(guideById(id)); },
     add:async function(slots,places){
@@ -1437,7 +1439,7 @@ function renderTx(){
   if(!rows.length){ $('#txlist').innerHTML='<div class="muted" style="padding:24px;text-align:center">沒有符合的紀錄</div>'; return; }
   var foot='<div class="txfoot"><span>有效 <b>'+valid.length+'</b> 筆 · 營收 <b>'+money(sum)+'</b></span><span>退費 <b>'+refunds.length+'</b> 筆／<b>'+money(refAmt)+'</b></span></div>';
   if(isM()){  // 手機：先看摘要，點進去才看明細
-    $('#txlist').innerHTML='<div class="m-list">'+rows.map(txMRow).join('')+'</div>'+foot.replace('class="txfoot"','class="txfoot" style="border:1px solid var(--line);border-radius:12px;margin-top:10px"');
+    $('#txlist').innerHTML='<div class="nb-list">'+rows.map(txMRow).join('')+'</div>'+foot.replace('class="txfoot"','class="txfoot" style="border:1px solid var(--line);border-radius:12px;margin-top:10px"');
     $('#txlist').querySelectorAll('.m-row').forEach(function(r){ r.onclick=function(){ openTxDetail(r.getAttribute('data-id'),r.getAttribute('data-kind')); }; });
     return;
   }
@@ -2297,10 +2299,15 @@ function txDetailHtml(t){
   return h+'<div class="m-saved"></div><div class="m-btns">'+(c?'<button type="button" data-mcust>看這位客人</button>':'')+'<button type="button" class="dl" data-del>刪除</button></div></div>';
 }
 function txMRow(t){
-  var tp=isTopup(t), c=custById(t.customer_id);
-  var cname=c?adName(c):esc(goneCust(t));
-  var sub=tp?fmtFull(t.created_at)+'・'+esc(t.method||''):esc(guideName(t.guide_id))+'・'+(t.appointment_at?fmtAppt(t.appointment_at):'未定時間');
-  return '<button type="button" class="m-row" data-id="'+t.id+'"'+(tp?' data-kind="topup"':'')+'><span class="mn"><b>'+cname+'</b>　'+(tp?'儲值':esc(t.service||'—'))+'<small>'+sub+'</small></span><span class="rt"><span class="am"'+(tp?' style="color:#3F7A5E"':'')+'>'+(tp?'+':'')+money(t.amount)+'</span>'+(tp?'<span class="status-badge st-topup">儲值</span>':statusBadge(t.status))+'</span><span class="go">›</span></button>';
+  // 手機：像筆記本一樣一筆一行（日期 時間｜客人｜引路人・項目｜金額｜狀態），點一下看明細
+  var tp=isTopup(t), c=custById(t.customer_id), cname=c?adName(c):esc(goneCust(t));
+  var w=tp?String(t.created_at||''):String(t.appointment_at||''), m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(w), d='—', tm=tp?'儲值':'';
+  if(tp){ var dd=new Date(t.created_at); if(!isNaN(dd)) d=(dd.getMonth()+1)+'/'+String(dd.getDate()).padStart(2,'0'); }
+  else if(m){ d=(+m[2])+'/'+m[3]; tm=m[4]+':'+m[5]; } else tm='未定';
+  var what=tp?esc(t.method||'儲值'):esc(guideName(t.guide_id))+'・'+esc(String(t.service||'—').split('｜')[0].replace(/（[^）]*）$/,''));
+  var dim=(t.status==='已取消'||t.status==='已退費');
+  return '<button type="button" class="m-row nb-row'+(dim?' dim':'')+'" data-id="'+t.id+'"'+(tp?' data-kind="topup"':'')+'><span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+cname+'</span><span class="nb-s">'+what+'</span>'+
+    '<span class="nb-a"'+(tp?' style="color:#3F7A5E"':'')+'>'+(tp?'+':'')+money(t.amount)+'</span>'+(tp?'<span class="status-badge st-topup">儲值</span>':statusBadge(t.status))+'</button>';
 }
 function soMRow(t){
   var c=custById(t.customer_id);

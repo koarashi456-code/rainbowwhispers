@@ -1,7 +1,7 @@
 /* 彩之語 Rainbow Whisper — 共用樣式 */
 :root{
   --cream:#FAF4E6; --tint:#F4EAD4; --card:#FFFDF8;
-  --ink:#5A4632; --soft:#8A7659; --brush:#6B4A33; --accent:#B5713F;
+  --ink:#5A4632; --soft:#76624C; --brush:#6B4A33; --accent:#B5713F;
   --line:#ECDFC6;
   --rainbow:linear-gradient(95deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);
 }
@@ -13,7 +13,7 @@ body{background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","PingFa
 .rw-nav{position:sticky;top:0;z-index:50;background:rgba(250,244,230,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
 .rw-nav-in{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:11px 20px;gap:12px}
 .rw-brand{display:flex;flex-direction:column;text-decoration:none;color:var(--brush);font-family:"Noto Serif TC",serif;font-weight:700;font-size:20px;letter-spacing:.1em;line-height:1.1}
-.rw-brand small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:8px;letter-spacing:.26em;color:#A78C6E;margin-top:2px}
+.rw-brand small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:11px;letter-spacing:.16em;color:#8F7550;margin-top:2px}
 .rw-links{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
 .rw-links a{text-decoration:none;color:var(--ink);font-size:14px;padding:7px 11px;border-radius:999px;transition:background .15s}
 .rw-links a:hover{background:var(--tint)}
@@ -68,7 +68,7 @@ body{background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","PingFa
 /* 漢堡選單（手機把導覽收成右邊三條線，點開才展開） */
 .rw-nav-in{position:relative}
 .rw-burger-cb{display:none}
-.rw-burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:40px;height:34px;padding:0 8px;cursor:pointer;margin-left:auto}
+.rw-burger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:44px;height:44px;padding:0;cursor:pointer;margin-left:auto}
 .rw-burger span{display:block;height:2px;width:20px;background:var(--brush);border-radius:2px;transition:transform .2s,opacity .2s}
 .rw-burger-cb:checked ~ .rw-burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .rw-burger-cb:checked ~ .rw-burger span:nth-child(2){opacity:0}
@@ -85,3 +85,41 @@ body{background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","PingFa
 /* 測驗「‹ 上一頁」：放在白色卡片裡、選項下面的文字按鈕，所有測驗同一款 */
 .rw-back{display:block;margin:16px auto 0;font:inherit;font-size:13.5px;color:var(--soft);background:none;border:none;padding:6px 10px;cursor:pointer}
 .rw-back:hover{color:var(--brush)}
+
+/* ===== Apple 人機介面指南（HIG）＋彩之語風格：全站共用 =====
+   ・手指點的地方至少 44pt　・小字最小 11～12px、灰字對比至少 4.5　・手機輸入框 16px（不會自動放大畫面）
+   ・按下去有回饋　・尊重「減少動態效果」設定 */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,label,select,input{-webkit-tap-highlight-color:transparent}
+.rw-foot-en{font-size:12px;color:#8F7550}
+.rw-foot-note{color:#76624C}
+.rw-foot-links{display:flex;flex-wrap:wrap;justify-content:center;font-size:13px}
+.rw-foot-links a{display:inline-flex;align-items:center;min-height:44px;padding:0 9px;margin:0;color:#76624C}
+.rw-copy{font-size:12px;color:#8F7550}
+.rw-textlink{color:var(--soft)}
+.rw-cta,.rw-ghost{min-height:44px}
+.rw-back{min-height:44px;padding:0 14px;font-size:15px}
+@media (hover:none) and (pointer:coarse){
+  /* iPhone：輸入框字小於 16px 會自動放大整個畫面 */
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{font-size:16px!important}
+  /* 按下去的回饋 */
+  button:active,.rw-cta:active,.rw-ghost:active,a.rw-cta:active{opacity:.72}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+/* ===== 條列像筆記本：一筆一行，淡淡的橫線＋左邊一條紅色邊線（交易紀錄用） ===== */
+.nb-list{position:relative;background:#FFFDF8;border:1px solid var(--line);border-radius:14px;overflow:hidden;padding:0}
+.nb-list::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none}
+.nb-list .nb-row{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;min-height:44px;margin:0;padding:0 10px;font:inherit;text-align:left;color:var(--ink);background:none;border:0;border-bottom:1px solid #EEE4D3;border-radius:0;cursor:pointer}
+.nb-list .nb-row:last-child{border-bottom:0}
+.nb-list .nb-row:active{background:#FBF6EC}
+.nb-d{flex:none;width:72px;font-size:11.5px;color:var(--soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nb-d b{font-size:13px;font-weight:600;color:var(--brush);margin-right:3px}
+.nb-n{flex:none;max-width:4.8em;padding-left:4px;font-size:13.5px;font-weight:600;color:var(--brush);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-s{flex:1;min-width:0;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-a{flex:none;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nb-list .nb-row .cal-st,.nb-list .nb-row .status-badge{flex:none;font-size:11px;padding:1px 7px;margin:0;white-space:nowrap}
+.nb-list .nb-row.dim .nb-n,.nb-list .nb-row.dim .nb-a{color:#9C8B74}
+@media (max-width:360px){ .nb-s{display:none} }

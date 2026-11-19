@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261119">
 <style>
   .owrap{max-width:560px;margin:0 auto;padding:18px 18px 60px}
   .ohead{display:flex;align-items:center;gap:10px;margin:8px 2px 4px}
@@ -67,7 +67,7 @@
   .rs-acts .go{background:var(--rainbow);border-color:transparent;color:#4A3A2A;font-weight:500}
   .rs-msg{font-size:12.5px;margin-top:10px;min-height:1em}
   .st-done{background:#D8ECDF;color:#3F7A5E}
-  .st-cancel{background:#EDE6DC;color:#8A7659}
+  .st-cancel{background:#EDE6DC;color:#6A5741}
   .st-refund{background:#F3D9DE;color:#B5566E}
 
   /* 條列式：一行一筆，點開看明細 */
@@ -145,7 +145,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js"></script>
+<script src="nav.js?v=20261119"></script>
 
 <div id="ord-loading" class="oloading">載入你的訂單中…</div>
 
@@ -201,6 +201,7 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="booking-access.js?v=20261119"></script>
+<script src="cal-ui.js?v=20261119"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
 function $(s){ return document.querySelector(s); }
@@ -236,10 +237,13 @@ function orderRow(o){
   if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=WDN[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
   else { var c=new Date(o.created_at||0); d=(c.getMonth()+1)+'/'+String(c.getDate()).padStart(2,'0'); sub=isBuy(o)?'購買':WDN[c.getDay()]; }
   var dim=(o.status==='已取消'||o.status==='已退費');
-  return '<button type="button" class="orow'+(dim?' dim':'')+'" data-i="'+i+'">'
-    +'<span class="od'+(isShop(o)?' shop':'')+(isBuy(o)?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
-    +'<span class="om"><div class="t">'+(isShop(o)?'商品訂單':esc(o.guide_name||'引路人'))+'</div><div class="s">'+esc(sp.plan)+(sp.place?'｜'+esc(sp.place):'')+'</div></span>'
-    +'<span class="oright"><div class="a">'+(o.method==='課程'?'1 堂':money(o.amount))+'</div>'+statusBadge(stText(o))+'</span><span class="ogo">›</span></button>';
+  // 像筆記本一樣一筆一行：日期 時間｜引路人｜方案｜金額｜狀態（點一下看明細）
+  var tm=p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):(isBuy(o)?'購買':isShop(o)?'商品':'');
+  var who=isShop(o)?'商品':esc(o.guide_name||'引路人'), pl=String(sp.plan||'').replace(/^課程購買：/,'').replace(/（[^）]*）$/,'');
+  return '<button type="button" class="orow nb-row'+(dim?' dim':'')+'" data-i="'+i+'" aria-label="'+esc(d+' '+tm+' '+(isShop(o)?'商品訂單':(o.guide_name||'引路人'))+' '+pl+' '+(o.method==='課程'?'1 堂':money(o.amount))+' '+stText(o))+'">'
+    +'<span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+who+'</span>'
+    +'<span class="nb-s">'+esc(pl)+(sp.place?'｜'+esc(sp.place.replace(/（實體）$/,'')):'')+'</span>'
+    +'<span class="nb-a">'+(o.method==='課程'?'1 堂':money(o.amount))+'</span>'+statusBadge(stText(o))+'</button>';
 }
 function kv(k,v,c){ return '<div class="kv'+(c?' '+c:'')+'"><span>'+k+'</span><span>'+v+'</span></div>'; }
 function fullDT(s){ var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+'（'+WDN[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
@@ -347,10 +351,17 @@ async function openReschedule(ref){
 function drawSlotPick(open,cur){
   var WD=['日','一','二','三','四','五','六'], days=[], by={};
   open.forEach(function(x){ var k=x.w.slice(0,10); if(!by[k]){ by[k]=[]; days.push(x); } by[k].push(x); });
-  if(!RS.date || !by[RS.date]) RS.date=days[0].w.slice(0,10);
-  var h='<div class="rs-lab">選日期</div><div class="rs-chips">'+days.map(function(x){ var k=x.w.slice(0,10); return '<button type="button" class="rs-chip'+(k===RS.date?' on':'')+'" data-d="'+k+'">'+x.p.mo+'/'+x.p.d+' '+WD[new Date(x.p.y,x.p.mo-1,x.p.d).getDay()]+'</button>'; }).join('')+'</div>';
-  h+='<div class="rs-lab">選時段（灰色＝已被約或原本的時間）</div><div class="rs-chips">'+by[RS.date].map(function(x){ var off=x.taken||x.w===cur; return '<button type="button" class="rs-chip'+(off?' off':'')+(x.w===RS.sel?' on':'')+'"'+(off?' disabled':' data-w="'+x.w+'"')+'>'+p2(x.p.h)+':'+p2(x.p.mi)+'</button>'; }).join('')+'</div>';
+  // 選日期：月曆（只有能改的日子可以點；右上角數字＝還剩幾個時段）
+  function freeN(k){ return by[k].filter(function(x){ return !x.taken && x.w!==cur; }).length; }
+  if(!RS.date || !by[RS.date]){ var fd=days.filter(function(x){ return freeN(x.w.slice(0,10))>0; })[0]; RS.date=(fd||days[0]).w.slice(0,10); }
+  var dm={}; days.forEach(function(x){ var k=x.w.slice(0,10), n=freeN(k); dm[k]=n?{n:n,dot:'op',label:'還有 '+n+' 個時段'}:{off:true,dot:'full',label:'沒有可改的時段'}; });
+  RS.cal=RS.cal||{};
+  var sp=RS.date.split('-');
+  var h='<div class="rs-lab">選日期</div><div id="rs-cal"></div>';
+  h+='<div class="rs-lab">選時段・'+(+sp[1])+'/'+(+sp[2])+'（'+WD[new Date(+sp[0],+sp[1]-1,+sp[2]).getDay()]+'）（灰色＝已被約或原本的時間）</div><div class="rs-chips">'+by[RS.date].map(function(x){ var off=x.taken||x.w===cur; return '<button type="button" class="rs-chip'+(off?' off':'')+(x.w===RS.sel?' on':'')+'"'+(off?' disabled':' data-w="'+x.w+'"')+'>'+p2(x.p.h)+':'+p2(x.p.mi)+'</button>'; }).join('')+'</div>';
   $('#rs-pick').innerHTML=h;
+  RWCal.mount($('#rs-cal'),{days:dm, sel:RS.date, state:RS.cal, legend:[['op','可以改（數字＝還剩幾個時段）'],['full','沒有可改的時段']],
+    onPick:function(k){ RS.date=k; RS.sel=''; $('#rs-go').disabled=true; drawSlotPick(open,cur); }});
   $('#rs-pick').querySelectorAll('[data-d]').forEach(function(b){ b.onclick=function(){ RS.date=b.getAttribute('data-d'); RS.sel=''; $('#rs-go').disabled=true; drawSlotPick(open,cur); }; });
   $('#rs-pick').querySelectorAll('[data-w]').forEach(function(b){ b.onclick=function(){ RS.sel=b.getAttribute('data-w'); $('#rs-go').disabled=false; drawSlotPick(open,cur); }; });
 }
@@ -381,8 +392,8 @@ function render(){
   var up=list.filter(isUpcoming).sort(function(a,b){ return cmpKey(a) - cmpKey(b); });
   var past=list.filter(function(o){ return !isUpcoming(o); }).sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   var h='';
-  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(orderRow).join('')+'</div>';
-  if(past.length) h+='<div class="olist-h">過去的訂單</div><div class="olist">'+past.map(orderRow).join('')+'</div>';
+  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist nb-list">'+up.map(orderRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的訂單</div><div class="olist nb-list">'+past.map(orderRow).join('')+'</div>';
   $('#o-list').innerHTML=h;
   $('#o-list').querySelectorAll('[data-i]').forEach(function(b){ b.onclick=function(){ openDetail(+b.getAttribute('data-i')); }; });
 }

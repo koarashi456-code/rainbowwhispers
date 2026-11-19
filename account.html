@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261119">
 <style>
   .acc{max-width:380px;margin:6vh auto;padding:0 22px;text-align:center}
   .acc .logo{width:66px;height:66px;border-radius:50%;margin:0 auto 16px;background:conic-gradient(from 200deg,#E8927C,#F0C66B,#9FD49A,#7FC8D9,#A99BE0,#E6A3C3,#E8927C);opacity:.9}
@@ -69,6 +69,16 @@
   .irow input.iv:focus{color:var(--brush)}
   .irow.link{cursor:pointer} .irow.link .il{color:var(--brush)}
   .chev{color:#C9B79A;font-size:16px}
+  /* 我的帳戶：儲值餘額／我的訂單／我的課程 一行一項，課程點開才看 */
+  .mc-list .irow{min-height:48px;box-sizing:border-box}
+  .mc-list .irow .il{color:var(--ink)}
+  .mc-list .mc-v{display:inline-flex;align-items:center;gap:6px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
+  .mc-list .mc-v .chev{font-weight:400}
+  .mc-list #mc-order-stat{border-bottom:0}
+  .mc-list #mc-pkg-wrap{border-top:1px solid var(--line)}
+  .mc-pkfold{width:100%;font:inherit;background:none;border:0;border-bottom:0!important;text-align:left;color:inherit;cursor:pointer;padding:11px 0}
+  .mc-pkfold .mc-v{font-weight:500;font-size:13.5px}
+  #mc-pkgs{border-top:1px dashed #EFE3CE;padding:2px 0 8px}
   .msaved{font-size:12px;color:#4F8E6E;text-align:right;padding:3px 20px 0;min-height:15px}
   .pwbox{margin:8px 20px 0}
   .pwbox input{width:100%;box-sizing:border-box;font:inherit;font-size:14.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:11px 14px;outline:none;margin-bottom:8px;text-align:left}
@@ -92,10 +102,39 @@
   /* 引路人後台：客戶管理／交易紀錄／報表（跟總後台同步，只看自己的客戶） */
   .gsec-lab{font-size:13px;color:var(--soft);font-weight:500;text-align:left;margin:22px 2px 8px}
   .gstats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* 報表：條列＋圖表 */
+  .grp-list{text-align:left}.grp-list::before{display:none}
+  .grp-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:0 14px;border-bottom:1px solid #EEE4D3;font-size:14px}
+  .grp-row:last-child{border-bottom:0}.grp-row span{color:var(--soft)}.grp-row b{color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
+  .grp-row.big{min-height:58px}.grp-row.big span{color:var(--ink);font-weight:500}.grp-row.big b{font-size:24px;font-weight:600}
+  .grp-h{font-size:14px;font-weight:600;color:var(--brush);margin:18px 4px 8px;text-align:left}.grp-h small{font-size:12px;font-weight:400;color:var(--soft);margin-left:8px}
+  .grp-card{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:14px 14px 10px;text-align:left}
+  .grp-plot{position:relative;height:150px;margin:18px 0 0 46px;border-bottom:1px solid #DCCDB6}
+  .grp-tk{position:absolute;left:0;right:0;border-top:1px solid #F1E8DA;height:0}
+  .grp-tk span{position:absolute;right:100%;margin-right:8px;top:-8px;font-size:11px;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .grp-cols{position:absolute;inset:0;display:flex}
+  .grp-col{flex:1;position:relative;font:inherit;background:none;border:0;padding:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;min-width:0}
+  .grp-col:hover,.grp-col.on{background:rgba(181,113,63,.06)}
+  .grp-col .bar{position:relative;display:block;width:22px;max-width:60%;background:#B5713F;border-radius:4px 4px 0 0}
+  .grp-col .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;font-size:11.5px;font-weight:600;color:var(--brush);white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
+  .grp-col.lab .v,.grp-col.on .v,.grp-col:hover .v,.grp-col:focus-visible .v{display:block}
+  .grp-cols:has(.grp-col.on) .grp-col.lab:not(.on) .v{display:none}
+  .grp-ms{display:flex;margin-left:46px;padding-top:6px}.grp-ms span{flex:1;text-align:center;font-size:11.5px;color:var(--soft)}.grp-ms span.cur{color:var(--brush);font-weight:600}
+  .grp-tbl{margin-top:10px;border-top:1px solid #F1E8DA;padding-top:6px}
+  .grp-tbl summary{font-size:12.5px;color:var(--brush);cursor:pointer;min-height:32px;display:flex;align-items:center;list-style:none}.grp-tbl summary::-webkit-details-marker{display:none}
+  .grp-tbl summary::after{content:"▾";margin-left:4px;font-size:11px}.grp-tbl[open] summary::after{content:"▴"}
+  .grp-tbl div{display:flex;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid #F3EBDD}.grp-tbl div:last-child{border-bottom:0}
+  .grp-tbl div span:first-child{flex:1;color:var(--ink)}.grp-tbl div span:nth-child(2){color:var(--soft);width:44px;text-align:right;font-variant-numeric:tabular-nums}.grp-tbl div b{width:72px;text-align:right;color:var(--brush);font-variant-numeric:tabular-nums}
+  .grp-mt{padding:6px 14px}
+  .grp-m{display:flex;align-items:center;gap:10px;min-height:44px;border-bottom:1px solid #F3EBDD}.grp-m:last-child{border-bottom:0}
+  .grp-m .n{flex:none;width:58px;font-size:13.5px;color:var(--ink)}
+  .grp-m .tr{flex:1;height:8px;border-radius:999px;background:#F1E3D3;overflow:hidden}.grp-m .tr i{display:block;height:100%;background:#B5713F;border-radius:999px}
+  .grp-m .a{flex:none;width:86px;text-align:right;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}.grp-m .a small{display:inline-block;width:34px;font-size:11.5px;font-weight:400;color:var(--soft)}
   .gstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;text-align:left;min-width:0}
   .gstat .k{font-size:12px;color:var(--soft)}
   .gstat .v{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush);margin-top:3px;word-break:break-word}
   .gbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:2px 16px;text-align:left}
+  .gplain{text-align:left}  /* 我的開放時間：三塊直接排，外面不再包一個框 */
   .grow{border-top:1px solid var(--line);padding:11px 0}
   .grow:first-child{border-top:none}
   .grow-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -158,7 +197,7 @@
   .cal-item .m{flex:1;min-width:0;color:var(--ink)}
   .cal-item .m small{display:block;color:var(--soft);font-size:11.5px;margin-top:2px}
   .cal-st{flex:none;font-size:11px;padding:2px 8px;border-radius:999px;background:#FBE7CC;color:#A5643A}
-  .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#8A7659}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
+  .cal-st.done{background:#D8ECDF;color:#3F7A5E}.cal-st.cancel{background:#EDE6DC;color:#6A5741}.cal-st.noshow{background:#F6DDE3;color:#B4566E}
   .cal-open{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
   /* 交易紀錄：條列式（跟會員「我的訂單」同樣子），點一筆從下方滑出明細 */
   .olist-h{font-size:12.5px;color:var(--soft);font-weight:500;margin:14px 4px 7px;text-align:left}
@@ -190,14 +229,30 @@
   .gmeter{height:11px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin:5px 0 2px}.gmeter i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
   .gfull-b{display:inline-block;font-size:11px;font-weight:600;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:0 8px;margin-left:6px;line-height:1.7;vertical-align:1px}
   .gcap-ic{background:#EFE6F6!important}.gloc-ic{background:#E3EEF6!important}
-  .glc{background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;margin-top:10px;text-align:left}.glc:first-child{margin-top:0}
-  .glc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.glc-top b{font-size:14px;color:var(--brush)}
-  .glc-tag{font-size:11.5px;background:#E4F2E7;color:#3F7A5E;border-radius:999px;padding:1px 8px;margin-left:6px;font-weight:400}.glc-tag.no{background:#F6E6DF;color:#B4614A}
-  .glc-del{font:inherit;border:1.5px solid #F0D5DC;background:#fff;color:#B4566E;border-radius:999px;font-size:12px;padding:2px 10px;cursor:pointer}
-  .glc-l{font-size:12px;color:var(--soft);margin:8px 0 3px}
-  .glc-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 10px;outline:none}
-  .glc-area{display:flex;gap:6px}.glc-area select{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 8px}
-  .glc-tr{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.glc-tr select{flex:none;width:auto}.glc-tr input{flex:1;min-width:0}.glc-tr .glc-walk{flex:none;width:58px;text-align:center}.glc-tr span{flex:none}
+  .glc-list{background:#fff;border:1.5px solid #EFE3CE;border-radius:14px;overflow:hidden}
+  .glc-row{display:flex;gap:10px;align-items:flex-start;width:100%;box-sizing:border-box;text-align:left;font:inherit;color:inherit;background:none;border:0;border-top:1px solid #F1E7D6;padding:11px 12px;min-height:48px;cursor:pointer}
+  .glc-list>.glc-row:first-child,.glc-list>.glc-none:first-child+.glc-row{border-top:0}
+  .glc-row:active{background:#FBF6EC}.glc-row.on{background:#FBF6EC}
+  .glc-row .ic{flex:none;font-size:15px;line-height:1.55}.glc-row .m{flex:1;min-width:0}
+  .glc-row b{display:block;font-size:14.5px;font-weight:600;color:var(--brush);line-height:1.5}.glc-row .glc-st{font-weight:400;color:var(--ink)}
+  /* 實體地點一行就好：太長就縮小字，不換行 */
+  .glc-row b.glc-one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  @media (max-width:600px){ .glc-row b.glc-one{font-size:13.5px;letter-spacing:-.01em} .glc-row{gap:8px;padding:10px 12px} .glc-row .glc-go{font-size:12.5px} }
+  @media (max-width:360px){ .glc-row .glc-go .w{display:none} .glc-row .glc-go{font-size:18px} .glc-row{gap:6px;padding:10px} }
+  .glc-row{align-items:center}
+  .glc-row small{display:block;font-size:12.5px;color:var(--soft);line-height:1.55;margin-top:1px;overflow-wrap:anywhere}
+  .glc-row .glc-go{flex:none;align-self:center;font-size:13px;color:var(--brush);white-space:nowrap}
+  .glc-no{color:#B4614A;font-weight:500}.glc-no.off{color:var(--soft)}
+  .glc-none{font-size:13px;color:var(--soft);padding:12px}
+  .glc-ed{background:#FBF6EC;border-top:1px dashed #E6D7BF;padding:4px 12px 12px}
+  .glc-l{font-size:12.5px;color:var(--brush);font-weight:500;margin:10px 0 4px}.glc-l small{font-weight:400;color:var(--soft);margin-left:6px}
+  .glc-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;outline:none;min-height:40px}
+  .glc-area{display:flex;gap:6px}.glc-area select{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px;min-height:40px}
+  .glc-acts{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px}
+  .glc-done{font:inherit;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;min-height:40px;padding:0 22px;cursor:pointer}
+  .glc-del{font:inherit;font-size:13px;color:#B4566E;background:none;border:0;min-height:40px;padding:0 4px;cursor:pointer}
+  .glc-msg{font-size:12.5px;min-height:1.2em;margin-top:8px}.glc-foot{font-size:12px;color:var(--soft)}
+  .glc-tr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.glc-tr select{flex:none;width:auto}.glc-tr input{flex:1 1 150px;min-width:0}.glc-tr .glc-walk{flex:none;width:58px;text-align:center}.glc-tr span{flex:none}
   .gv-opt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 11px;margin-top:6px;cursor:pointer;text-align:left}
   .gv-opt.on{border-color:#C9A7DE;background:#FBF7FE}.gv-opt input{margin-top:5px}.gv-opt b{font-size:13.5px;color:var(--brush)}.gv-opt small{display:block;font-size:12px;color:var(--soft);line-height:1.6}
   .cal-st.vwait{background:#FBE7CC;color:#A5643A}.cal-st.vsent{background:#E3EEF6;color:#4F7392}
@@ -207,8 +262,8 @@
   .gv-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #CFE0EE;border-radius:10px;padding:7px 10px;margin-top:6px;outline:none}
   .gv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
   .gv-btn{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:500;cursor:pointer}.gv-btn:disabled{opacity:.6}
-  .glc-add{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13px;cursor:pointer;margin-top:10px}
-  .glc-h{font-size:13.5px;font-weight:600;color:var(--brush);margin:14px 0 2px;text-align:left}
+  .glc-add{font:inherit;font-size:14px;font-weight:500;color:var(--brush);background:#fff;border:1.5px dashed #D9C7A8;border-radius:999px;min-height:40px;padding:0 16px;cursor:pointer;margin-top:8px}
+  .glc-h{font-size:14px;font-weight:600;color:var(--brush);margin:16px 2px 8px;text-align:left}.glc-h small{display:block;font-size:12px;font-weight:400;color:var(--soft);margin-top:2px}
   .gcap-mini{display:block;height:6px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin-top:6px}.gcap-mini i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
   .gcap-day{display:grid;grid-template-columns:78px 1fr 64px;gap:8px;align-items:center;font-size:13px;padding:4px 0}
   .gcap-day b{font-weight:500;color:var(--brush)}.gcap-day .m{height:8px;border-radius:999px;background:#F1E7D6;overflow:hidden}.gcap-day .m i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
@@ -220,7 +275,12 @@
   .grole small{display:block;font-size:11px;color:var(--soft)}.grole.on{background:var(--brush);border-color:var(--brush);color:#fff}.grole.on small{color:#EBDCC8}
   .gp-min{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--soft);margin-top:4px}
   .gp-min select{font:inherit;font-size:12.5px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:8px;padding:2px 4px}
-  .grm-btn{font:inherit;font-size:13px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:6px 14px;cursor:pointer;margin-top:10px}
+  .grm-btn{flex:none;font:inherit;font-size:13px;color:var(--brush);background:#fff;border:1.5px solid #E6D7BF;border-radius:999px;min-height:36px;padding:0 12px;cursor:pointer}
+  .gc-card .grow-top{align-items:center}.gc-card .grow-name{font-size:17px;font-weight:600}
+  .gc-kvs{margin-top:8px;border-top:1px solid #F1E7D6}
+  .gc-kvs>div{display:flex;gap:12px;font-size:13.5px;padding:7px 0;border-bottom:1px solid #F1E7D6}
+  .gc-kvs>div span:first-child{flex:none;width:34px;color:var(--soft);font-size:12.5px}
+  .gc-kvs>div span:last-child{flex:1;min-width:0;color:var(--ink);overflow-wrap:anywhere}
   .grm-opt{display:flex;gap:9px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 11px;margin-top:7px;cursor:pointer;text-align:left}
   .grm-opt.on{border-color:#C9A7DE;background:#FBF7FE}.grm-opt input{margin-top:5px}.grm-opt b{font-size:13.5px;color:var(--brush)}.grm-opt div{font-size:12px;color:var(--soft)}
   .grm-opt.off{opacity:.5;cursor:default}
@@ -262,15 +322,38 @@
   .gx-amt{font-size:14px;font-weight:600;color:var(--brush)}
   .gx-go{flex:none;color:#C2A878;font-size:20px}
   .gx-note-dot{font-size:11px;color:#B5713F}
+  /* 客戶列表像筆記本：一人一行，淡淡橫線＋左邊紅色邊線（點進去看明細時不畫線） */
+  #g-members.nb-cust{position:relative}
+  #g-members.nb-cust:not(.gx-mode){border:0;background:none;padding:0 4px}  /* 客戶列表不要外框 */
+  #g-members.nb-cust::before{content:"";position:absolute;top:0;bottom:0;left:82px;width:1px;background:#F0CFCA;pointer-events:none}
+  #g-members.nb-cust.gx-mode::before{display:none}
+  #g-members.nb-cust>.grow.gx{padding:0;border-top:1px solid #EEE4D3}
+  #g-members.nb-cust>.grow.gx:first-child{border-top:0}
+  #g-members.nb-cust .gx-sum{min-height:46px;padding:0;gap:8px}
+  #g-members.nb-cust .gx-main{display:flex;align-items:center;gap:12px;font-size:13.5px}
+  #g-members.nb-cust .gx-main b{flex:none;width:72px;display:flex;align-items:center;gap:2px;min-width:0}
+  #g-members.nb-cust .gx-main b .gc-dname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g-members.nb-cust .gx-main small{flex:1;min-width:0;margin:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g-members.nb-cust .gx-pk{flex:none;font-size:11px;color:#6E4F9E;background:#EFE6F6;border-radius:999px;padding:1px 7px;white-space:nowrap}
+  #g-members.nb-cust .gx-amt{font-size:13.5px;font-variant-numeric:tabular-nums}
+  #g-members.nb-cust .gx-go{font-size:17px}
+  .gc-olist.nb-list{margin-top:6px}.gc-olist.nb-list::before{left:86px}
   .gx-det{display:none}
   .gx.open .gx-sum{display:none}
   .gx.open .gx-det{display:block}
   .gx-mode .gx:not(.open){display:none!important}
   .gx-mode .g-noresult{display:none}
   .gx-hide{display:none!important}
-  .gx-back{font:inherit;font-size:13px;color:var(--soft);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;margin-bottom:10px}
-  .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;margin:0 0 10px;outline:none}
-  .g-search:focus{border-color:#C9A7DE}
+  .gx-back{font:inherit;font-size:15px;font-weight:500;color:var(--brush);background:none;border:0;padding:0 8px 0 0;min-height:44px;display:inline-flex;align-items:center;gap:2px;cursor:pointer;margin:-6px 0 2px}
+  .gx-back:active{opacity:.6}
+  /* 客戶明細打開時：外框改成柔和的卡片（不要硬邊框、圓一點、淡淡的陰影） */
+  #g-members.gx-mode{border-color:transparent;border-radius:22px;padding:10px 18px 18px;background:#FFFDF8;box-shadow:0 1px 0 rgba(231,217,195,.7),0 12px 32px -18px rgba(120,90,60,.38)}
+  #g-members.gx-mode .gx.open{border-top:0}
+  #g-members.gx-mode .gc-kvs{border-top-color:#F3EBDD}#g-members.gx-mode .gc-kvs>div{border-bottom-color:#F3EBDD}
+  #g-members.gx-mode .pkc.cmp{border-color:#F0E6D6;background:#FFFCF6}
+  .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#F1E9DC;border:0;border-radius:12px;min-height:40px;padding:8px 14px;margin:0 0 10px;outline:none}
+  .g-search::placeholder{color:#8F7A5E}
+  .g-search:focus{background:#EDE3D3;box-shadow:0 0 0 2px #E2CFEE}  /* 搜尋框：不要外框，淡淡的底色就好（像 iPhone 的搜尋欄） */
   .g-noresult{font-size:13px;color:var(--soft);text-align:center;padding:14px 0}
   .gc-orders{margin-top:8px;border-top:1px dashed #EFE3CE}
   .gc-o{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed #EFE3CE}
@@ -326,7 +409,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js"></script>
+<script src="nav.js?v=20261119"></script>
 
 <div id="loading" class="acc"><p class="sub" style="margin-top:20px">載入中…</p></div>
 
@@ -383,9 +466,14 @@
     <div class="pmail" id="mc-mail"></div>
     <div class="pbadge">會員</div>
   </div>
-  <div class="stats2">
-    <div class="st"><div class="stic i-a"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6E4F9E" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 3v4"/></svg></div><div class="stk">儲值餘額</div><div class="stv" id="mc-balance">$0</div></div>
-    <div class="st" id="mc-order-stat" style="cursor:pointer"><div class="stic i-b"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#A5643A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h6M9 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2"/><path d="M9 11h6M9 15h4"/></svg></div><div class="stk">我的訂單</div><div class="stv" id="mc-order-count">0</div><span class="stcaret">›</span></div>
+  <div class="sec-lab">我的帳戶</div>
+  <div class="info-card mc-list">
+    <div class="irow"><span class="il">儲值餘額</span><span class="iv mc-v" id="mc-balance">$0</span></div>
+    <div class="irow link" id="mc-order-stat" role="link" tabindex="0"><span class="il">我的訂單</span><span class="iv mc-v"><span id="mc-order-count">0</span> 筆<span class="chev">›</span></span></div>
+    <div id="mc-pkg-wrap" style="display:none">
+      <button type="button" class="irow link mc-pkfold" id="mc-pk-fold" aria-expanded="false" aria-controls="mc-pkgs"><span class="il">我的課程</span><span class="iv mc-v"><span id="mc-pk-sum"></span><span class="chev" id="mc-pk-chev">▾</span></span></button>
+      <div id="mc-pkgs" hidden></div>
+    </div>
   </div>
   <div class="promo-card" id="mc-promo" style="display:none">
     <div class="promo-h">會員優惠 <span class="promo-soon">即將開放</span></div>
@@ -394,7 +482,6 @@
       <li>會員限定服務優惠</li>
     </ul>
   </div>
-  <div id="mc-pkg-wrap" style="display:none"><div class="sec-lab">我的課程</div><div id="mc-pkgs"></div></div>
   <div class="sec-lab">基本資料</div>
   <div class="info-card">
     <div class="irow"><span class="il">姓名</span><input class="iv" id="mc-f-name" placeholder="—"></div>
@@ -456,7 +543,7 @@
   </div>
 
   <div class="gsec-lab">我的開放時間</div>
-  <div class="gbox" style="padding:14px 16px"><div id="g-locs" style="display:none;margin-bottom:8px"></div><div id="g-caps" style="display:none;margin-bottom:8px"></div><div id="sl-editor"></div></div>
+  <div class="gplain"><div id="g-locs" style="display:none;margin-bottom:10px"></div><div id="g-caps" style="display:none;margin-bottom:10px"></div><div id="sl-editor"></div></div>
 
   <div class="gsec-lab">我的方案</div>
   <div class="gbox" style="padding:14px 16px">
@@ -482,7 +569,7 @@
   </div>
 
   <div class="gsec-lab">報表</div>
-  <div class="gstats" id="g-report"></div>
+  <div id="g-report"></div>
 
   <div class="gsec-lab">交易紀錄</div>
   <input class="g-search" data-target="g-bookings" type="search" placeholder="搜尋 客戶／項目／日期／訂單編號／狀態…">
@@ -491,7 +578,7 @@
   <div class="gsec-lab">客戶管理</div>
   <div id="g-remind" style="display:none;margin-bottom:10px"></div>
   <input class="g-search" data-target="g-members" type="search" placeholder="搜尋 姓名／電話／信箱／地區／備註…">
-  <div class="gbox" id="g-members"></div>
+  <div class="gbox nb-cust" id="g-members"></div>
 
   <button class="lo" id="g-logout" style="margin-top:22px">登出</button>
 </div>
@@ -518,9 +605,10 @@
   <button type="button" class="ob-go" id="ob-go">完成，開始探索</button>
 </div></div>
 <script src="supabase-config.js"></script>
-<script src="area.js?v=20261109"></script>
-<script src="slot-ui.js?v=20261109"></script>
-<script src="course-ui.js?v=20261108c"></script>
+<script src="area.js?v=20261119"></script>
+<script src="cal-ui.js?v=20261119"></script>
+<script src="slot-ui.js?v=20261119"></script>
+<script src="course-ui.js?v=20261119"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -559,11 +647,17 @@ function enterMember(o){
   loadMyPackages();
 }
 // 會員：我的課程（套裝課程，SQL：my_packages；畫面在 course-ui.js）
+var MC_PK_OPEN=false;
 async function loadMyPackages(){
   var w=$('#mc-pkg-wrap'), box=$('#mc-pkgs'); if(!w||!box||!window.RWCourse) return;
   var L=[]; try{ var r=await db.rpc('my_packages'); if(!r.error && Array.isArray(r.data)) L=r.data; }catch(e){}
   if(!L.length){ w.style.display='none'; return; }
   w.style.display='block'; box.innerHTML=L.map(function(k){ return RWCourse.card(k,'member'); }).join('');
+  // 收合：平常只看「彩虹卡 5 堂課程・剩 4 堂」，點開才看課程卡
+  var remAll=L.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0);
+  $('#mc-pk-sum').textContent=(L.length===1?(L[0].label||'套裝課程'):L.length+' 個課程')+'・剩 '+remAll+' 堂';
+  var fb=$('#mc-pk-fold'); function setPk(on){ MC_PK_OPEN=on; box.hidden=!on; fb.setAttribute('aria-expanded',on); $('#mc-pk-chev').textContent=on?'▴':'▾'; }
+  setPk(MC_PK_OPEN); fb.onclick=function(){ setPk(!MC_PK_OPEN); };
   // 退費（SQL：package_refund_quote、request_package_refund、cancel_package_refund）
   RWCourse.bind(box,L,{
     refund:async function(pk){
@@ -633,6 +727,44 @@ async function loadMyAccount(){
   }catch(e){}
 }
 // 引路人後台：看自己的預約 + 會員（＋自己的會員資料）
+// 報表：上面條列（像筆記本）、中間每月營收長條圖、下面付款方式比例條；圖的數字點一下或用「看每月數字」都看得到
+var GREP={};
+function gNice(v){ if(v<=0) return 1000; var e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e, S=[1,1.2,1.5,2,2.5,3,4,5,6,8,10]; for(var i=0;i<S.length;i++){ if(f<=S[i]) return S[i]*e; } return 10*e; }
+function gMonths(){
+  var t=new Date(), L=[];
+  for(var i=5;i>=0;i--){ var d=new Date(t.getFullYear(),t.getMonth()-i,1); L.push({k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), m:d.getMonth()+1, y:d.getFullYear(), v:0, n:0}); }
+  (GORD||[]).forEach(function(o){ if(o.status==='已取消'||o.status==='已退費') return; var a=Number(o.amount)||0; if(a<=0) return;
+    var p=wpart(o.appointment_at), k=''; if(p) k=p.y+'-'+String(p.mo).padStart(2,'0'); else { var bd=gBuyAt(o); if(bd) k=bd.getFullYear()+'-'+String(bd.getMonth()+1).padStart(2,'0'); }
+    L.forEach(function(x){ if(x.k===k){ x.v+=a; x.n++; } }); });
+  return L;
+}
+function drawGuideReport(){
+  var rep=$('#g-report'); if(!rep) return;
+  var rp=GREP||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
+  var h='<div class="nb-list grp-list">'+
+    '<div class="grp-row big"><span>有效營收</span><b>'+money(rev)+'</b></div>'+
+    '<div class="grp-row"><span>交易筆數</span><b>'+cnt+' 筆</b></div>'+
+    '<div class="grp-row"><span>平均客單</span><b>'+money(cnt?Math.round(rev/cnt):0)+'</b></div>'+
+    '<div class="grp-row"><span>退費</span><b>'+(rp.refund_count||0)+' 筆／'+money(rp.refund_amount)+'</b></div></div>';
+  // 每月營收（近 6 個月）
+  var M=gMonths(), mx=Math.max.apply(null,M.map(function(x){ return x.v; })), top=gNice(mx), cur=M[M.length-1], hi=M.reduce(function(a,x){ return x.v>a.v?x:a; },M[0]);
+  h+='<div class="grp-h">每月營收<small>近 6 個月・點長條看金額</small></div><div class="grp-card"><div class="grp-plot">'+
+    '<div class="grp-tk" style="bottom:100%"><span>'+money(top)+'</span></div><div class="grp-tk" style="bottom:50%"><span>'+money(top/2)+'</span></div>'+
+    '<div class="grp-cols">'+M.map(function(x){ var pct=x.v?Math.max(2,x.v*100/top):0, lab=(x===cur||(x===hi&&x.v>0));
+      return '<button type="button" class="grp-col'+(lab?' lab':'')+'" aria-label="'+x.m+' 月營收 '+money(x.v)+'，'+x.n+' 筆"><span class="bar" style="height:'+pct+'%"><span class="v">'+money(x.v)+'</span></span></button>'; }).join('')+'</div></div>'+
+    '<div class="grp-ms">'+M.map(function(x){ return '<span'+(x===cur?' class="cur"':'')+'>'+x.m+' 月</span>'; }).join('')+'</div>'+
+    '<details class="grp-tbl"><summary>看每月數字</summary>'+M.slice().reverse().map(function(x){ return '<div><span>'+x.y+' 年 '+x.m+' 月</span><span>'+x.n+' 筆</span><b>'+money(x.v)+'</b></div>'; }).join('')+'</details></div>';
+  // 付款方式（佔有效營收的比例；由多到少）
+  var P=[['刷卡',rp.m_card],['匯款',rp.m_transfer],['現金',rp.m_cash],['儲值折抵',rp.m_stored]].map(function(x){ return {t:x[0], v:Number(x[1])||0}; });
+  var tot=P.reduce(function(a,x){ return a+x.v; },0); P.sort(function(a,b){ return b.v-a.v; });
+  // 百分比加起來剛好 100（四捨五入後多的、少的補給小數最大的）
+  if(tot){ P.forEach(function(x){ var r=x.v*100/tot; x.pc=Math.floor(r); x.fr=r-x.pc; }); var left=100-P.reduce(function(a,x){ return a+x.pc; },0);
+    P.slice().sort(function(a,b){ return b.fr-a.fr; }).forEach(function(x){ if(left>0 && x.v>0){ x.pc++; left--; } }); }
+  h+='<div class="grp-h">付款方式<small>佔營收的比例</small></div><div class="grp-card grp-mt">'+P.map(function(x){ var pc=tot?x.pc:0;
+    return '<div class="grp-m" role="img" aria-label="'+x.t+' '+money(x.v)+'，'+pc+'%"><span class="n">'+x.t+'</span><span class="tr"><i style="width:'+(tot?x.v*100/tot:0)+'%"></i></span><span class="a">'+money(x.v)+'<small>'+pc+'%</small></span></div>'; }).join('')+'</div>';
+  rep.innerHTML=h;
+  rep.querySelectorAll('.grp-col').forEach(function(b){ b.onclick=function(){ var on=b.classList.contains('on'); rep.querySelectorAll('.grp-col.on').forEach(function(x){ x.classList.remove('on'); }); if(!on) b.classList.add('on'); }; });
+}
 function gstat(k,v){ return '<div class="gstat"><div class="k">'+escA(k)+'</div><div class="v">'+v+'</div></div>'; }
 function txRowG(o){
   return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(o.customer_name||'客戶')+' <span style="color:var(--ink);font-weight:400;font-size:13px">'+escA(o.service||'')+'</span></span><span class="grow-amt">'+money(o.amount)+'</span></div>'
@@ -753,10 +885,12 @@ function gRow(o){
   var d=p?(p.mo+'/'+String(p.d).padStart(2,'0')):'—', sub=p?(GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'未定時間', buy=!p&&gIsBuy(o);
   if(buy){ var bd0=gBuyAt(o); if(bd0){ d=(bd0.getMonth()+1)+'/'+String(bd0.getDate()).padStart(2,'0'); } sub='購買'; }
   var search=[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' ').toLowerCase();
-  return '<button type="button" class="orow'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'">'
-    +'<span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
-    +'<span class="om"><div class="t">'+escA(o.customer_name||'客戶')+'</div><div class="s">'+escA(sp.plan)+(sp.place?'｜'+escA(sp.place):'')+'</div></span>'
-    +'<span class="oright"><div class="a">'+money(o.amount)+'</div>'+(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at?'<span class="cal-st vsent">已傳連結 '+gHM(o.video_sent_at)+'</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>')+'</span><span class="ogo">›</span></button>';
+  // 像筆記本一樣一筆一行：日期 時間｜客人｜方案｜金額｜狀態（點一下看明細）
+  var tm=buy?'購買':(p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):'');
+  var st=(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at)?'<span class="cal-st vsent">已傳連結</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>';
+  return '<button type="button" class="orow nb-row'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'" aria-label="'+escA(d+' '+tm+' '+(o.customer_name||'客戶')+' '+sp.plan+' '+money(o.amount)+' '+(o.status||''))+'">'
+    +'<span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+escA(o.customer_name||'客戶')+'</span>'
+    +'<span class="nb-s">'+escA(String(sp.plan||'').replace(/（[^）]*）$/,''))+(sp.place?'｜'+escA(sp.place.replace(/（實體）$/,'')):'')+'</span><span class="nb-a">'+money(o.amount)+'</span>'+st+'</button>';
 }
 function gsClose(){ var m=$('#gs-mask'); if(m) m.classList.remove('on'); }
 function gFullDT(s){ var p=wpart(s); if(!p) return '未定時間'; return p.y+'/'+p.mo+'/'+p.d+'（'+GWD[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
@@ -841,15 +975,15 @@ async function loadGuideOrders(){
   try{ await db.rpc('auto_complete_orders'); }catch(e){}
   var r; try{ r=await db.rpc('my_guide_orders'); }catch(e){ return; }
   if(!r || r.error || !Array.isArray(r.data)) return;
-  GORD=r.data;
+  GORD=r.data; try{ drawGuideReport(); }catch(e){}
   try{ var vs=await db.rpc('my_guide_video_status'); if(!vs.error && Array.isArray(vs.data)){ var VM={}; vs.data.forEach(function(x){ VM[x.order_ref]=x; }); GORD.forEach(function(o){ var x=VM[o.order_ref]; if(x){ o.video_link=x.video_link; o.video_sent_at=x.video_sent_at; } }); } }catch(e){}
   if(!GORD.length){ bx.innerHTML='<div class="gbox"><p class="gempty">還沒有交易。</p></div>'; return; }
   var up=GORD.filter(gUpcoming).sort(function(a,b){ return gKey(a)-gKey(b); });
   var past=GORD.filter(function(o){ return !gUpcoming(o); }).sort(function(a,b){ return gKey(b)-gKey(a); });
   var h='', soon=up.filter(function(o){ var ms=gKey(o)-Date.now(); return gNeedLink(o) && ms>-3600e3 && ms<=24*3600e3; });
   if(soon.length) h+='<div class="gvban">🎥 24 小時內有 '+soon.length+' 筆線上預約還沒傳視訊連結，點那筆就能傳</div>';
-  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(gRow).join('')+'</div>';
-  if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist">'+past.map(gRow).join('')+'</div>';
+  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist nb-list">'+up.map(gRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist nb-list">'+past.map(gRow).join('')+'</div>';
   bx.innerHTML=h;
   bx.querySelectorAll('[data-gi]').forEach(function(b){ b.onclick=function(){ openGOrder(+b.getAttribute('data-gi')); }; });
 }
@@ -901,18 +1035,24 @@ async function loadGuideCustomers(){
       if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
       else if(bd){ d=(bd.getMonth()+1)+'/'+String(bd.getDate()).padStart(2,'0'); sub='購買'; } else { d='—'; sub='未定時間'; }
       var sp=gSplit(o.service);
-      return '<button type="button" class="orow gc-orow" data-ref="'+escA(o.order_ref||'')+'"><span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'+'<span class="om"><div class="t">'+escA(String(sp.plan||'—').replace(/^課程購買：/,''))+'</div><div class="s">'+(buy?'課程購買（套裝課程）':(sp.place?escA(sp.place):(o.amount===0?'用課程堂數':'')))+'</div></span>'+'<span class="oright"><div class="a">'+(o.amount===0&&!buy?'1 堂':money(o.amount))+'</div><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
+      var tm=buy?'購買':(p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):''), pl=String(sp.plan||'—').replace(/^課程購買：/,'').replace(/（[^）]*）$/,'');
+      return '<button type="button" class="orow gc-orow nb-row'+((o.status==='已取消'||o.status==='已退費')?' dim':'')+'" data-ref="'+escA(o.order_ref||'')+'"><span class="nb-d"><b>'+d+'</b>'+tm+'</span>'
+        +'<span class="nb-s" style="color:var(--ink)">'+escA(pl)+(buy?'<span style="color:var(--soft)">｜套裝課程</span>':sp.place?'<span style="color:var(--soft)">｜'+escA(sp.place.replace(/（實體）$/,''))+'</span>':'')+'</span>'
+        +'<span class="nb-a">'+(o.amount===0&&!buy?'1 堂':money(o.amount))+'</span><span class="cal-st '+stc(o.status)+'">'+escA(o.status||'')+'</span></button>';
     }).join('');
     var lastO=(m.orders||[])[0], recHint=(m.orders||[]).length+' 筆・合計 '+money(m.spend);
-    var sum='<span class="gx-main"><b class="gc-dname">'+gcName(m.alias,m.name)+'</b>'+(m.note?' <span class="gx-note-dot" title="有備註">✎</span>':'')+'<small>'+(m.bookings||0)+' 次'+(lastO&&lastO.appointment_at?'　·　最近 '+fmtDT(lastO.appointment_at):'')+'</small></span><span class="gx-right"><span class="gx-amt">'+money(m.spend)+'</span></span><span class="gx-go">›</span>';
+    // 列表一行：姓名｜信箱（點進去才看次數、金額、課程、消費紀錄）
+    var mail=[m.contact,m.email].filter(function(v){ return /@/.test(String(v||'')); })[0]||'';
+    var sum='<span class="gx-main"><b><span class="gc-dname">'+gcName(m.alias,m.name)+'</span></b><small>'+(mail?escA(mail):'<span style="color:#B5A88E">沒有留信箱</span>')+'</small></span><span class="gx-go">›</span>';
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
-      +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span><span class="grow-amt">'+money(m.spend)+'</span></div>'
-      +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
-      +'<button type="button" class="grm-btn" data-remind="'+escA(m.id)+'">🔔 提醒客人</button>'
+      +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span>'
+        +'<button type="button" class="grm-btn" data-remind="'+escA(m.id)+'">🔔 提醒客人</button></div>'
+      +'<div class="gc-kvs">'+(m.contact?'<div><span>'+(/@/.test(m.contact)?'信箱':'聯絡')+'</span><span>'+escA(m.contact)+'</span></div>':'')+(m.phone?'<div><span>電話</span><span>'+escA(m.phone)+'</span></div>':'')+(m.area?'<div><span>地區</span><span>'+escA(m.area)+'</span></div>':'')
+        +'<div><span>消費</span><span>'+(m.bookings||0)+' 次・'+money(m.spend)+'</span></div></div>'
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div>'
-      +(orders?'<button type="button" class="gc-tog" aria-expanded="false">消費紀錄 <span data-hint="'+escA(recHint)+'">'+escA(recHint)+'・點開 ▾</span></button><div class="olist gc-olist" hidden>'+orders+'</div>':'')+'</div>';
+      +(orders?'<button type="button" class="gc-tog" aria-expanded="false">消費紀錄 <span data-hint="'+escA(recHint)+'">'+escA(recHint)+'・點開 ▾</span></button><div class="olist gc-olist nb-list" hidden>'+orders+'</div>':'')+'</div>';
     return gxRow(sum,det,[m.alias,m.name,m.contact,m.phone,m.area,m.note,(m.orders||[]).map(function(o){ return (o.service||'')+' '+(o.appointment_at?fmtDT(o.appointment_at):''); }).join(' ')].join(' '));
   }).join('');
   bindGx(mx);
@@ -970,9 +1110,7 @@ async function loadGuidePkgs(){
     box.innerHTML='<div class="gc-note-l">套裝課程</div>'+L.map(function(k){ return RWCourse.card(k,'guide'); }).join('');
     var nl=card.querySelector('.gc-note-l'); card.insertBefore(box, nl||null);
     RWCourse.bind(box,L,{adjust:async function(id,d,at){ var x=await db.rpc('package_adjust',{p_package_id:id,p_delta:d,p_at:at,p_note:null}); if(x.error) throw new Error(x.error.message); }, done:function(){ loadGuidePkgs(); }});
-    // 列表那一行也標「課程剩 N 堂」
-    var row=card.closest('.gx'), sm=row&&row.querySelector('.gx-main small');
-    if(sm){ var rem=L.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0), t=sm.querySelector('.gx-pk'); if(!t){ t=document.createElement('span'); t.className='gx-pk'; t.style.cssText='color:#6E4F9E'; sm.appendChild(t); } t.textContent='　·　課程剩 '+rem+' 堂'; }
+    // 列表那一行只放姓名＋信箱（課程堂數在點進去的明細裡看）
   });
 }
 function custRowG(m){
@@ -990,8 +1128,7 @@ function loadMySlots(){
     places:async function(){ var r=await db.rpc('my_guide_places'); return (!r.error && r.data)?RWSlots.placesFrom(r.data):[]; },
     add:async function(slots,places){ var r=await db.rpc('add_my_slots_v2',{p_slots:slots,p_places:places.length?places:null}); if(r.error && isMissingFn(r.error)) r=await db.rpc('add_my_slots',{p_slots:slots}); if(r.error) throw new Error(r.error.message); return r.data; },
     del:async function(id){ var r=await db.rpc('del_my_slot',{p_id:id}); if(r.error) throw new Error(r.error.message); },
-    changed:function(){ loadSchedule(); },
-    openAdd:true
+    changed:function(){ loadSchedule(); }
   });
 }
 async function enterGuide(d){
@@ -1076,12 +1213,7 @@ async function enterGuide(d){
   if(!data){ bx.innerHTML='<div class="gbox"><p class="gempty">目前讀不到後台資料，請稍後再試或聯繫官方 LINE。</p></div>'; mx.innerHTML=''; return; }
   if(data.guide_name){ $('#g-hi').textContent='引路人・'+data.guide_name; GNAME=data.guide_name; }
   // 報表
-  var rp=data.report||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
-  rep.innerHTML=
-    gstat('有效營收', money(rev)) + gstat('交易筆數', cnt+' 筆') +
-    gstat('退費', (rp.refund_count||0)+' 筆／'+money(rp.refund_amount)) + gstat('平均客單', money(cnt?Math.round(rev/cnt):0)) +
-    gstat('現金', money(rp.m_cash)) + gstat('刷卡', money(rp.m_card)) +
-    gstat('匯款', money(rp.m_transfer)) + gstat('儲值折抵', money(rp.m_stored));
+  GREP=data.report||{}; drawGuideReport();
   // 交易紀錄
   var tx=data.transactions||[];
   bx.innerHTML='<div class="gbox">'+(tx.length ? tx.map(txRowG).join('') : '<p class="gempty">還沒有交易。</p>')+'</div>';
@@ -1129,7 +1261,7 @@ function gpMinHtml(p){
 var GNAME='';
 function hrs(min){ var h=Math.round(Number(min||0)/6)/10; return (h%1?h.toFixed(1):String(h)); }
 // 服務地點＋線上視訊：引路人自己設定（SQL：my_guide_locations、set_my_locations、set_my_video）
-var GLOC={open:false, L:[], app:'', link:''};
+var GLOC={open:false, L:[], app:'', link:'', edit:null};
 async function loadGuideLocs(){
   var box=$('#g-locs'); if(!box) return;
   var d=null; try{ var r=await db.rpc('my_guide_locations'); if(!r.error && r.data) d=r.data; }catch(e){}
@@ -1142,61 +1274,91 @@ async function loadGuideLocs(){
 }
 function glocSum(){ var A=GLOC.L.map(function(x){ return x.area; }).filter(Boolean); return (A.length?A.length+' 個實體地點：'+A.join('、'):'還沒有實體地點')+'・'+(GLOC.app?'線上視訊（'+GLOC.app+'・'+(GLOC.mode==='fixed'?'固定連結':'當天傳連結')+'）':'沒有線上視訊'); }
 function glocMsg(t,c){ var m=$('#gloc-msg'); if(!m) return; m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },1600); }
+// 摘要那一行（地址、交通）跟著剛改的內容更新，不用整塊重畫（才不會打斷正在打字的欄位）
+function glocRowsSync(){ GLOC.L.forEach(function(x,i){ var m=document.querySelector('#g-locs .glc-row[data-ed="'+i+'"] .m'); if(m) m.innerHTML=glocLine(x); }); glocFit(); }
+// 一行放不下就把字縮小（最小 11px），不換行
+function glocFit(){ document.querySelectorAll('#g-locs .glc-one').forEach(function(b){ b.style.fontSize=''; var f=parseFloat(getComputedStyle(b).fontSize)||14;
+  while(b.scrollWidth>b.clientWidth+1 && f>11){ f-=0.5; b.style.fontSize=f+'px'; } }); }
+window.addEventListener('resize',function(){ if(GLOC.open) glocFit(); });
 async function saveGuideLocs(){
   glocMsg('儲存中…');
   try{ var r=await db.rpc('set_my_locations',{p_locations:GLOC.L}); if(r.error) throw new Error(r.error.message);
-    glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); return true; }
+    glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); glocRowsSync(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); return true; }
   catch(e){ glocMsg('儲存失敗：'+(e.message||''),'#C0506A'); return false; }
 }
+// 服務地點：平常每個地點只顯示一行摘要，點了才展開編輯（一次只開一個）；GLOC.edit＝正在編輯的地點編號，或 'video'
+function glocStation(x){ var st=String(x.t_station||'').trim(); if(!st) return ''; if(/車站$/.test(st)) return st; return st.replace(/站$/,'')+(x.t_type||'捷運')+'站'; }
+// 捷運有站名可以挑；公車站牌、火車站讓引路人自己打
+function glocStPh(t){ return t==='公車'?'站牌名稱，例：重新路口':t==='火車'?'火車站，例：板橋':'捷運站，例：三重站'; }
+function glocLine(x){ return x.area?'<b class="glc-one" title="'+escA(x.area+glocStation(x))+'">'+escA(x.area)+'<span class="glc-st">'+escA(glocStation(x))+'</span></b>':'<b><span class="glc-no">還沒選地區</span></b>'; }
 function drawGuideLocs(){
   var box=$('#g-locs'); if(!box) return;
   var h='<button type="button" class="rs-fold'+(GLOC.open?' open':'')+'" id="gloc-fold"><span class="rs-fic gloc-ic">📍</span><span class="rs-fm"><b>服務地點</b><small>'+escA(glocSum())+'</small></span><span class="rs-fgo">'+(GLOC.open?'收起 ▴':'修改 ▾')+'</span></button>';
   if(GLOC.open){
-    h+='<div class="rs-fbody" style="text-align:left"><div class="glc-h" style="margin-top:0">實體地點</div><div style="font-size:12px;color:var(--soft);margin-bottom:8px">地區會顯示在你的引路人頁；完整地址不公開，客人付款成功後才看得到</div><div id="gloc-list">'+
-      (GLOC.L.length?GLOC.L.map(function(x,i){
-        return '<div class="glc" data-i="'+i+'"><div class="glc-top"><b>地點 '+(i+1)+(x.area?'<span class="glc-tag">'+escA(x.area)+'</span>':'<span class="glc-tag no">還沒選地區</span>')+'</b><button type="button" class="glc-del" data-rm="'+i+'">刪除</button></div>'+
-          '<div class="glc-l">地區（公開）</div><div class="glc-area" data-area></div>'+
-          '<div class="glc-l">完整地址（不公開）</div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
-          '<div class="glc-l">報到提醒</div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」">'+
-          '<div class="glc-l">附近交通（公開，讓客人知道好不好到）</div><div class="glc-tr"><select class="glc-in" data-f="t_type">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
-            '<input class="glc-in" data-f="t_station" maxlength="30" list="rw-stations" value="'+escA(x.t_station)+'" placeholder="站名，例：三重站"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5"><span>分</span></div>'+
-          '<div class="glc-l">交通補充（選填）</div><input class="glc-in" data-f="t_tip" maxlength="100" value="'+escA(x.t_tip)+'" placeholder="例：附近有停車場、公車 306 重新路口站"></div>'; }).join(''):'<div style="font-size:12.5px;color:var(--soft)">還沒有實體地點（只做線上的話可以不用加）</div>')+
-      '</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>'+
-      '<div class="glc-h">線上視訊</div>'+
-      '<div class="glc-l">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
-      '<div style="font-size:11.5px;color:var(--soft);margin-top:4px">選了就代表有線上服務，排時段時可以開「線上視訊」，不用先給連結</div>'+
+    h+='<div class="rs-fbody" style="text-align:left">';
+    // 實體地點
+    h+='<div class="glc-h" style="margin-top:0">實體地點<small>地區和交通公開；地址付款後才給客人</small></div><div class="glc-list">';
+    if(!GLOC.L.length) h+='<div class="glc-none">還沒有實體地點（只做線上可以不用加）</div>';
+    GLOC.L.forEach(function(x,i){
+      var on=GLOC.edit===i;
+      h+='<button type="button" class="glc-row'+(on?' on':'')+'" data-ed="'+i+'"><span class="m">'+glocLine(x)+'</span><span class="glc-go">'+(on?'收起':'<span class="w">編輯 </span>›')+'</span></button>';
+      if(on) h+='<div class="glc-ed" data-i="'+i+'">'+
+        '<div class="glc-l">地區</div><div class="glc-area" data-area></div>'+
+        '<div class="glc-l">地址<small>不公開</small></div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
+        '<div class="glc-l">報到提醒<small>不公開</small></div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴">'+
+        '<div class="glc-l">附近交通</div><div class="glc-tr"><select class="glc-in" data-f="t_type" aria-label="交通方式">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
+          '<input class="glc-in" data-f="t_station" maxlength="30"'+(x.t_type==='捷運'?' list="rw-stations"':'')+' value="'+escA(x.t_station)+'" placeholder="'+glocStPh(x.t_type)+'" aria-label="站名"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5" aria-label="走路幾分鐘"><span>分</span></div>'+
+        '<input class="glc-in" data-f="t_tip" maxlength="100" value="'+escA(x.t_tip)+'" placeholder="交通補充（選填），例：附近有停車場" style="margin-top:6px" aria-label="交通補充">'+
+        '<div class="glc-acts"><button type="button" class="glc-del" data-rm="'+i+'">刪除這個地點</button><button type="button" class="glc-done" data-done>完成</button></div></div>';
+    });
+    h+='</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>';
+    // 線上視訊
+    var von=GLOC.edit==='video';
+    h+='<div class="glc-h">線上視訊</div><div class="glc-list"><button type="button" class="glc-row'+(von?' on':'')+'" data-ed="video"><span class="m"><b>'+(GLOC.app?escA(GLOC.app):'<span class="glc-no off">沒有提供線上</span>')+'</b>'+
+      (GLOC.app?'<small>'+(GLOC.mode==='fixed'?'固定連結，預約成功就給客人':'每次當天傳連結給客人')+'</small>':'')+'</span><span class="glc-go">'+(von?'收起':'編輯 ›')+'</span></button>';
+    if(von) h+='<div class="glc-ed">'+
+      '<div class="glc-l" style="margin-top:0">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">不提供線上</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
       '<div id="gloc-how"'+(GLOC.app?'':' style="display:none"')+'><div class="glc-l">連結怎麼給客人？</div>'+
-        '<label class="gv-opt'+(GLOC.mode!=='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="day"'+(GLOC.mode!=='fixed'?' checked':'')+'><span><b>每次當天自己傳</b><small>預約前 30 分鐘～1 小時，在交易紀錄點那筆按「傳連結給客人」，會寄到客人信箱＋網站小鈴鐺</small></span></label>'+
-        '<label class="gv-opt'+(GLOC.mode==='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="fixed"'+(GLOC.mode==='fixed'?' checked':'')+'><span><b>用固定連結，預約成功就給</b><small>客人一預約好就看得到下面這個連結</small></span></label>'+
-        '<div class="glc-l">固定視訊連結（不公開；當天傳的時候也會自動帶入）</div><input class="glc-in" id="gloc-link" maxlength="300" value="'+escA(GLOC.link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"></div>'+
-      '<div id="gloc-msg" style="font-size:12px;min-height:1.2em;margin-top:6px"></div>'+
-      '<div style="font-size:11.5px;color:var(--soft);line-height:1.7">・同一個地區只能有一個地點<br>・改完離開欄位就會自動儲存；下面「可預約時間」的地點按鈕會跟著更新</div></div>';
+        '<label class="gv-opt'+(GLOC.mode!=='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="day"'+(GLOC.mode!=='fixed'?' checked':'')+'><span><b>每次當天傳</b><small>預約前 30 分鐘～1 小時，在交易紀錄按「傳連結給客人」</small></span></label>'+
+        '<label class="gv-opt'+(GLOC.mode==='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="fixed"'+(GLOC.mode==='fixed'?' checked':'')+'><span><b>固定連結</b><small>客人預約成功就看得到</small></span></label>'+
+        '<div class="glc-l">固定連結<small>不公開；當天傳時也會自動帶入</small></div><input class="glc-in" id="gloc-link" maxlength="300" value="'+escA(GLOC.link)+'" placeholder="https://meet.google.com/…"></div>'+
+      '<div class="glc-acts" style="justify-content:flex-end"><button type="button" class="glc-done" data-done>完成</button></div></div>';
+    h+='</div><div id="gloc-msg" class="glc-msg"></div><div class="glc-foot">改完會自動儲存・同一個地區只能有一個地點</div></div>';
   }
   box.innerHTML=h;
   $('#gloc-fold').onclick=function(){ GLOC.open=!GLOC.open; drawGuideLocs(); };
   if(!GLOC.open) return;
-  box.querySelectorAll('#gloc-list .glc').forEach(function(row){
-    var i=+row.getAttribute('data-i');
-    if(window.RWArea){ var pk=RWArea.picker(row.querySelector('[data-area]'),{value:GLOC.L[i].area,onChange:function(v,ok){ if(!ok) return;
+  glocFit();
+  box.querySelectorAll('[data-ed]').forEach(function(b){ b.onclick=function(){ var k=b.getAttribute('data-ed'); k=(k==='video')?'video':+k; GLOC.edit=(GLOC.edit===k)?null:k; drawGuideLocs(); }; });
+  box.querySelectorAll('[data-done]').forEach(function(b){ b.onclick=function(){ GLOC.edit=null; drawGuideLocs(); }; });
+  var ed=box.querySelector('.glc-ed[data-i]');
+  if(ed){
+    var i=+ed.getAttribute('data-i');
+    if(window.RWArea){ var pk=RWArea.picker(ed.querySelector('[data-area]'),{value:GLOC.L[i].area,onChange:function(v,ok){ if(!ok) return;
       if(GLOC.L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(GLOC.L[i].area); return; }
-      GLOC.L[i].area=v; var tg=row.querySelector('.glc-tag'); if(tg){ tg.textContent=v; tg.classList.remove('no'); } saveGuideLocs(); }}); }
-    row.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
-    row.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); drawGuideLocs(); await saveGuideLocs(); };
-  });
-  if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
-  $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); drawGuideLocs(); var last=box.querySelector('#gloc-list .glc:last-child select'); if(last) last.focus(); };
+      GLOC.L[i].area=v; glocRowsSync(); saveGuideLocs(); }}); }
+    ed.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
+    var tty=ed.querySelector('[data-f="t_type"]'), tst=ed.querySelector('[data-f="t_station"]');
+    if(tty && tst) tty.addEventListener('change',function(){ if(tty.value==='捷運') tst.setAttribute('list','rw-stations'); else tst.removeAttribute('list'); tst.placeholder=glocStPh(tty.value); });
+    ed.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); GLOC.edit=null; drawGuideLocs(); await saveGuideLocs(); };
+    if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
+  }
+  $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); GLOC.edit=GLOC.L.length-1; drawGuideLocs(); var s=box.querySelector('.glc-ed select'); if(s) s.focus(); };
   var ap=$('#gloc-app'), lk=$('#gloc-link'), how=$('#gloc-how');
+  if(!ap) return;
   function curMode(){ var c=box.querySelector('input[name="gloc-mode"]:checked'); return c?c.value:'day'; }
   async function saveVideo(){
     var app=ap.value, link=lk.value.trim(), md=curMode();
     if(app && link && !/^https:\/\//i.test(link)){ glocMsg('視訊連結要用 https:// 開頭','#C0506A'); return; }
-    if(app && md==='fixed' && !link){ glocMsg('選「固定連結」的話，請在下面貼上視訊連結'); lk.focus(); return; }
+    if(app && md==='fixed' && !link){ glocMsg('選「固定連結」的話，請貼上視訊連結'); lk.focus(); return; }
     glocMsg('儲存中…');
     try{ var r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null,p_mode:md});
       if(r.error && (r.error.code==='PGRST202' || /could not find the function/i.test(r.error.message||''))) r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null});
       if(r.error) throw new Error(r.error.message);
       GLOC.app=(r.data&&r.data.video_app)||app||''; GLOC.link=(r.data&&r.data.video_link)||''; GLOC.mode=(r.data&&r.data.video_mode)||md; if(!app){ lk.value=''; }
-      glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); }
+      glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum();
+      var vb=box.querySelector('.glc-row[data-ed="video"] .m'); if(vb) vb.innerHTML='<b>'+(GLOC.app?escA(GLOC.app):'<span class="glc-no off">沒有提供線上</span>')+'</b>'+(GLOC.app?'<small>'+(GLOC.mode==='fixed'?'固定連結，預約成功就給客人':'每次當天傳連結給客人')+'</small>':'');
+      if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); }
     catch(e){ glocMsg('儲存失敗：'+(e.message||''),'#C0506A'); }
   }
   ap.onchange=function(){ if(how) how.style.display=ap.value?'':'none'; saveVideo(); };
@@ -1406,6 +1568,7 @@ $('#seg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
 // 我的訂單卡 → 訂單頁；設定走右上角齒輪
 $('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
+$('#mc-order-stat').onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); location.href='orders.html'; } };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
 // 儲存基本資料（姓名／手機／地區）
 // 地區：縣市＋區兩個下拉（存成「新北市三重區」）

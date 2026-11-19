@@ -19,12 +19,12 @@ var CSS='.pkc{background:#fff;border:1.5px solid #EFE3CE;border-radius:16px;padd
   '.pkc-bar .u{background:var(--rainbow)}.pkc-bar .b{background:#F2CF9E}.pkc-bar .x{background:#D8CFC2}'+
   '.pkc-n{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--ink)}.pkc-n b{color:var(--brush)}'+
   '.pkc-dots{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}'+
-  '.pkc-dots span{width:22px;height:22px;border-radius:50%;border:1.5px solid #E4D7C2;font-size:11px;display:flex;align-items:center;justify-content:center;color:#B8A88E;background:#fff;box-sizing:border-box}'+
+  '.pkc-dots span{width:22px;height:22px;border-radius:50%;border:1.5px solid #E4D7C2;font-size:12px;display:flex;align-items:center;justify-content:center;color:#B8A88E;background:#fff;box-sizing:border-box}'+
   '.pkc-dots span.u{background:#7FBF93;border-color:#7FBF93;color:#fff}.pkc-dots span.b{background:#FBE7CC;border-color:#E9C79A;color:#A5643A}.pkc-dots span.x{background:#EEE8DF;border-color:#E0D7CA;color:#B5AA98;text-decoration:line-through}'+
   '.pkc-ses{margin-top:8px;border-top:1px dashed #EFE3CE}'+
   '.pkc-ses div{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px dashed #EFE3CE}'+
   '.pkc-ses .k{flex:none;width:44px;color:var(--soft)}.pkc-ses .w{flex:1;min-width:0;text-align:left;color:var(--ink)}'+
-  '.pkc-ses .st{flex:none;font-size:11px;border-radius:999px;padding:1px 8px;white-space:nowrap}'+
+  '.pkc-ses .st{flex:none;font-size:12px;border-radius:999px;padding:1px 8px;white-space:nowrap}'+
   '.pkc-st-d{background:#D8ECDF;color:#3F7A5E}.pkc-st-b{background:#FBE7CC;color:#A5643A}.pkc-st-m{background:#EAD9F2;color:#6E4F9E}.pkc-st-n{background:#F6DDE3;color:#B4566E}.pkc-st-x{background:#EEE8DF;color:#8A7D6A}'+
   '.pkc-more{font:inherit;font-size:12.5px;color:var(--brush);background:none;border:0;text-decoration:underline;cursor:pointer;padding:6px 0 0}'+
   '.pkc-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.pkc-btns>*{flex:1;min-width:110px;font:inherit;font-size:13px;border-radius:999px;padding:8px 6px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box}'+
@@ -32,10 +32,10 @@ var CSS='.pkc{background:#fff;border:1.5px solid #EFE3CE;border-radius:16px;padd
   '.pkc-use{display:none;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}.pkc-use.on{display:flex}'+
   '.pkc-use input{font:inherit;font-size:13.5px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:10px;padding:6px 9px}'+
   '.pkc-use button{font:inherit;font-size:13px;border-radius:999px;padding:7px 14px;border:0;background:var(--rainbow);color:#4A3A2A;cursor:pointer}'+
-  '.pkc-rule{font-size:11.5px;color:var(--soft);background:#FBF6EC;border-radius:10px;padding:7px 10px;margin-top:10px;line-height:1.7}.pkc-rule b{color:var(--brush);font-weight:500}'+
+  '.pkc-rule{font-size:12.5px;color:var(--soft);background:#FBF6EC;border-radius:10px;padding:7px 10px;margin-top:10px;line-height:1.7}.pkc-rule b{color:var(--brush);font-weight:500}'+
   '.pkc-link{display:block;text-align:center;font-size:12.5px;color:var(--brush);text-decoration:underline;margin-top:10px}'+
   '.pkc-msg{font-size:12px;margin-top:6px;min-height:0}'+
-  '.pkc-rf{margin-top:10px;background:#FBEDE9;color:#A5543F;border-radius:10px;padding:8px 11px;font-size:13px;line-height:1.6}.pkc-rf small{color:#B98575;font-size:11.5px}.pkc-rf.done{background:#EEE8DF;color:#7A6B57}'+
+  '.pkc-rf{margin-top:10px;background:#FBEDE9;color:#A5543F;border-radius:10px;padding:8px 11px;font-size:13px;line-height:1.6}.pkc-rf small{color:#B98575;font-size:12.5px}.pkc-rf.done{background:#EEE8DF;color:#7A6B57}'+
   '.pkc-btns .pkc-warn{color:#B4566E;border-color:#F0D5DC}'+
   '.pkr-mask{position:fixed;inset:0;background:rgba(60,45,30,.38);display:flex;align-items:flex-end;justify-content:center;z-index:120}'+
   '.pkr-box{background:var(--card,#FFFDF8);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:14px 16px 20px;max-height:88vh;overflow:auto;text-align:left;box-sizing:border-box}'+
@@ -44,10 +44,25 @@ var CSS='.pkc{background:#fff;border:1.5px solid #EFE3CE;border-radius:16px;padd
   '.pkr-x{border:0;background:none;font-size:24px;line-height:1;color:var(--soft);cursor:pointer}'+
   '.pkr-kv{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;padding:5px 0;border-bottom:1px dashed #EFE3CE}.pkr-kv span:first-child{color:var(--soft);flex:none}.pkr-kv span:last-child{text-align:right}'+
   '.pkr-kv.tot span:last-child{font-weight:700;color:var(--brush)}'+
-  '.pkr-tag{display:inline-block;font-size:11.5px;border-radius:999px;padding:1px 9px;margin:4px 0 6px;background:#E4F2E7;color:#3F7A5E}.pkr-tag.no{background:#F6E6DF;color:#B4614A}'+
+  '.pkr-tag{display:inline-block;font-size:12.5px;border-radius:999px;padding:1px 9px;margin:4px 0 6px;background:#E4F2E7;color:#3F7A5E}.pkr-tag.no{background:#F6E6DF;color:#B4614A}'+
   '.pkr-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;margin-top:4px}'+
   '.pkr-note{font-size:12px;color:var(--soft);margin-top:8px;line-height:1.7}.pkr-err{font-size:12.5px;color:#C0506A;min-height:1.2em;margin-top:6px}'+
   '.pkr-btns{display:flex;gap:8px;margin-top:8px}.pkr-btns button{flex:1;font:inherit;font-size:14px;border-radius:999px;padding:9px 0;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer}.pkr-btns .go{color:#B4566E;border-color:#F0D5DC}.pkr-btns button:disabled{opacity:.5}';
+// 精簡卡（引路人後台、我的後台）：一行標題＋剩幾堂、細進度條、最近 2 筆、小按鍵、一行規定
+CSS+='.pkc.cmp{padding:10px 12px;border-radius:14px;background:#FFFDF8}'+
+  '.pkc.cmp .pkc-h b{font-size:14px}.pkc.cmp .pkc-h .rm{flex:none;font-size:13px;color:var(--soft)}.pkc.cmp .pkc-h .rm b{font-size:15px;color:var(--brush)}'+
+  '.pkc.cmp .pkc-sub{font-size:12px;color:var(--soft);margin-top:1px}'+
+  '.pkc.cmp .pkc-bar{height:6px;margin:8px 0 2px}'+
+  '.pkc.cmp .pkc-ses{margin-top:6px;border-top:0}.pkc.cmp .pkc-ses div{font-size:12.5px;padding:5px 0}.pkc.cmp .pkc-ses .k{width:40px}.pkc.cmp .pkc-ses .st{font-size:11px}'+
+  '.pkc.cmp .pkc-more{font-size:12px;padding:4px 0 0}'+
+  '.pkc.cmp .pkc-btns{gap:6px;margin-top:8px}.pkc.cmp .pkc-btns>*{flex:none;min-width:0;min-height:36px;padding:0 14px;font-size:13px}'+
+  '.pkc.cmp .pkc-btns .pkc-go{background:#fff;border-color:#D9C7A8;color:var(--brush);font-weight:500}'+
+  '.pkc.cmp .pkc-rule{background:none;padding:0;margin-top:8px;font-size:11.5px;line-height:1.6}.pkc.cmp .pkc-rule b{font-weight:400;color:var(--soft)}'+
+  // 會員（我的課程）：放在列表裡，不要外框；主要按鍵還是彩虹
+  '.pkc.cmp.mem{border:0;background:none;border-radius:0;padding:10px 0;margin:0;border-bottom:1px dashed #EFE3CE}.pkc.cmp.mem:last-child{border-bottom:0}'+
+  '.pkc.cmp.mem .pkc-btns .pkc-go{flex:1;background:var(--rainbow);border-color:transparent;color:#4A3A2A;display:inline-flex;align-items:center;justify-content:center}'+
+  '.pkc.cmp.mem .pkc-btns .pkc-warn{border:0;background:none;color:#B4566E;padding:0 6px}'+
+  '.pkc.cmp .pkc-link{text-align:left;font-size:12px;margin-top:4px}';
 function css(){ if(document.getElementById('pkc-css')) return; var s=document.createElement('style'); s.id='pkc-css'; s.textContent=CSS; document.head.appendChild(s); }
 // 每一堂：網站預約（看訂單狀態）、手動記錄、轉讓
 function sesRows(pk,mode){
@@ -70,16 +85,24 @@ function card(pk,mode){
   var pct=function(x){ return total?Math.max(0,Math.min(100,x*100/total)):0; };
   var right=mode==='member'?esc(pk.guide_name||''):(pk.from_name?'由 '+esc(pk.from_name)+' 轉讓':(ymd(pk.created_at)+' 購買'+(pk.price?' '+money(pk.price):'')));
   if(mode==='member' && pk.from_name) right=esc(pk.guide_name||'')+'<br><small>由 '+esc(pk.from_name)+' 轉讓</small>';
-  var h='<div class="pkc" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span>'+right+'</span></div>'+
+  var cmp=true, h;
+  if(cmp){
+    var subL=mode==='member'?(esc(pk.guide_name||'')+(pk.from_name?'（由 '+esc(pk.from_name)+' 轉讓）':'')):right;
+    h='<div class="pkc cmp'+(mode==='member'?' mem':'')+'" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span class="rm">剩 <b>'+rem+'</b> / '+total+' 堂</span></div>'+
+      '<div class="pkc-sub">'+subL+'・已上 '+used+' 堂'+(bk?'・已預約 '+bk+' 堂':'')+(tr?'・轉出 '+tr+' 堂':'')+'</div>'+
+      '<div class="pkc-bar"><i class="u" style="width:'+pct(used)+'%"></i><i class="b" style="width:'+pct(bk)+'%"></i><i class="x" style="width:'+pct(tr)+'%"></i></div>';
+  } else {
+  h='<div class="pkc" data-pkid="'+esc(pk.id)+'"><div class="pkc-h"><b>'+esc(pk.label||'套裝課程')+'</b><span>'+right+'</span></div>'+
     '<div class="pkc-bar"><i class="u" style="width:'+pct(used)+'%"></i><i class="b" style="width:'+pct(bk)+'%"></i><i class="x" style="width:'+pct(tr)+'%"></i></div>'+
     '<div class="pkc-n"><span>已上 <b>'+used+'</b> 堂'+(bk?'・已預約 '+bk+' 堂':'')+(tr?'・轉出 '+tr+' 堂':'')+'</span><span>剩 <b>'+rem+'</b> 堂'+(mode==='member'&&!pk.refund_status?'可約':'')+'</span></div>';
-  if(total<=30){ h+='<div class="pkc-dots">'; for(var i=0;i<total;i++){ var c=i<used?'u':i<used+bk?'b':i<used+bk+tr?'x':''; h+='<span class="'+c+'">'+(i+1)+'</span>'; } h+='</div>'; }
+  }
+  if(total<=30 && !cmp){ h+='<div class="pkc-dots">'; for(var i=0;i<total;i++){ var c=i<used?'u':i<used+bk?'b':i<used+bk+tr?'x':''; h+='<span class="'+c+'">'+(i+1)+'</span>'; } h+='</div>'; }
   var rs=pk.refund_status||'';
   if(rs==='申請中') h+='<div class="pkc-rf">退費申請中・可退 <b>'+money(pk.refund_amount)+'</b>'+(Number(pk.refund_fee)>0?'（違約金 '+money(pk.refund_fee)+'）':'')+'<br><small>'+(mode==='member'?'彩之語會在 3～5 個工作天內處理退款':'等彩之語處理退款')+(mode==='admin'&&pk.refund_account?'・退款帳戶：'+esc(pk.refund_account):'')+'</small></div>';
   else if(rs==='已退費') h+='<div class="pkc-rf done">已退費 '+money(pk.refund_amount)+(pk.refunded_at?'（'+ymd(pk.refunded_at)+'）':'')+'・課程已結束</div>';
   var rows=sesRows(pk,mode);
   if(rows.length){
-    var show=mode==='member'?rows:rows.slice(-3);
+    var show=rows.slice(-2);
     h+='<div class="pkc-ses">'+show.join('')+'</div>';
     if(show.length<rows.length) h+='<button type="button" class="pkc-more" data-pk-all>看全部 '+rows.length+' 筆紀錄</button><div class="pkc-ses" data-pk-allbox style="display:none">'+rows.join('')+'</div>';
   }
@@ -96,7 +119,7 @@ function card(pk,mode){
       (mode==='admin'&&rs==='申請中'?'<div class="pkc-btns"><button type="button" class="pkc-warn" data-pk-rfdone>錢退好了，按這裡完成退費</button></div>':'')+
       '<div class="pkc-use" data-pk-usebox><span style="font-size:12.5px;color:var(--soft)">上課日期</span><input type="date" data-pk-date><button type="button" data-pk-ok>確認扣 1 堂</button></div>'+
       '<div class="pkc-msg" data-pk-msg></div>'+
-      '<div class="pkc-rule"><b>無使用期限</b>・7 天內全額退費，之後退費酌收 10%・可轉讓'+(mode==='guide'?'（轉讓、退費由彩之語官方處理）':'')+'</div>';
+      '<div class="pkc-rule">無使用期限・7 天內全額退費，之後酌收 10%・可轉讓'+(mode==='guide'?'（由官方處理）':'')+'</div>';
   }
   return h+'</div>';
 }

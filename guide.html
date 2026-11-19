@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20261119">
 <style>
   .wrap{max-width:560px;margin:0 auto;padding:26px 18px 60px}
   .testbar{max-width:560px;margin:12px auto 0;padding:8px 18px}
@@ -114,7 +114,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js"></script>
+<script src="nav.js?v=20261119"></script>
 
 <div class="testbar"><span>測試版本 · 匯款為測試流程，請勿真的匯款</span></div>
 
@@ -202,6 +202,7 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="booking-access.js?v=20261119"></script>
+<script src="cal-ui.js?v=20261119"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
 var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, PKG_PLANS=[], OWNED=[], MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
@@ -212,7 +213,7 @@ function show(id){ ['loading','notfound','content'].forEach(function(x){ $('#'+x
 function wpart(s){ var m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s||'')); return m?{y:+m[1],mo:+m[2],d:+m[3],h:+m[4],mi:+m[5]}:null; }
 function p2(n){ return (n<10?'0':'')+n; }
 function fmtWhen(s){ if(!s) return '未指定'; var p=wpart(s); if(!p) return '未指定'; return p.y+'/'+p.mo+'/'+p.d+' '+p2(p.h)+':'+p2(p.mi); }
-var OPEN_SLOTS=[], SLOT_PL={}, SEL_DATE='', SEL_WHEN='';
+var OPEN_SLOTS=[], SLOT_PL={}, SEL_DATE='', SEL_WHEN='', SLCAL={};
 // 每個地點的附近交通（SQL：guide_place_info；公開資訊，不含完整地址）
 var PLACE_INFO=[];
 function trText(t){ if(!t) return ''; var st=String(t.station||'').trim(); if(!st) return ''; if(!/站$/.test(st)) st+='站'; var w=Number(t.walk)||0, ty=t.type||'捷運'; return (ty==='火車'?'🚆 ':ty==='公車'?'🚌 ':'🚇 ')+st+(w?' 走路 '+w+' 分鐘':''); }
@@ -243,17 +244,21 @@ function renderSlotPicker(){
   fut.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var dk=p.y+'-'+p2(p.mo)+'-'+p2(p.d);
     if(!byDate[dk]){ byDate[dk]=[]; order.push({k:dk,p:p}); }
     byDate[dk].push({when:dk+'T'+p2(p.h)+':'+p2(p.mi), t:p2(p.h)+':'+p2(p.mi), taken:!!s.taken}); });
-  if(!SEL_DATE || !byDate[SEL_DATE]) SEL_DATE=order[0].k;
-  var h=pnote+'<div class="lbl2">選日期</div><div class="slchips">';
-  order.forEach(function(o){ var w=WD[new Date(o.p.y,o.p.mo-1,o.p.d).getDay()]; h+='<span class="slchip'+(o.k===SEL_DATE?' on':'')+'" data-d="'+o.k+'">'+o.p.mo+'/'+o.p.d+' '+w+'</span>'; });
-  h+='</div><div class="lbl2">選時段（白色＝已被約）</div><div class="slchips">';
+  // 選日期：月曆（只有引路人有開放的日子可以點；右上角數字＝還剩幾個時段）
+  if(!SEL_DATE || !byDate[SEL_DATE]){ var fo=order.filter(function(o){ return byDate[o.k].some(function(s){ return !s.taken; }); })[0]; SEL_DATE=(fo||order[0]).k; }
+  var dm={}; order.forEach(function(o){ var free=byDate[o.k].filter(function(s){ return !s.taken; }).length;
+    dm[o.k]=free?{n:free,dot:'op',label:'還有 '+free+' 個時段'}:{off:true,dot:'full',label:'已約滿'}; });
+  var sp=SEL_DATE.split('-'), sw=WD[new Date(+sp[0],+sp[1]-1,+sp[2]).getDay()];
+  var h=pnote+'<div class="lbl2">選日期</div><div id="slcal"></div>';
+  h+='<div class="lbl2">選時段・'+(+sp[1])+'/'+(+sp[2])+'（'+sw+'）（白色＝已被約）</div><div class="slchips">';
   byDate[SEL_DATE].forEach(function(s){
     if(s.taken){ h+='<span class="slchip taken">'+s.t+'<span class="tk">已約</span></span>'; }
     else { h+='<span class="slchip'+(s.when===SEL_WHEN?' on':'')+'" data-w="'+s.when+'">'+s.t+'</span>'; }
   });
   h+='</div>';
   host.innerHTML=h;
-  Array.prototype.forEach.call(host.querySelectorAll('[data-d]'),function(c){ c.onclick=function(){ SEL_DATE=c.getAttribute('data-d'); SEL_WHEN=''; renderSlotPicker(); }; });
+  RWCal.mount(host.querySelector('#slcal'),{days:dm, sel:SEL_DATE, state:SLCAL, legend:[['op','可以約（數字＝還剩幾個時段）'],['full','已約滿']],
+    onPick:function(k){ SEL_DATE=k; SEL_WHEN=''; renderSlotPicker(); }});
   Array.prototype.forEach.call(host.querySelectorAll('[data-w]'),function(c){ c.onclick=function(){ SEL_WHEN=c.getAttribute('data-w'); renderSlotPicker(); }; });
 }
 async function refreshSlots(){ if(!guide) return; try{ var r=await db.rpc('guide_open_slots',{p_guide_id:guide.id}); OPEN_SLOTS=(r&&!r.error&&Array.isArray(r.data))?r.data:[]; }catch(e){} await loadSlotPlaces(); await loadClosed(); renderSlotPicker(); }
