@@ -195,7 +195,8 @@
   .glc-list>.glc-row:first-child,.glc-list>.glc-none:first-child+.glc-row{border-top:0}
   .glc-row:active{background:#FBF6EC}.glc-row.on{background:#FBF6EC}
   .glc-row .ic{flex:none;font-size:15px;line-height:1.55}.glc-row .m{flex:1;min-width:0}
-  .glc-row b{display:block;font-size:14.5px;font-weight:600;color:var(--brush);line-height:1.5}
+  .glc-row b{display:block;font-size:14.5px;font-weight:600;color:var(--brush);line-height:1.5}.glc-row .glc-st{font-weight:400;color:var(--ink)}
+  .glc-row{align-items:center}
   .glc-row small{display:block;font-size:12.5px;color:var(--soft);line-height:1.55;margin-top:1px;overflow-wrap:anywhere}
   .glc-row .glc-go{flex:none;align-self:center;font-size:13px;color:var(--brush);white-space:nowrap}
   .glc-no{color:#B4614A;font-weight:500}.glc-no.off{color:var(--soft)}
@@ -1154,8 +1155,7 @@ async function loadGuideLocs(){
 function glocSum(){ var A=GLOC.L.map(function(x){ return x.area; }).filter(Boolean); return (A.length?A.length+' 個實體地點：'+A.join('、'):'還沒有實體地點')+'・'+(GLOC.app?'線上視訊（'+GLOC.app+'・'+(GLOC.mode==='fixed'?'固定連結':'當天傳連結')+'）':'沒有線上視訊'); }
 function glocMsg(t,c){ var m=$('#gloc-msg'); if(!m) return; m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },1600); }
 // 摘要那一行（地址、交通）跟著剛改的內容更新，不用整塊重畫（才不會打斷正在打字的欄位）
-function glocRowsSync(){ GLOC.L.forEach(function(x,i){ var m=document.querySelector('#g-locs .glc-row[data-ed="'+i+'"] .m'); if(!m) return; var tr=glocTrans(x);
-  m.innerHTML='<b>'+(x.area?escA(x.area):'<span class="glc-no">還沒選地區</span>')+'</b>'+(x.address?'<small>🔒 '+escA(x.address)+'</small>':'')+(tr?'<small>'+escA(tr)+'</small>':''); }); }
+function glocRowsSync(){ GLOC.L.forEach(function(x,i){ var m=document.querySelector('#g-locs .glc-row[data-ed="'+i+'"] .m'); if(m) m.innerHTML=glocLine(x); }); }
 async function saveGuideLocs(){
   glocMsg('儲存中…');
   try{ var r=await db.rpc('set_my_locations',{p_locations:GLOC.L}); if(r.error) throw new Error(r.error.message);
@@ -1163,7 +1163,8 @@ async function saveGuideLocs(){
   catch(e){ glocMsg('儲存失敗：'+(e.message||''),'#C0506A'); return false; }
 }
 // 服務地點：平常每個地點只顯示一行摘要，點了才展開編輯（一次只開一個）；GLOC.edit＝正在編輯的地點編號，或 'video'
-function glocTrans(x){ var t=(window.RWArea&&RWArea.transitText)?RWArea.transitText(x):''; return t+(x.t_tip?(t?'・':'')+x.t_tip:''); }
+function glocStation(x){ var st=String(x.t_station||'').trim(); if(!st) return ''; if(/車站$/.test(st)) return st; return st.replace(/站$/,'')+(x.t_type||'捷運')+'站'; }
+function glocLine(x){ return x.area?'<b>'+escA(x.area)+'<span class="glc-st">'+escA(glocStation(x))+'</span></b>':'<b><span class="glc-no">還沒選地區</span></b>'; }
 function drawGuideLocs(){
   var box=$('#g-locs'); if(!box) return;
   var h='<button type="button" class="rs-fold'+(GLOC.open?' open':'')+'" id="gloc-fold"><span class="rs-fic gloc-ic">📍</span><span class="rs-fm"><b>服務地點</b><small>'+escA(glocSum())+'</small></span><span class="rs-fgo">'+(GLOC.open?'收起 ▴':'修改 ▾')+'</span></button>';
@@ -1173,9 +1174,8 @@ function drawGuideLocs(){
     h+='<div class="glc-h" style="margin-top:0">實體地點<small>地區和交通公開；地址付款後才給客人</small></div><div class="glc-list">';
     if(!GLOC.L.length) h+='<div class="glc-none">還沒有實體地點（只做線上可以不用加）</div>';
     GLOC.L.forEach(function(x,i){
-      var on=GLOC.edit===i, tr=glocTrans(x);
-      h+='<button type="button" class="glc-row'+(on?' on':'')+'" data-ed="'+i+'"><span class="ic">📍</span><span class="m"><b>'+(x.area?escA(x.area):'<span class="glc-no">還沒選地區</span>')+'</b>'+
-        (x.address?'<small>🔒 '+escA(x.address)+'</small>':'')+(tr?'<small>'+escA(tr)+'</small>':'')+'</span><span class="glc-go">'+(on?'收起':'編輯 ›')+'</span></button>';
+      var on=GLOC.edit===i;
+      h+='<button type="button" class="glc-row'+(on?' on':'')+'" data-ed="'+i+'"><span class="ic">📍</span><span class="m">'+glocLine(x)+'</span><span class="glc-go">'+(on?'收起':'編輯 ›')+'</span></button>';
       if(on) h+='<div class="glc-ed" data-i="'+i+'">'+
         '<div class="glc-l">地區</div><div class="glc-area" data-area></div>'+
         '<div class="glc-l">地址<small>不公開</small></div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
@@ -1209,7 +1209,7 @@ function drawGuideLocs(){
     var i=+ed.getAttribute('data-i');
     if(window.RWArea){ var pk=RWArea.picker(ed.querySelector('[data-area]'),{value:GLOC.L[i].area,onChange:function(v,ok){ if(!ok) return;
       if(GLOC.L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(GLOC.L[i].area); return; }
-      GLOC.L[i].area=v; var tb=box.querySelector('.glc-row[data-ed="'+i+'"] b'); if(tb) tb.textContent=v; saveGuideLocs(); }}); }
+      GLOC.L[i].area=v; glocRowsSync(); saveGuideLocs(); }}); }
     ed.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
     ed.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); GLOC.edit=null; drawGuideLocs(); await saveGuideLocs(); };
     if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
