@@ -237,10 +237,13 @@ function orderRow(o){
   if(p){ d=p.mo+'/'+String(p.d).padStart(2,'0'); sub=WDN[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
   else { var c=new Date(o.created_at||0); d=(c.getMonth()+1)+'/'+String(c.getDate()).padStart(2,'0'); sub=isBuy(o)?'購買':WDN[c.getDay()]; }
   var dim=(o.status==='已取消'||o.status==='已退費');
-  return '<button type="button" class="orow'+(dim?' dim':'')+'" data-i="'+i+'">'
-    +'<span class="od'+(isShop(o)?' shop':'')+(isBuy(o)?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
-    +'<span class="om"><div class="t">'+(isShop(o)?'商品訂單':esc(o.guide_name||'引路人'))+'</div><div class="s">'+esc(sp.plan)+(sp.place?'｜'+esc(sp.place):'')+'</div></span>'
-    +'<span class="oright"><div class="a">'+(o.method==='課程'?'1 堂':money(o.amount))+'</div>'+statusBadge(stText(o))+'</span><span class="ogo">›</span></button>';
+  // 像筆記本一樣一筆一行：日期 時間｜引路人｜方案｜金額｜狀態（點一下看明細）
+  var tm=p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):(isBuy(o)?'購買':isShop(o)?'商品':'');
+  var who=isShop(o)?'商品':esc(o.guide_name||'引路人'), pl=String(sp.plan||'').replace(/^課程購買：/,'').replace(/（[^）]*）$/,'');
+  return '<button type="button" class="orow nb-row'+(dim?' dim':'')+'" data-i="'+i+'" aria-label="'+esc(d+' '+tm+' '+(isShop(o)?'商品訂單':(o.guide_name||'引路人'))+' '+pl+' '+(o.method==='課程'?'1 堂':money(o.amount))+' '+stText(o))+'">'
+    +'<span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+who+'</span>'
+    +'<span class="nb-s">'+esc(pl)+(sp.place?'｜'+esc(sp.place.replace(/（實體）$/,'')):'')+'</span>'
+    +'<span class="nb-a">'+(o.method==='課程'?'1 堂':money(o.amount))+'</span>'+statusBadge(stText(o))+'</button>';
 }
 function kv(k,v,c){ return '<div class="kv'+(c?' '+c:'')+'"><span>'+k+'</span><span>'+v+'</span></div>'; }
 function fullDT(s){ var p=wpart(s); if(!p) return '待確認'; return p.y+'/'+p.mo+'/'+p.d+'（'+WDN[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
@@ -389,8 +392,8 @@ function render(){
   var up=list.filter(isUpcoming).sort(function(a,b){ return cmpKey(a) - cmpKey(b); });
   var past=list.filter(function(o){ return !isUpcoming(o); }).sort(function(a,b){ return cmpKey(b) - cmpKey(a); });
   var h='';
-  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(orderRow).join('')+'</div>';
-  if(past.length) h+='<div class="olist-h">過去的訂單</div><div class="olist">'+past.map(orderRow).join('')+'</div>';
+  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist nb-list">'+up.map(orderRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的訂單</div><div class="olist nb-list">'+past.map(orderRow).join('')+'</div>';
   $('#o-list').innerHTML=h;
   $('#o-list').querySelectorAll('[data-i]').forEach(function(b){ b.onclick=function(){ openDetail(+b.getAttribute('data-i')); }; });
 }
