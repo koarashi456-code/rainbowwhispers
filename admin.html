@@ -1146,6 +1146,7 @@ function loadGuideSlots(el,id){
   if(el._slotEd){ el._slotEd.reload(); return; }
   box.style.color='var(--ink)'; box.style.fontSize='';
   el._slotEd=RWSlots.editor(box,{
+    open:true,
     load:async function(){ var r=await fetchGuideSlots(id); return {rows:r.rows, editable:r.editable}; },
     places:async function(){ return adminGuidePlaces(guideById(id)); },
     add:async function(slots,places){

@@ -62,7 +62,7 @@ var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;co
   '.rs-fold.open{border-bottom-left-radius:0;border-bottom-right-radius:0}'+
   '.rs-fbody{background:#fff;border:1.5px solid #EFE3CE;border-top:0;border-radius:0 0 14px 14px;padding:10px 12px 12px}'+
   '.rs-top{font-size:13px;color:var(--soft);margin:0 2px 10px}.rs-top b{color:var(--brush)}'+
-  '.rs-day{margin-top:12px;background:#FFFDF8;border:1.5px solid #EFE3CE;border-radius:16px;padding:12px 12px 14px;max-width:440px;box-sizing:border-box}'+
+  '.rs-day{margin-top:12px;padding-top:12px;border-top:1px dashed #E6D7BF;max-width:440px;box-sizing:border-box}'+
   '.rs-day-h{font-size:16px;color:var(--brush);font-weight:600;display:flex;align-items:center;gap:8px}.rs-tdy{font-size:12px;font-weight:500;color:#A5643A;background:#FBE7CC;border-radius:999px;padding:1px 8px}'+
   '.rs-tg{font-size:12.5px;color:var(--soft);margin:12px 2px 6px}'+
   '.rs-add{font:inherit;font-size:14px;font-weight:500;color:var(--brush);background:#fff;border:1.5px dashed #D9C7A8;border-radius:999px;min-height:42px;padding:0 18px;margin-top:12px;cursor:pointer}'+
@@ -77,10 +77,11 @@ function css(){ if(document.getElementById('rs-css')) return; var s=document.cre
    add(slots,places) → Promise<新增幾個>
    del(id)       → Promise
    changed()     （選用）新增／刪除後呼叫
+   open          （選用）true＝一開始就打開（平常收合，只看摘要）
    （一個月曆：點日子看那天的時段、刪除、加時段） */
 function editor(el,api){
   css();
-  var S={rows:[], editable:true, all:[], date:today(), pick:[], times:{}, tp:{}, tab:'', adding:false, vcal:{}};
+  var S={rows:[], editable:true, all:[], date:today(), pick:[], times:{}, tp:{}, tab:'', adding:false, vcal:{}, open:!!(api&&api.open)};
   // 有好幾個地點時：線上視訊和各地區「分開選時段」；S.tp = {地點: {時間:true}}，同一個時間只能給一個地點
   function multi(){ return S.all.length>1; }
   function cnt(v){ return Object.keys(S.tp[v]||{}).length; }
@@ -97,8 +98,11 @@ function editor(el,api){
     if(!S.date || S.date<tk0) S.date=tk0;
     var tkAll=S.rows.filter(function(s){ return s.taken; }).length, nowK=tk0+'T'+p2(new Date().getHours())+':'+p2(new Date().getMinutes());
     var nextS=S.rows.filter(function(s){ return !s.taken; }).map(function(s){ var p=wpart(s.slot_at); return p?dayKey(p)+'T'+p2(p.h)+':'+p2(p.mi):''; }).filter(function(k){ return k && k>=nowK; }).sort()[0];
-    var h='<div class="rs-top">'+(S.rows.length?'可約 <b>'+(S.rows.length-tkAll)+'</b> 個・已被預約 <b>'+tkAll+'</b> 個'+(nextS?'・最近 '+dayLabel(nextS.slice(0,10))+' '+nextS.slice(11):''):'還沒開任何時段，點日子開始排')+'</div>';
-    h+='<div data-rs-cal></div>';
+    // 收合：平常只看摘要，點「修改」才打開月曆
+    var sum=S.rows.length?'可約 '+(S.rows.length-tkAll)+' 個・已被預約 '+tkAll+' 個'+(nextS?'・最近 '+dayLabel(nextS.slice(0,10))+' '+nextS.slice(11):''):'還沒開任何時段';
+    var h='<button type="button" class="rs-fold'+(S.open?' open':'')+'" data-rs-fold aria-expanded="'+S.open+'"><span class="rs-fic">📅</span><span class="rs-fm"><b>可預約時間</b><small>'+esc(sum)+'</small></span><span class="rs-fgo">'+(S.open?'收起 ▴':'修改 ▾')+'</span></button>';
+    if(!S.open){ el.innerHTML=h; el.querySelector('[data-rs-fold]').onclick=function(){ S.open=true; draw(); }; return; }
+    h+='<div class="rs-fbody"><div data-rs-cal></div>';
     // 選到的那一天
     var D=B[S.date]||[], have={}; D.forEach(function(x){ have[x.t]=true; });
     h+='<div class="rs-day"><div class="rs-day-h">'+dayLabel(S.date)+(S.date===tk0?'<span class="rs-tdy">今天</span>':'')+'</div>';
@@ -129,12 +133,14 @@ function editor(el,api){
     h+='</div>';
     if(multi()) h+='<div class="rs-note">線上和各地區分開開時段，同一個時間只能給一個地點。</div>';
     if(!S.editable) h+='<div class="rs-note" style="color:#B07A2E">⚠️ 目前只能檢視（請先在 Supabase 執行時段的 SQL）</div>';
+    h+='</div>';
     el.innerHTML=h;
+    el.querySelector('[data-rs-fold]').onclick=function(){ S.open=false; draw(); };
     // 月曆：右上角數字＝那天開了幾個時段；綠點＝還開放、咖啡點＝有人預約了
     var dm={}; Object.keys(B).forEach(function(k){ var L=B[k], nb=L.filter(function(s){ return s.taken; }).length;
       dm[k]={n:L.length, dot:(L.length>nb?'op':''), dot2:(nb?'bk':''), label:L.length+' 個時段'+(nb?'，'+nb+' 個已被預約':'')}; });
     S.vcal=S.vcal||{};
-    if(window.RWCal) RWCal.mount(el.querySelector('[data-rs-cal]'),{days:dm, sel:S.date, state:S.vcal, from:tk0, ahead:6,
+    if(window.RWCal) RWCal.mount(el.querySelector('[data-rs-cal]'),{plain:true, days:dm, sel:S.date, state:S.vcal, from:tk0, ahead:6,
       legend:[['op','還開放'],['bk','有人預約了']], onPick:function(k){ if(k!==S.date){ S.date=k; S.times={}; S.tp={}; S.adding=false; } draw(); }});
     var op=el.querySelector('[data-rs-open]'); if(op) op.onclick=function(){ S.adding=true; draw(); };
     var cl=el.querySelector('[data-rs-close]'); if(cl) cl.onclick=function(){ S.adding=false; S.times={}; S.tp={}; draw(); };
