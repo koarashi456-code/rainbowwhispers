@@ -92,6 +92,34 @@
   /* 引路人後台：客戶管理／交易紀錄／報表（跟總後台同步，只看自己的客戶） */
   .gsec-lab{font-size:13px;color:var(--soft);font-weight:500;text-align:left;margin:22px 2px 8px}
   .gstats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* 報表：條列＋圖表 */
+  .grp-list{text-align:left}.grp-list::before{display:none}
+  .grp-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:0 14px;border-bottom:1px solid #EEE4D3;font-size:14px}
+  .grp-row:last-child{border-bottom:0}.grp-row span{color:var(--soft)}.grp-row b{color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
+  .grp-row.big{min-height:58px}.grp-row.big span{color:var(--ink);font-weight:500}.grp-row.big b{font-size:24px;font-weight:600}
+  .grp-h{font-size:14px;font-weight:600;color:var(--brush);margin:18px 4px 8px;text-align:left}.grp-h small{font-size:12px;font-weight:400;color:var(--soft);margin-left:8px}
+  .grp-card{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:14px 14px 10px;text-align:left}
+  .grp-plot{position:relative;height:150px;margin:18px 0 0 46px;border-bottom:1px solid #DCCDB6}
+  .grp-tk{position:absolute;left:0;right:0;border-top:1px solid #F1E8DA;height:0}
+  .grp-tk span{position:absolute;right:100%;margin-right:8px;top:-8px;font-size:11px;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .grp-cols{position:absolute;inset:0;display:flex}
+  .grp-col{flex:1;position:relative;font:inherit;background:none;border:0;padding:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;min-width:0}
+  .grp-col:hover,.grp-col.on{background:rgba(181,113,63,.06)}
+  .grp-col .bar{position:relative;display:block;width:22px;max-width:60%;background:#B5713F;border-radius:4px 4px 0 0}
+  .grp-col .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;font-size:11.5px;font-weight:600;color:var(--brush);white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
+  .grp-col.lab .v,.grp-col.on .v,.grp-col:hover .v,.grp-col:focus-visible .v{display:block}
+  .grp-cols:has(.grp-col.on) .grp-col.lab:not(.on) .v{display:none}
+  .grp-ms{display:flex;margin-left:46px;padding-top:6px}.grp-ms span{flex:1;text-align:center;font-size:11.5px;color:var(--soft)}.grp-ms span.cur{color:var(--brush);font-weight:600}
+  .grp-tbl{margin-top:10px;border-top:1px solid #F1E8DA;padding-top:6px}
+  .grp-tbl summary{font-size:12.5px;color:var(--brush);cursor:pointer;min-height:32px;display:flex;align-items:center;list-style:none}.grp-tbl summary::-webkit-details-marker{display:none}
+  .grp-tbl summary::after{content:"▾";margin-left:4px;font-size:11px}.grp-tbl[open] summary::after{content:"▴"}
+  .grp-tbl div{display:flex;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid #F3EBDD}.grp-tbl div:last-child{border-bottom:0}
+  .grp-tbl div span:first-child{flex:1;color:var(--ink)}.grp-tbl div span:nth-child(2){color:var(--soft);width:44px;text-align:right;font-variant-numeric:tabular-nums}.grp-tbl div b{width:72px;text-align:right;color:var(--brush);font-variant-numeric:tabular-nums}
+  .grp-mt{padding:6px 14px}
+  .grp-m{display:flex;align-items:center;gap:10px;min-height:44px;border-bottom:1px solid #F3EBDD}.grp-m:last-child{border-bottom:0}
+  .grp-m .n{flex:none;width:58px;font-size:13.5px;color:var(--ink)}
+  .grp-m .tr{flex:1;height:8px;border-radius:999px;background:#F1E3D3;overflow:hidden}.grp-m .tr i{display:block;height:100%;background:#B5713F;border-radius:999px}
+  .grp-m .a{flex:none;width:86px;text-align:right;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}.grp-m .a small{display:inline-block;width:34px;font-size:11.5px;font-weight:400;color:var(--soft)}
   .gstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;text-align:left;min-width:0}
   .gstat .k{font-size:12px;color:var(--soft)}
   .gstat .v{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush);margin-top:3px;word-break:break-word}
@@ -527,7 +555,7 @@
   </div>
 
   <div class="gsec-lab">報表</div>
-  <div class="gstats" id="g-report"></div>
+  <div id="g-report"></div>
 
   <div class="gsec-lab">交易紀錄</div>
   <input class="g-search" data-target="g-bookings" type="search" placeholder="搜尋 客戶／項目／日期／訂單編號／狀態…">
@@ -679,6 +707,44 @@ async function loadMyAccount(){
   }catch(e){}
 }
 // 引路人後台：看自己的預約 + 會員（＋自己的會員資料）
+// 報表：上面條列（像筆記本）、中間每月營收長條圖、下面付款方式比例條；圖的數字點一下或用「看每月數字」都看得到
+var GREP={};
+function gNice(v){ if(v<=0) return 1000; var e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e, S=[1,1.2,1.5,2,2.5,3,4,5,6,8,10]; for(var i=0;i<S.length;i++){ if(f<=S[i]) return S[i]*e; } return 10*e; }
+function gMonths(){
+  var t=new Date(), L=[];
+  for(var i=5;i>=0;i--){ var d=new Date(t.getFullYear(),t.getMonth()-i,1); L.push({k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), m:d.getMonth()+1, y:d.getFullYear(), v:0, n:0}); }
+  (GORD||[]).forEach(function(o){ if(o.status==='已取消'||o.status==='已退費') return; var a=Number(o.amount)||0; if(a<=0) return;
+    var p=wpart(o.appointment_at), k=''; if(p) k=p.y+'-'+String(p.mo).padStart(2,'0'); else { var bd=gBuyAt(o); if(bd) k=bd.getFullYear()+'-'+String(bd.getMonth()+1).padStart(2,'0'); }
+    L.forEach(function(x){ if(x.k===k){ x.v+=a; x.n++; } }); });
+  return L;
+}
+function drawGuideReport(){
+  var rep=$('#g-report'); if(!rep) return;
+  var rp=GREP||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
+  var h='<div class="nb-list grp-list">'+
+    '<div class="grp-row big"><span>有效營收</span><b>'+money(rev)+'</b></div>'+
+    '<div class="grp-row"><span>交易筆數</span><b>'+cnt+' 筆</b></div>'+
+    '<div class="grp-row"><span>平均客單</span><b>'+money(cnt?Math.round(rev/cnt):0)+'</b></div>'+
+    '<div class="grp-row"><span>退費</span><b>'+(rp.refund_count||0)+' 筆／'+money(rp.refund_amount)+'</b></div></div>';
+  // 每月營收（近 6 個月）
+  var M=gMonths(), mx=Math.max.apply(null,M.map(function(x){ return x.v; })), top=gNice(mx), cur=M[M.length-1], hi=M.reduce(function(a,x){ return x.v>a.v?x:a; },M[0]);
+  h+='<div class="grp-h">每月營收<small>近 6 個月・點長條看金額</small></div><div class="grp-card"><div class="grp-plot">'+
+    '<div class="grp-tk" style="bottom:100%"><span>'+money(top)+'</span></div><div class="grp-tk" style="bottom:50%"><span>'+money(top/2)+'</span></div>'+
+    '<div class="grp-cols">'+M.map(function(x){ var pct=x.v?Math.max(2,x.v*100/top):0, lab=(x===cur||(x===hi&&x.v>0));
+      return '<button type="button" class="grp-col'+(lab?' lab':'')+'" aria-label="'+x.m+' 月營收 '+money(x.v)+'，'+x.n+' 筆"><span class="bar" style="height:'+pct+'%"><span class="v">'+money(x.v)+'</span></span></button>'; }).join('')+'</div></div>'+
+    '<div class="grp-ms">'+M.map(function(x){ return '<span'+(x===cur?' class="cur"':'')+'>'+x.m+' 月</span>'; }).join('')+'</div>'+
+    '<details class="grp-tbl"><summary>看每月數字</summary>'+M.slice().reverse().map(function(x){ return '<div><span>'+x.y+' 年 '+x.m+' 月</span><span>'+x.n+' 筆</span><b>'+money(x.v)+'</b></div>'; }).join('')+'</details></div>';
+  // 付款方式（佔有效營收的比例；由多到少）
+  var P=[['刷卡',rp.m_card],['匯款',rp.m_transfer],['現金',rp.m_cash],['儲值折抵',rp.m_stored]].map(function(x){ return {t:x[0], v:Number(x[1])||0}; });
+  var tot=P.reduce(function(a,x){ return a+x.v; },0); P.sort(function(a,b){ return b.v-a.v; });
+  // 百分比加起來剛好 100（四捨五入後多的、少的補給小數最大的）
+  if(tot){ P.forEach(function(x){ var r=x.v*100/tot; x.pc=Math.floor(r); x.fr=r-x.pc; }); var left=100-P.reduce(function(a,x){ return a+x.pc; },0);
+    P.slice().sort(function(a,b){ return b.fr-a.fr; }).forEach(function(x){ if(left>0 && x.v>0){ x.pc++; left--; } }); }
+  h+='<div class="grp-h">付款方式<small>佔營收的比例</small></div><div class="grp-card grp-mt">'+P.map(function(x){ var pc=tot?x.pc:0;
+    return '<div class="grp-m" role="img" aria-label="'+x.t+' '+money(x.v)+'，'+pc+'%"><span class="n">'+x.t+'</span><span class="tr"><i style="width:'+(tot?x.v*100/tot:0)+'%"></i></span><span class="a">'+money(x.v)+'<small>'+pc+'%</small></span></div>'; }).join('')+'</div>';
+  rep.innerHTML=h;
+  rep.querySelectorAll('.grp-col').forEach(function(b){ b.onclick=function(){ var on=b.classList.contains('on'); rep.querySelectorAll('.grp-col.on').forEach(function(x){ x.classList.remove('on'); }); if(!on) b.classList.add('on'); }; });
+}
 function gstat(k,v){ return '<div class="gstat"><div class="k">'+escA(k)+'</div><div class="v">'+v+'</div></div>'; }
 function txRowG(o){
   return '<div class="grow"><div class="grow-top"><span class="grow-name">'+escA(o.customer_name||'客戶')+' <span style="color:var(--ink);font-weight:400;font-size:13px">'+escA(o.service||'')+'</span></span><span class="grow-amt">'+money(o.amount)+'</span></div>'
@@ -889,7 +955,7 @@ async function loadGuideOrders(){
   try{ await db.rpc('auto_complete_orders'); }catch(e){}
   var r; try{ r=await db.rpc('my_guide_orders'); }catch(e){ return; }
   if(!r || r.error || !Array.isArray(r.data)) return;
-  GORD=r.data;
+  GORD=r.data; try{ drawGuideReport(); }catch(e){}
   try{ var vs=await db.rpc('my_guide_video_status'); if(!vs.error && Array.isArray(vs.data)){ var VM={}; vs.data.forEach(function(x){ VM[x.order_ref]=x; }); GORD.forEach(function(o){ var x=VM[o.order_ref]; if(x){ o.video_link=x.video_link; o.video_sent_at=x.video_sent_at; } }); } }catch(e){}
   if(!GORD.length){ bx.innerHTML='<div class="gbox"><p class="gempty">還沒有交易。</p></div>'; return; }
   var up=GORD.filter(gUpcoming).sort(function(a,b){ return gKey(a)-gKey(b); });
@@ -1127,12 +1193,7 @@ async function enterGuide(d){
   if(!data){ bx.innerHTML='<div class="gbox"><p class="gempty">目前讀不到後台資料，請稍後再試或聯繫官方 LINE。</p></div>'; mx.innerHTML=''; return; }
   if(data.guide_name){ $('#g-hi').textContent='引路人・'+data.guide_name; GNAME=data.guide_name; }
   // 報表
-  var rp=data.report||{}, cnt=Number(rp.count||0), rev=Number(rp.revenue||0);
-  rep.innerHTML=
-    gstat('有效營收', money(rev)) + gstat('交易筆數', cnt+' 筆') +
-    gstat('退費', (rp.refund_count||0)+' 筆／'+money(rp.refund_amount)) + gstat('平均客單', money(cnt?Math.round(rev/cnt):0)) +
-    gstat('現金', money(rp.m_cash)) + gstat('刷卡', money(rp.m_card)) +
-    gstat('匯款', money(rp.m_transfer)) + gstat('儲值折抵', money(rp.m_stored));
+  GREP=data.report||{}; drawGuideReport();
   // 交易紀錄
   var tx=data.transactions||[];
   bx.innerHTML='<div class="gbox">'+(tx.length ? tx.map(txRowG).join('') : '<p class="gempty">還沒有交易。</p>')+'</div>';
