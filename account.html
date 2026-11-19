@@ -305,7 +305,13 @@
   .gx-mode .gx:not(.open){display:none!important}
   .gx-mode .g-noresult{display:none}
   .gx-hide{display:none!important}
-  .gx-back{font:inherit;font-size:13px;color:var(--soft);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;margin-bottom:10px}
+  .gx-back{font:inherit;font-size:15px;font-weight:500;color:var(--brush);background:none;border:0;padding:0 8px 0 0;min-height:44px;display:inline-flex;align-items:center;gap:2px;cursor:pointer;margin:-6px 0 2px}
+  .gx-back:active{opacity:.6}
+  /* 客戶明細打開時：外框改成柔和的卡片（不要硬邊框、圓一點、淡淡的陰影） */
+  #g-members.gx-mode{border-color:transparent;border-radius:22px;padding:10px 18px 18px;background:#FFFDF8;box-shadow:0 1px 0 rgba(231,217,195,.7),0 12px 32px -18px rgba(120,90,60,.38)}
+  #g-members.gx-mode .gx.open{border-top:0}
+  #g-members.gx-mode .gc-kvs{border-top-color:#F3EBDD}#g-members.gx-mode .gc-kvs>div{border-bottom-color:#F3EBDD}
+  #g-members.gx-mode .pkc.cmp{border-color:#F0E6D6;background:#FFFCF6}
   .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;margin:0 0 10px;outline:none}
   .g-search:focus{border-color:#C9A7DE}
   .g-noresult{font-size:13px;color:var(--soft);text-align:center;padding:14px 0}
