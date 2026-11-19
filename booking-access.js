@@ -20,10 +20,10 @@ function trText(t){ if(!t) return ''; var st=String(t.station||'').trim(); if(!s
 
 // 回傳 HTML；沒付款（匯款）或拿不到資料回傳空字串
 function html(acc){
-  if(!acc || !acc.paid) return '';
+  if(!acc || (!acc.paid && !safeUrl(acc.video_link))) return '';
   css();
   var h='';
-  if(acc.offline){
+  if(acc.offline && acc.paid){
     if(acc.address){
       var map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(acc.address);
       h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-a">'+esc(acc.address)+'</div>'+
@@ -40,7 +40,8 @@ function html(acc){
         '<div class="rwa-s">請提前準備安靜的空間和耳機，並先確認裝置能開啟 '+app+'。'+(acc.offline&&acc.address?'選實體的話照上面地址前往即可。':'')+'</div>'+
         '<div class="rwa-btns"><a class="go" href="'+esc(link)+'" target="_blank" rel="noopener">開啟 '+app+'</a><button type="button" data-rwa-copy="'+esc(link)+'">複製連結</button></div></div>';
     } else if(!(acc.offline && acc.address)){
-      h+='<div class="rwa-box"><div class="rwa-h">'+CAM+'線上視訊</div><div class="rwa-s">引路人的視訊連結還在設定中，我們會用 Email 或官方 LINE 通知你。</div></div>';
+      // 引路人選「每次當天自己傳」：預約前 30 分鐘～1 小時才會傳連結
+      h+='<div class="rwa-box"><div class="rwa-h">'+CAM+'線上視訊'+(acc.video_app?'（'+app+'）':'')+'</div><div class="rwa-s" style="color:var(--ink);font-size:13.5px">'+(acc.guide_name?esc(acc.guide_name):'引路人')+' 會在預約前 30 分鐘～1 小時傳視訊連結給你，會寄到你的信箱，也會出現在網站右上角的小鈴鐺和「我的訂單」。</div></div>';
     }
   }
   return h;
@@ -52,6 +53,7 @@ function text(acc){
   if(acc.offline && acc.address){ L.push('服務地址'+(acc.area?'（'+acc.area+'）':'')+'：'+acc.address); if(trText(acc.transit)) L.push('附近交通：'+trText(acc.transit).replace(/^\S+ /,'')+(acc.transit.tip?'（'+acc.transit.tip+'）':'')); if(acc.checkin_note) L.push('報到提醒：'+acc.checkin_note); L.push('請在預約時間前 10 分鐘抵達。'); }
   var link=safeUrl(acc.video_link);
   if(acc.online && link) L.push('線上視訊（'+appName(acc.video_app)+'）：'+link+'（預約時間到了點連結進入）');
+  else if(acc.online && !(acc.offline && acc.address)) L.push('線上視訊：'+(acc.guide_name||'引路人')+' 會在預約前 30 分鐘～1 小時把視訊連結寄給你，也會出現在網站小鈴鐺和「我的訂單」。');
   return L.join('\n');
 }
 // 綁「複製」按鈕

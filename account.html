@@ -198,6 +198,15 @@
   .glc-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 10px;outline:none}
   .glc-area{display:flex;gap:6px}.glc-area select{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 8px}
   .glc-tr{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.glc-tr select{flex:none;width:auto}.glc-tr input{flex:1;min-width:0}.glc-tr .glc-walk{flex:none;width:58px;text-align:center}.glc-tr span{flex:none}
+  .gv-opt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 11px;margin-top:6px;cursor:pointer;text-align:left}
+  .gv-opt.on{border-color:#C9A7DE;background:#FBF7FE}.gv-opt input{margin-top:5px}.gv-opt b{font-size:13.5px;color:var(--brush)}.gv-opt small{display:block;font-size:12px;color:var(--soft);line-height:1.6}
+  .cal-st.vwait{background:#FBE7CC;color:#A5643A}.cal-st.vsent{background:#E3EEF6;color:#4F7392}
+  .gvban{background:#FFF4E2;border:1.5px solid #F2D3A2;border-radius:12px;padding:8px 12px;font-size:13px;color:#A5643A;margin:4px 0 10px;text-align:left}
+  .gvbox{background:#F1F6FB;border:1.5px solid #CFE0EE;border-radius:12px;padding:10px 12px;margin-top:12px;text-align:left}
+  .gvbox b{font-size:14px;color:var(--brush)}.gvbox .s{font-size:12px;color:var(--soft);margin-top:2px}
+  .gv-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #CFE0EE;border-radius:10px;padding:7px 10px;margin-top:6px;outline:none}
+  .gv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .gv-btn{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:500;cursor:pointer}.gv-btn:disabled{opacity:.6}
   .glc-add{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13px;cursor:pointer;margin-top:10px}
   .glc-h{font-size:13.5px;font-weight:600;color:var(--brush);margin:14px 0 2px;text-align:left}
   .gcap-mini{display:block;height:6px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin-top:6px}.gcap-mini i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
@@ -735,6 +744,10 @@ function gStc(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st=
 function gSplit(sv){ sv=String(sv||''); var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
 function gKey(o){ var p=wpart(o.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); return gBuyAt(o)||new Date(0); }
 function gUpcoming(o){ return o.status==='已預約' && !o.past && !!o.appointment_at; }
+// 線上視訊：這筆是不是線上、需不需要傳連結（SQL：my_guide_video_status、guide_send_video）
+function gOnline(o){ return o && (o.location==='線上' || /｜線上視訊/.test(String(o.service||''))); }
+function gNeedLink(o){ return gOnline(o) && o.status==='已預約' && !o.past && !o.video_sent_at && GLOC.mode!=='fixed'; }
+function gHM(s){ var d=new Date(s); return isNaN(d)?'':String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 function gRow(o){
   var i=GORD.indexOf(o), p=wpart(o.appointment_at), sp=gSplit(o.service), dim=(o.status==='已取消'||o.status==='已退費');
   var d=p?(p.mo+'/'+String(p.d).padStart(2,'0')):'—', sub=p?(GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'未定時間', buy=!p&&gIsBuy(o);
@@ -743,7 +756,7 @@ function gRow(o){
   return '<button type="button" class="orow'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'">'
     +'<span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
     +'<span class="om"><div class="t">'+escA(o.customer_name||'客戶')+'</div><div class="s">'+escA(sp.plan)+(sp.place?'｜'+escA(sp.place):'')+'</div></span>'
-    +'<span class="oright"><div class="a">'+money(o.amount)+'</div><span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span></span><span class="ogo">›</span></button>';
+    +'<span class="oright"><div class="a">'+money(o.amount)+'</div>'+(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at?'<span class="cal-st vsent">已傳連結 '+gHM(o.video_sent_at)+'</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>')+'</span><span class="ogo">›</span></button>';
 }
 function gsClose(){ var m=$('#gs-mask'); if(m) m.classList.remove('on'); }
 function gFullDT(s){ var p=wpart(s); if(!p) return '未定時間'; return p.y+'/'+p.mo+'/'+p.d+'（'+GWD[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
@@ -757,10 +770,26 @@ function openGOrder(i){
     +gKv('客戶',escA(o.customer_name||'客戶'))+gKv('聯絡',escA(o.customer_contact||'—'))+gKv('方案',escA(sp.plan||'—'))+(sp.place?gKv('服務地點',escA(sp.place)):'')
     +gKv('預約時間',gFullDT(o.appointment_at))+gKv('付款方式',escA(o.method||'—'))+(o.method==='匯款'&&o.pay_last5?gKv('匯款末 5 碼',escA(o.pay_last5)):'')
     +gKv('金額',money(o.amount),'tot')+(o.order_ref?gKv('訂單編號',escA(o.order_ref)):'');
+  if(gOnline(o) && o.status==='已預約' && !o.past){
+    h+='<div class="gvbox"><b>🎥 這次的視訊連結</b><div class="s">'+(o.video_sent_at?'已在 '+gHM(o.video_sent_at)+' 傳給客人；要換連結可以改了再傳一次':'預約前 30 分鐘～1 小時傳給客人就好'+(GLOC.link?'（已帶入你的固定連結，可以改）':''))+'</div>'+
+      '<input class="gv-in" id="gv-link" maxlength="300" value="'+escA(o.video_link||GLOC.link||'')+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…">'+
+      '<div class="gv-row"><button type="button" class="gv-btn" id="gv-send">'+(o.video_sent_at?'重新傳一次':'傳連結給客人')+'</button><span id="gv-msg" style="font-size:12px;color:var(--soft)">會寄到客人信箱＋網站小鈴鐺</span></div></div>';
+  }
   if(can) h+='<div style="margin-top:14px;text-align:center"><button type="button" class="gs-noshow" id="gs-noshow">客戶沒來？標記未出席</button></div>';
   if(o.customer_contact||o.customer_name) h+='<div style="text-align:center"><button type="button" class="gs-link" id="gs-cust">看這位客戶的所有紀錄 ›</button></div>';
   $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on');
   $('#gs-x').onclick=gsClose;
+  var vb=$('#gv-send'); if(vb) vb.onclick=async function(){
+    var lk=($('#gv-link').value||'').trim(), msg=$('#gv-msg');
+    if(!/^https:\/\//i.test(lk)){ msg.textContent='連結要用 https:// 開頭'; msg.style.color='#C0506A'; return; }
+    vb.disabled=true; msg.textContent='傳送中…'; msg.style.color='var(--soft)';
+    try{ var x=await db.rpc('guide_send_video',{p_ref:o.order_ref,p_link:lk}); if(x.error) throw new Error(/could not find the function/i.test(x.error.message||'')?'請先請官方更新系統（SQL）':x.error.message);
+      var d=x.data||{}; o.video_link=lk; o.video_sent_at=d.sent_at||new Date().toISOString();
+      if(d.email) sendVideoEmail(d,lk);
+      msg.style.color='#4F8E6E'; msg.textContent=d.email?('已寄到 '+d.email+(d.member?'，也傳到客人的小鈴鐺':'')):(d.member?'已傳到客人的小鈴鐺和「我的訂單」（客人沒有信箱）':'已存好；這位客人沒有信箱也不是會員，請用電話或 LINE 告訴他');
+      vb.textContent='重新傳一次'; vb.disabled=false; loadGuideOrders();
+    }catch(e){ vb.disabled=false; msg.style.color='#C0506A'; msg.textContent='傳送失敗：'+(e.message||''); }
+  };
   var nb=$('#gs-noshow'); if(nb) nb.onclick=async function(){
     if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
     nb.disabled=true; nb.textContent='處理中…';
@@ -768,6 +797,15 @@ function openGOrder(i){
     catch(e){ alert('標記失敗：'+(e.message||'')); nb.disabled=false; nb.textContent='客戶沒來？標記未出席'; }
   };
   var cb=$('#gs-cust'); if(cb) cb.onclick=function(){ gsClose(); openGuideCustomer(o.customer_contact, o.customer_name); };
+}
+// 寄視訊連結給客人（跟預約通知一樣用 FormSubmit；客人收到自動回覆信，官方信箱留一份）
+function sendVideoEmail(d,link){
+  try{
+    var plan=String(d.service||'').split('｜')[0];
+    fetch('https://formsubmit.co/ajax/koarashi456@gmail.com',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({_subject:'彩之語 · 視訊連結（'+(d.when||'')+'）', _template:'table', name:d.name||'', email:d.email, 引路人:d.guide||'', 預約時間:d.when||'', 方案:plan, 視訊連結:link,
+        _autoresponse:'你好 '+(d.name||'')+'，\n\n'+(d.guide||'引路人')+' 傳來這次預約的視訊連結：\n'+link+'\n\n預約時間：'+(d.when||'')+'\n方案：'+plan+'\n\n請提前準備安靜的空間和耳機，時間到了點上面的連結進入。\n也可以到彩之語網站「我的訂單」查看。\n\n彩之語 Rainbow Whisper'})}).catch(function(){});
+  }catch(e){}
 }
 // 課程購買明細：購買日期、共幾堂／已用／剩幾堂（課程資料來自 my_guide_packages）
 async function openGBuy(o){
@@ -804,10 +842,12 @@ async function loadGuideOrders(){
   var r; try{ r=await db.rpc('my_guide_orders'); }catch(e){ return; }
   if(!r || r.error || !Array.isArray(r.data)) return;
   GORD=r.data;
+  try{ var vs=await db.rpc('my_guide_video_status'); if(!vs.error && Array.isArray(vs.data)){ var VM={}; vs.data.forEach(function(x){ VM[x.order_ref]=x; }); GORD.forEach(function(o){ var x=VM[o.order_ref]; if(x){ o.video_link=x.video_link; o.video_sent_at=x.video_sent_at; } }); } }catch(e){}
   if(!GORD.length){ bx.innerHTML='<div class="gbox"><p class="gempty">還沒有交易。</p></div>'; return; }
   var up=GORD.filter(gUpcoming).sort(function(a,b){ return gKey(a)-gKey(b); });
   var past=GORD.filter(function(o){ return !gUpcoming(o); }).sort(function(a,b){ return gKey(b)-gKey(a); });
-  var h='';
+  var h='', soon=up.filter(function(o){ var ms=gKey(o)-Date.now(); return gNeedLink(o) && ms>-3600e3 && ms<=24*3600e3; });
+  if(soon.length) h+='<div class="gvban">🎥 24 小時內有 '+soon.length+' 筆線上預約還沒傳視訊連結，點那筆就能傳</div>';
   if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(gRow).join('')+'</div>';
   if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist">'+past.map(gRow).join('')+'</div>';
   bx.innerHTML=h;
@@ -1097,10 +1137,10 @@ async function loadGuideLocs(){
   var L=Array.isArray(d.locations)?d.locations:[];
   if(!L.length && window.RWArea){ L=RWArea.parseList(d.region).map(function(a,i){ return {area:a, address:i?'':(d.address||''), note:i?'':(d.checkin_note||'')}; }); if(!L.length && String(d.address||'').trim()) L=[{area:'',address:d.address||'',note:d.checkin_note||''}]; }
   GLOC.L=L.map(function(x){ x=x||{}; return {area:String(x.area||''), address:String(x.address||''), note:String(x.note||''), t_type:String(x.t_type||'捷運'), t_station:String(x.t_station||''), t_walk:(x.t_walk==null||x.t_walk==='')?'':String(x.t_walk), t_tip:String(x.t_tip||'')}; });
-  GLOC.app=d.video_app||''; GLOC.link=d.video_link||'';
+  GLOC.app=d.video_app||''; GLOC.link=d.video_link||''; GLOC.mode=d.video_mode||(d.video_link?'fixed':'day');
   box.style.display='block'; drawGuideLocs();
 }
-function glocSum(){ var A=GLOC.L.map(function(x){ return x.area; }).filter(Boolean); return (A.length?A.length+' 個實體地點：'+A.join('、'):'還沒有實體地點')+'・'+(GLOC.link?'線上視訊（'+(GLOC.app||'已設定')+'）':'沒有線上視訊'); }
+function glocSum(){ var A=GLOC.L.map(function(x){ return x.area; }).filter(Boolean); return (A.length?A.length+' 個實體地點：'+A.join('、'):'還沒有實體地點')+'・'+(GLOC.app?'線上視訊（'+GLOC.app+'・'+(GLOC.mode==='fixed'?'固定連結':'當天傳連結')+'）':'沒有線上視訊'); }
 function glocMsg(t,c){ var m=$('#gloc-msg'); if(!m) return; m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },1600); }
 async function saveGuideLocs(){
   glocMsg('儲存中…');
@@ -1124,7 +1164,11 @@ function drawGuideLocs(){
       '</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>'+
       '<div class="glc-h">線上視訊</div>'+
       '<div class="glc-l">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
-      '<div class="glc-l">視訊連結（不公開，客人預約成功後才看得到）</div><input class="glc-in" id="gloc-link" maxlength="300" value="'+escA(GLOC.link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"'+(GLOC.app?'':' disabled')+'>'+
+      '<div style="font-size:11.5px;color:var(--soft);margin-top:4px">選了就代表有線上服務，排時段時可以開「線上視訊」，不用先給連結</div>'+
+      '<div id="gloc-how"'+(GLOC.app?'':' style="display:none"')+'><div class="glc-l">連結怎麼給客人？</div>'+
+        '<label class="gv-opt'+(GLOC.mode!=='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="day"'+(GLOC.mode!=='fixed'?' checked':'')+'><span><b>每次當天自己傳</b><small>預約前 30 分鐘～1 小時，在交易紀錄點那筆按「傳連結給客人」，會寄到客人信箱＋網站小鈴鐺</small></span></label>'+
+        '<label class="gv-opt'+(GLOC.mode==='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="fixed"'+(GLOC.mode==='fixed'?' checked':'')+'><span><b>用固定連結，預約成功就給</b><small>客人一預約好就看得到下面這個連結</small></span></label>'+
+        '<div class="glc-l">固定視訊連結（不公開；當天傳的時候也會自動帶入）</div><input class="glc-in" id="gloc-link" maxlength="300" value="'+escA(GLOC.link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"></div>'+
       '<div id="gloc-msg" style="font-size:12px;min-height:1.2em;margin-top:6px"></div>'+
       '<div style="font-size:11.5px;color:var(--soft);line-height:1.7">・同一個地區只能有一個地點<br>・改完離開欄位就會自動儲存；下面「可預約時間」的地點按鈕會跟著更新</div></div>';
   }
@@ -1141,17 +1185,22 @@ function drawGuideLocs(){
   });
   if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
   $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); drawGuideLocs(); var last=box.querySelector('#gloc-list .glc:last-child select'); if(last) last.focus(); };
-  var ap=$('#gloc-app'), lk=$('#gloc-link');
+  var ap=$('#gloc-app'), lk=$('#gloc-link'), how=$('#gloc-how');
+  function curMode(){ var c=box.querySelector('input[name="gloc-mode"]:checked'); return c?c.value:'day'; }
   async function saveVideo(){
-    var app=ap.value, link=lk.value.trim();
+    var app=ap.value, link=lk.value.trim(), md=curMode();
     if(app && link && !/^https:\/\//i.test(link)){ glocMsg('視訊連結要用 https:// 開頭','#C0506A'); return; }
+    if(app && md==='fixed' && !link){ glocMsg('選「固定連結」的話，請在下面貼上視訊連結'); lk.focus(); return; }
     glocMsg('儲存中…');
-    try{ var r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null}); if(r.error) throw new Error(r.error.message);
-      GLOC.app=(r.data&&r.data.video_app)||app||''; GLOC.link=(r.data&&r.data.video_link)||''; if(!app){ lk.value=''; }
+    try{ var r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null,p_mode:md});
+      if(r.error && (r.error.code==='PGRST202' || /could not find the function/i.test(r.error.message||''))) r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null});
+      if(r.error) throw new Error(r.error.message);
+      GLOC.app=(r.data&&r.data.video_app)||app||''; GLOC.link=(r.data&&r.data.video_link)||''; GLOC.mode=(r.data&&r.data.video_mode)||md; if(!app){ lk.value=''; }
       glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); }
     catch(e){ glocMsg('儲存失敗：'+(e.message||''),'#C0506A'); }
   }
-  ap.onchange=function(){ lk.disabled=!ap.value; if(!ap.value || lk.value.trim()) saveVideo(); else { glocMsg('再貼上視訊連結就完成了'); lk.focus(); } };
+  ap.onchange=function(){ if(how) how.style.display=ap.value?'':'none'; saveVideo(); };
+  box.querySelectorAll('input[name="gloc-mode"]').forEach(function(rd){ rd.onchange=function(){ box.querySelectorAll('.gv-opt').forEach(function(o){ o.classList.toggle('on',o.querySelector('input').checked); }); saveVideo(); }; });
   lk.addEventListener('change',saveVideo);
 }
 var GCAP_OPEN=false, GCAP_DATA=null;

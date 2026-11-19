@@ -277,6 +277,24 @@
   .bulkdel{font:inherit;font-size:13px;color:#C0506A;background:#fff;border:1.5px solid #E7C3C3;border-radius:999px;padding:7px 16px;cursor:pointer}
   .bulkdel:disabled{opacity:.45;cursor:not-allowed}
   .trbulk{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:8px 12px;background:#FBF6EC;border:1px solid var(--line);border-radius:10px;flex-wrap:wrap}
+  /* 刪除紀錄：一筆一行，點開才編輯原因、還原、永久刪除 */
+  .trl{background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;overflow:hidden}
+  #trashlist .trr{padding:0!important;margin:0!important;border:0!important;border-bottom:1px solid #F1E7D6!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+  #trashlist .trr:last-child{border-bottom:0!important}
+  .trh{display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer}
+  .trh .tr-ck{flex:none;width:16px;height:16px;margin:0}
+  .tbd{flex:none;font-size:10.5px;border-radius:999px;padding:0 7px;background:#EDE6DC;color:#8A7659;white-space:nowrap;line-height:1.7}
+  .tbd.tx{background:#FBE7CC;color:#A5643A}.tbd.tp{background:#E4F2E7;color:#3F7A5E}.tbd.gd{background:#EAE4F7;color:#6E4F9E}
+  .trh .tm{flex:1;min-width:0;line-height:1.35}.trh .tm b{display:block;font-size:13.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trh .tm small{display:block;font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trs{flex:none;font-size:11px;color:#B98575}
+  .tgo{flex:none;color:#C2A878;font-size:16px;transition:transform .15s}.trr.open .tgo{transform:rotate(90deg)}
+  .trr .tbody{display:none;padding:0 10px 9px 34px}.trr.open .tbody{display:block}
+  .tlab{font-size:12px;color:var(--soft);margin:2px 0 3px}
+  .trbtns{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:6px;flex-wrap:wrap}.trbtns .saved{margin-right:auto}
+  .trr .tbody .in{width:100%;box-sizing:border-box}
+  .trbtns .abtn,.trbtns .del{font:inherit;font-size:13px;border-radius:999px;padding:5px 16px;cursor:pointer;text-decoration:none;background:#fff}
+  .trbtns .abtn{border:1.5px solid var(--line);color:var(--brush)}.trbtns .del{border:1.5px solid #F0D5DC;color:#B4566E}
   table.txt tbody tr:nth-child(even){background:#FCF7EC}
   table.txt tbody tr:hover{background:#F6EEDC}
   table.txt td.num{text-align:right;font-variant-numeric:tabular-nums}
@@ -1926,10 +1944,14 @@ function renderTrash(){
   document.getElementById('trash-count').textContent='共 '+items.length+' 筆已刪除（可還原）';
   if(!items.length){ list.innerHTML='<div class="muted" style="padding:30px;text-align:center">目前沒有被刪除的資料</div>'; return; }
   list.innerHTML='<div class="trbulk" id="tr-bulk"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="tr-ckall">全選</label><span style="font-size:13px">已選 <b id="tr-cksel">0</b> 筆</span><span style="flex:1"></span><button class="abtn" id="tr-bulkrestore" disabled>還原選取</button><button class="bulkdel" id="tr-bulkpurge" disabled>永久刪除選取</button></div>'+
-    items.map(function(it){ return '<div class="cust" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="cust-top"><label style="display:flex;flex-direction:row;align-items:center;gap:8px;cursor:pointer;min-width:0"><input type="checkbox" class="tr-ck" style="flex-shrink:0"><span style="min-width:0"><span class="src-badge" style="background:#EDE6DC;color:#8A7659">'+it.t+'</span> <b>'+esc(it.lbl)+'</b></span></label><div class="meta">'+esc(it.sub)+'</div></div><label class="notes-l" style="margin-top:0"><input class="in" data-reason value="'+esc(it.reason)+'" placeholder="刪除原因（選填）…"></label><div class="cust-actions"><span class="saved" data-rsaved></span><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div>'; }).join('');
+    '<div class="trl">'+items.map(function(it){ var tc={'客戶':'','引路人':' gd','交易':' tx','儲值':' tp'}[it.t]||'';
+      return '<div class="cust trr" data-tbl="'+it.tbl+'" data-id="'+it.id+'"><div class="trh"><input type="checkbox" class="tr-ck" aria-label="選取"><span class="tbd'+tc+'">'+it.t+'</span><span class="tm"><b>'+esc(it.lbl)+'</b><small>'+esc(it.sub||'')+'</small></span>'+(it.reason?'<span class="trs">有原因</span>':'')+'<span class="tgo">›</span></div>'+
+        '<div class="tbody"><div class="tlab">刪除原因</div><input class="in" data-reason value="'+esc(it.reason)+'" placeholder="寫一下為什麼刪（選填）"><div class="trbtns"><span class="saved" data-rsaved></span><button class="abtn" data-restore>還原</button><button class="del" data-purge>永久刪除</button></div></div></div>'; }).join('')+'</div>';
   document.querySelectorAll('#trashlist .cust').forEach(function(row){
     var tbl=row.getAttribute('data-tbl'), id=row.getAttribute('data-id');
     var ri=row.querySelector('[data-reason]');
+    var th=row.querySelector('.trh'); if(th) th.addEventListener('click',function(e){ if(e.target.classList.contains('tr-ck')) return; row.classList.toggle('open'); });
+    if(ri) ri.addEventListener('change',function(){ var tg=row.querySelector('.trs'); if(ri.value.trim() && !tg){ row.querySelector('.tgo').insertAdjacentHTML('beforebegin','<span class="trs">有原因</span>'); } else if(!ri.value.trim() && tg){ tg.remove(); } });
     if(ri) ri.addEventListener('change',async function(){ var sv=row.querySelector('[data-rsaved]'); if(sv){sv.textContent='儲存中…';sv.style.color='var(--soft)';} var rr=await db.from(tbl).update({delete_reason:ri.value}).eq('id',id); if(rr.error){ if(sv){sv.textContent='存檔失敗';sv.style.color='#C0506A';} } else { var o=DEL[tbl].find(function(x){return x.id===id;}); if(o)o.delete_reason=ri.value; if(sv){sv.textContent='已儲存';sv.style.color='#4F8E6E';setTimeout(function(){sv.textContent='';},1200);} } });
     row.querySelector('[data-restore]').onclick=async function(){
       var r=await db.from(tbl).update({deleted:false}).eq('id',id);
