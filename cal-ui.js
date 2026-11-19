@@ -5,7 +5,9 @@
      state: {ym:'2026-11'},        // 呼叫的人保留這個物件，重畫時月份才不會跳回去
      onPick: function(k){},        // 點了某一天
      legend: [['op','可預約'],['bk','已被預約']],  // 下面的小說明（可省略）
-     plain:  true                  // 放在已經有框的地方：不要外框
+     plain:  true,                 // 放在已經有框的地方：不要外框
+     from:   '2026-11-19',         // （選用）這天以後每一天都能點（排時段用）；之前的日子是灰的
+     ahead:  6                     // （選用）配合 from：可以往後翻幾個月
    })
    用在：預約頁選日期（guide.html）、改期選日期（orders.html）、已開放時段看哪一天（slot-ui.js） */
 (function(){
@@ -40,6 +42,7 @@
     if(!el) return; css();
     var days=o.days||{}, keys=Object.keys(days).sort(), st=o.state||(o.state={});
     var minYm=keys.length?ymOf(keys[0]):ymOf(todayKey()), maxYm=keys.length?ymOf(keys[keys.length-1]):minYm;
+    if(o.from){ minYm=ymOf(o.from); var far=shift(minYm,o.ahead||6); if(far>maxYm) maxYm=far; }
     if(!st.ym) st.ym=o.sel?ymOf(o.sel):minYm;
     if(st.ym<minYm) st.ym=minYm; if(st.ym>maxYm) st.ym=maxYm;
     var y=+st.ym.slice(0,4), m=+st.ym.slice(5,7), first=new Date(y,m-1,1).getDay(), nd=new Date(y,m,0).getDate(), tk=todayKey();
@@ -48,10 +51,10 @@
       '<div class="rwc-g rwc-w">'+WD.map(function(w){ return '<span>'+w+'</span>'; }).join('')+'</div><div class="rwc-g">';
     for(var i=0;i<first;i++) h+='<span class="rwc-d blank"></span>';
     for(var d=1;d<=nd;d++){
-      var k=st.ym+'-'+p2(d), x=days[k], can=!!(x && !x.off);
+      var k=st.ym+'-'+p2(d), x=days[k], can=o.from?(k>=o.from && !(x && x.off)):!!(x && !x.off);
       var inner=(x && x.n?'<span class="cnt'+(x.cntBk?' bk':'')+'">'+x.n+'</span>':'')+d+'<span class="dots">'+(x && x.dot?'<i class="'+x.dot+'"></i>':'')+(x && x.dot2?'<i class="'+x.dot2+'"></i>':'')+'</span>';
       var cls='rwc-d'+(can?' on':'')+(k===tk?' today':'')+(k===o.sel?' sel':'');
-      h+=can?'<button type="button" class="'+cls+'" data-rwc-d="'+k+'" aria-label="'+m+' 月 '+d+' 日'+(x.label?'，'+x.label:'')+'"'+(k===o.sel?' aria-pressed="true"':'')+'>'+inner+'</button>'
+      h+=can?'<button type="button" class="'+cls+'" data-rwc-d="'+k+'" aria-label="'+m+' 月 '+d+' 日'+(x && x.label?'，'+x.label:'')+'"'+(k===o.sel?' aria-pressed="true"':'')+'>'+inner+'</button>'
             :'<span class="'+cls+'"'+(x && x.label?' title="'+x.label+'"':'')+'>'+inner+'</span>';
     }
     h+='</div>';
