@@ -190,14 +190,25 @@
   .gmeter{height:11px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin:5px 0 2px}.gmeter i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
   .gfull-b{display:inline-block;font-size:11px;font-weight:600;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:0 8px;margin-left:6px;line-height:1.7;vertical-align:1px}
   .gcap-ic{background:#EFE6F6!important}.gloc-ic{background:#E3EEF6!important}
-  .glc{background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:10px 12px;margin-top:10px;text-align:left}.glc:first-child{margin-top:0}
-  .glc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.glc-top b{font-size:14px;color:var(--brush)}
-  .glc-tag{font-size:11.5px;background:#E4F2E7;color:#3F7A5E;border-radius:999px;padding:1px 8px;margin-left:6px;font-weight:400}.glc-tag.no{background:#F6E6DF;color:#B4614A}
-  .glc-del{font:inherit;border:1.5px solid #F0D5DC;background:#fff;color:#B4566E;border-radius:999px;font-size:12px;padding:2px 10px;cursor:pointer}
-  .glc-l{font-size:12px;color:var(--soft);margin:8px 0 3px}
-  .glc-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 10px;outline:none}
-  .glc-area{display:flex;gap:6px}.glc-area select{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:7px 8px}
-  .glc-tr{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.glc-tr select{flex:none;width:auto}.glc-tr input{flex:1;min-width:0}.glc-tr .glc-walk{flex:none;width:58px;text-align:center}.glc-tr span{flex:none}
+  .glc-list{background:#fff;border:1.5px solid #EFE3CE;border-radius:14px;overflow:hidden}
+  .glc-row{display:flex;gap:10px;align-items:flex-start;width:100%;box-sizing:border-box;text-align:left;font:inherit;color:inherit;background:none;border:0;border-top:1px solid #F1E7D6;padding:11px 12px;min-height:48px;cursor:pointer}
+  .glc-list>.glc-row:first-child,.glc-list>.glc-none:first-child+.glc-row{border-top:0}
+  .glc-row:active{background:#FBF6EC}.glc-row.on{background:#FBF6EC}
+  .glc-row .ic{flex:none;font-size:15px;line-height:1.55}.glc-row .m{flex:1;min-width:0}
+  .glc-row b{display:block;font-size:14.5px;font-weight:600;color:var(--brush);line-height:1.5}
+  .glc-row small{display:block;font-size:12.5px;color:var(--soft);line-height:1.55;margin-top:1px;overflow-wrap:anywhere}
+  .glc-row .glc-go{flex:none;align-self:center;font-size:13px;color:var(--brush);white-space:nowrap}
+  .glc-no{color:#B4614A;font-weight:500}.glc-no.off{color:var(--soft)}
+  .glc-none{font-size:13px;color:var(--soft);padding:12px}
+  .glc-ed{background:#FBF6EC;border-top:1px dashed #E6D7BF;padding:4px 12px 12px}
+  .glc-l{font-size:12.5px;color:var(--brush);font-weight:500;margin:10px 0 4px}.glc-l small{font-weight:400;color:var(--soft);margin-left:6px}
+  .glc-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px 10px;outline:none;min-height:40px}
+  .glc-area{display:flex;gap:6px}.glc-area select{flex:1;min-width:0;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:10px;padding:8px;min-height:40px}
+  .glc-acts{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px}
+  .glc-done{font:inherit;font-size:14px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;min-height:40px;padding:0 22px;cursor:pointer}
+  .glc-del{font:inherit;font-size:13px;color:#B4566E;background:none;border:0;min-height:40px;padding:0 4px;cursor:pointer}
+  .glc-msg{font-size:12.5px;min-height:1.2em;margin-top:8px}.glc-foot{font-size:12px;color:var(--soft)}
+  .glc-tr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--soft)}.glc-tr select{flex:none;width:auto}.glc-tr input{flex:1 1 150px;min-width:0}.glc-tr .glc-walk{flex:none;width:58px;text-align:center}.glc-tr span{flex:none}
   .gv-opt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 11px;margin-top:6px;cursor:pointer;text-align:left}
   .gv-opt.on{border-color:#C9A7DE;background:#FBF7FE}.gv-opt input{margin-top:5px}.gv-opt b{font-size:13.5px;color:var(--brush)}.gv-opt small{display:block;font-size:12px;color:var(--soft);line-height:1.6}
   .cal-st.vwait{background:#FBE7CC;color:#A5643A}.cal-st.vsent{background:#E3EEF6;color:#4F7392}
@@ -207,8 +218,8 @@
   .gv-in{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid #CFE0EE;border-radius:10px;padding:7px 10px;margin-top:6px;outline:none}
   .gv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
   .gv-btn{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13.5px;font-weight:500;cursor:pointer}.gv-btn:disabled{opacity:.6}
-  .glc-add{font:inherit;border:0;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:7px 16px;font-size:13px;cursor:pointer;margin-top:10px}
-  .glc-h{font-size:13.5px;font-weight:600;color:var(--brush);margin:14px 0 2px;text-align:left}
+  .glc-add{font:inherit;font-size:14px;font-weight:500;color:var(--brush);background:#fff;border:1.5px dashed #D9C7A8;border-radius:999px;min-height:40px;padding:0 16px;cursor:pointer;margin-top:8px}
+  .glc-h{font-size:14px;font-weight:600;color:var(--brush);margin:16px 2px 8px;text-align:left}.glc-h small{display:block;font-size:12px;font-weight:400;color:var(--soft);margin-top:2px}
   .gcap-mini{display:block;height:6px;border-radius:999px;background:#F1E7D6;overflow:hidden;margin-top:6px}.gcap-mini i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
   .gcap-day{display:grid;grid-template-columns:78px 1fr 64px;gap:8px;align-items:center;font-size:13px;padding:4px 0}
   .gcap-day b{font-weight:500;color:var(--brush)}.gcap-day .m{height:8px;border-radius:999px;background:#F1E7D6;overflow:hidden}.gcap-day .m i{display:block;height:100%;background:var(--rainbow);border-radius:999px}
@@ -1129,7 +1140,7 @@ function gpMinHtml(p){
 var GNAME='';
 function hrs(min){ var h=Math.round(Number(min||0)/6)/10; return (h%1?h.toFixed(1):String(h)); }
 // 服務地點＋線上視訊：引路人自己設定（SQL：my_guide_locations、set_my_locations、set_my_video）
-var GLOC={open:false, L:[], app:'', link:''};
+var GLOC={open:false, L:[], app:'', link:'', edit:null};
 async function loadGuideLocs(){
   var box=$('#g-locs'); if(!box) return;
   var d=null; try{ var r=await db.rpc('my_guide_locations'); if(!r.error && r.data) d=r.data; }catch(e){}
@@ -1142,61 +1153,83 @@ async function loadGuideLocs(){
 }
 function glocSum(){ var A=GLOC.L.map(function(x){ return x.area; }).filter(Boolean); return (A.length?A.length+' 個實體地點：'+A.join('、'):'還沒有實體地點')+'・'+(GLOC.app?'線上視訊（'+GLOC.app+'・'+(GLOC.mode==='fixed'?'固定連結':'當天傳連結')+'）':'沒有線上視訊'); }
 function glocMsg(t,c){ var m=$('#gloc-msg'); if(!m) return; m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },1600); }
+// 摘要那一行（地址、交通）跟著剛改的內容更新，不用整塊重畫（才不會打斷正在打字的欄位）
+function glocRowsSync(){ GLOC.L.forEach(function(x,i){ var m=document.querySelector('#g-locs .glc-row[data-ed="'+i+'"] .m'); if(!m) return; var tr=glocTrans(x);
+  m.innerHTML='<b>'+(x.area?escA(x.area):'<span class="glc-no">還沒選地區</span>')+'</b>'+(x.address?'<small>🔒 '+escA(x.address)+'</small>':'')+(tr?'<small>'+escA(tr)+'</small>':''); }); }
 async function saveGuideLocs(){
   glocMsg('儲存中…');
   try{ var r=await db.rpc('set_my_locations',{p_locations:GLOC.L}); if(r.error) throw new Error(r.error.message);
-    glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); return true; }
+    glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); glocRowsSync(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); return true; }
   catch(e){ glocMsg('儲存失敗：'+(e.message||''),'#C0506A'); return false; }
 }
+// 服務地點：平常每個地點只顯示一行摘要，點了才展開編輯（一次只開一個）；GLOC.edit＝正在編輯的地點編號，或 'video'
+function glocTrans(x){ var t=(window.RWArea&&RWArea.transitText)?RWArea.transitText(x):''; return t+(x.t_tip?(t?'・':'')+x.t_tip:''); }
 function drawGuideLocs(){
   var box=$('#g-locs'); if(!box) return;
   var h='<button type="button" class="rs-fold'+(GLOC.open?' open':'')+'" id="gloc-fold"><span class="rs-fic gloc-ic">📍</span><span class="rs-fm"><b>服務地點</b><small>'+escA(glocSum())+'</small></span><span class="rs-fgo">'+(GLOC.open?'收起 ▴':'修改 ▾')+'</span></button>';
   if(GLOC.open){
-    h+='<div class="rs-fbody" style="text-align:left"><div class="glc-h" style="margin-top:0">實體地點</div><div style="font-size:12px;color:var(--soft);margin-bottom:8px">地區會顯示在你的引路人頁；完整地址不公開，客人付款成功後才看得到</div><div id="gloc-list">'+
-      (GLOC.L.length?GLOC.L.map(function(x,i){
-        return '<div class="glc" data-i="'+i+'"><div class="glc-top"><b>地點 '+(i+1)+(x.area?'<span class="glc-tag">'+escA(x.area)+'</span>':'<span class="glc-tag no">還沒選地區</span>')+'</b><button type="button" class="glc-del" data-rm="'+i+'">刪除</button></div>'+
-          '<div class="glc-l">地區（公開）</div><div class="glc-area" data-area></div>'+
-          '<div class="glc-l">完整地址（不公開）</div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
-          '<div class="glc-l">報到提醒</div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」">'+
-          '<div class="glc-l">附近交通（公開，讓客人知道好不好到）</div><div class="glc-tr"><select class="glc-in" data-f="t_type">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
-            '<input class="glc-in" data-f="t_station" maxlength="30" list="rw-stations" value="'+escA(x.t_station)+'" placeholder="站名，例：三重站"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5"><span>分</span></div>'+
-          '<div class="glc-l">交通補充（選填）</div><input class="glc-in" data-f="t_tip" maxlength="100" value="'+escA(x.t_tip)+'" placeholder="例：附近有停車場、公車 306 重新路口站"></div>'; }).join(''):'<div style="font-size:12.5px;color:var(--soft)">還沒有實體地點（只做線上的話可以不用加）</div>')+
-      '</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>'+
-      '<div class="glc-h">線上視訊</div>'+
-      '<div class="glc-l">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
-      '<div style="font-size:11.5px;color:var(--soft);margin-top:4px">選了就代表有線上服務，排時段時可以開「線上視訊」，不用先給連結</div>'+
+    h+='<div class="rs-fbody" style="text-align:left">';
+    // 實體地點
+    h+='<div class="glc-h" style="margin-top:0">實體地點<small>地區和交通公開；地址付款後才給客人</small></div><div class="glc-list">';
+    if(!GLOC.L.length) h+='<div class="glc-none">還沒有實體地點（只做線上可以不用加）</div>';
+    GLOC.L.forEach(function(x,i){
+      var on=GLOC.edit===i, tr=glocTrans(x);
+      h+='<button type="button" class="glc-row'+(on?' on':'')+'" data-ed="'+i+'"><span class="ic">📍</span><span class="m"><b>'+(x.area?escA(x.area):'<span class="glc-no">還沒選地區</span>')+'</b>'+
+        (x.address?'<small>🔒 '+escA(x.address)+'</small>':'')+(tr?'<small>'+escA(tr)+'</small>':'')+'</span><span class="glc-go">'+(on?'收起':'編輯 ›')+'</span></button>';
+      if(on) h+='<div class="glc-ed" data-i="'+i+'">'+
+        '<div class="glc-l">地區</div><div class="glc-area" data-area></div>'+
+        '<div class="glc-l">地址<small>不公開</small></div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
+        '<div class="glc-l">報到提醒<small>不公開</small></div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴">'+
+        '<div class="glc-l">附近交通</div><div class="glc-tr"><select class="glc-in" data-f="t_type" aria-label="交通方式">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
+          '<input class="glc-in" data-f="t_station" maxlength="30" list="rw-stations" value="'+escA(x.t_station)+'" placeholder="站名" aria-label="站名"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5" aria-label="走路幾分鐘"><span>分</span></div>'+
+        '<input class="glc-in" data-f="t_tip" maxlength="100" value="'+escA(x.t_tip)+'" placeholder="交通補充（選填），例：附近有停車場" style="margin-top:6px" aria-label="交通補充">'+
+        '<div class="glc-acts"><button type="button" class="glc-del" data-rm="'+i+'">刪除這個地點</button><button type="button" class="glc-done" data-done>完成</button></div></div>';
+    });
+    h+='</div><button type="button" class="glc-add" id="gloc-add">＋ 新增地點</button>';
+    // 線上視訊
+    var von=GLOC.edit==='video';
+    h+='<div class="glc-h">線上視訊</div><div class="glc-list"><button type="button" class="glc-row'+(von?' on':'')+'" data-ed="video"><span class="ic">🎥</span><span class="m"><b>'+(GLOC.app?escA(GLOC.app):'<span class="glc-no off">沒有提供線上</span>')+'</b>'+
+      (GLOC.app?'<small>'+(GLOC.mode==='fixed'?'固定連結，預約成功就給客人':'每次當天傳連結給客人')+'</small>':'')+'</span><span class="glc-go">'+(von?'收起':'編輯 ›')+'</span></button>';
+    if(von) h+='<div class="glc-ed">'+
+      '<div class="glc-l" style="margin-top:0">視訊軟體</div><select class="glc-in" id="gloc-app"><option value="">不提供線上</option>'+['Google Meet','Zoom'].map(function(a){ return '<option'+(GLOC.app===a?' selected':'')+'>'+a+'</option>'; }).join('')+'</select>'+
       '<div id="gloc-how"'+(GLOC.app?'':' style="display:none"')+'><div class="glc-l">連結怎麼給客人？</div>'+
-        '<label class="gv-opt'+(GLOC.mode!=='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="day"'+(GLOC.mode!=='fixed'?' checked':'')+'><span><b>每次當天自己傳</b><small>預約前 30 分鐘～1 小時，在交易紀錄點那筆按「傳連結給客人」，會寄到客人信箱＋網站小鈴鐺</small></span></label>'+
-        '<label class="gv-opt'+(GLOC.mode==='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="fixed"'+(GLOC.mode==='fixed'?' checked':'')+'><span><b>用固定連結，預約成功就給</b><small>客人一預約好就看得到下面這個連結</small></span></label>'+
-        '<div class="glc-l">固定視訊連結（不公開；當天傳的時候也會自動帶入）</div><input class="glc-in" id="gloc-link" maxlength="300" value="'+escA(GLOC.link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"></div>'+
-      '<div id="gloc-msg" style="font-size:12px;min-height:1.2em;margin-top:6px"></div>'+
-      '<div style="font-size:11.5px;color:var(--soft);line-height:1.7">・同一個地區只能有一個地點<br>・改完離開欄位就會自動儲存；下面「可預約時間」的地點按鈕會跟著更新</div></div>';
+        '<label class="gv-opt'+(GLOC.mode!=='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="day"'+(GLOC.mode!=='fixed'?' checked':'')+'><span><b>每次當天傳</b><small>預約前 30 分鐘～1 小時，在交易紀錄按「傳連結給客人」</small></span></label>'+
+        '<label class="gv-opt'+(GLOC.mode==='fixed'?' on':'')+'"><input type="radio" name="gloc-mode" value="fixed"'+(GLOC.mode==='fixed'?' checked':'')+'><span><b>固定連結</b><small>客人預約成功就看得到</small></span></label>'+
+        '<div class="glc-l">固定連結<small>不公開；當天傳時也會自動帶入</small></div><input class="glc-in" id="gloc-link" maxlength="300" value="'+escA(GLOC.link)+'" placeholder="https://meet.google.com/…"></div>'+
+      '<div class="glc-acts" style="justify-content:flex-end"><button type="button" class="glc-done" data-done>完成</button></div></div>';
+    h+='</div><div id="gloc-msg" class="glc-msg"></div><div class="glc-foot">改完會自動儲存・同一個地區只能有一個地點</div></div>';
   }
   box.innerHTML=h;
   $('#gloc-fold').onclick=function(){ GLOC.open=!GLOC.open; drawGuideLocs(); };
   if(!GLOC.open) return;
-  box.querySelectorAll('#gloc-list .glc').forEach(function(row){
-    var i=+row.getAttribute('data-i');
-    if(window.RWArea){ var pk=RWArea.picker(row.querySelector('[data-area]'),{value:GLOC.L[i].area,onChange:function(v,ok){ if(!ok) return;
+  box.querySelectorAll('[data-ed]').forEach(function(b){ b.onclick=function(){ var k=b.getAttribute('data-ed'); k=(k==='video')?'video':+k; GLOC.edit=(GLOC.edit===k)?null:k; drawGuideLocs(); }; });
+  box.querySelectorAll('[data-done]').forEach(function(b){ b.onclick=function(){ GLOC.edit=null; drawGuideLocs(); }; });
+  var ed=box.querySelector('.glc-ed[data-i]');
+  if(ed){
+    var i=+ed.getAttribute('data-i');
+    if(window.RWArea){ var pk=RWArea.picker(ed.querySelector('[data-area]'),{value:GLOC.L[i].area,onChange:function(v,ok){ if(!ok) return;
       if(GLOC.L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(GLOC.L[i].area); return; }
-      GLOC.L[i].area=v; var tg=row.querySelector('.glc-tag'); if(tg){ tg.textContent=v; tg.classList.remove('no'); } saveGuideLocs(); }}); }
-    row.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
-    row.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); drawGuideLocs(); await saveGuideLocs(); };
-  });
-  if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
-  $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); drawGuideLocs(); var last=box.querySelector('#gloc-list .glc:last-child select'); if(last) last.focus(); };
+      GLOC.L[i].area=v; var tb=box.querySelector('.glc-row[data-ed="'+i+'"] b'); if(tb) tb.textContent=v; saveGuideLocs(); }}); }
+    ed.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
+    ed.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); GLOC.edit=null; drawGuideLocs(); await saveGuideLocs(); };
+    if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
+  }
+  $('#gloc-add').onclick=function(){ GLOC.L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); GLOC.edit=GLOC.L.length-1; drawGuideLocs(); var s=box.querySelector('.glc-ed select'); if(s) s.focus(); };
   var ap=$('#gloc-app'), lk=$('#gloc-link'), how=$('#gloc-how');
+  if(!ap) return;
   function curMode(){ var c=box.querySelector('input[name="gloc-mode"]:checked'); return c?c.value:'day'; }
   async function saveVideo(){
     var app=ap.value, link=lk.value.trim(), md=curMode();
     if(app && link && !/^https:\/\//i.test(link)){ glocMsg('視訊連結要用 https:// 開頭','#C0506A'); return; }
-    if(app && md==='fixed' && !link){ glocMsg('選「固定連結」的話，請在下面貼上視訊連結'); lk.focus(); return; }
+    if(app && md==='fixed' && !link){ glocMsg('選「固定連結」的話，請貼上視訊連結'); lk.focus(); return; }
     glocMsg('儲存中…');
     try{ var r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null,p_mode:md});
       if(r.error && (r.error.code==='PGRST202' || /could not find the function/i.test(r.error.message||''))) r=await db.rpc('set_my_video',{p_app:app||null,p_link:link||null});
       if(r.error) throw new Error(r.error.message);
       GLOC.app=(r.data&&r.data.video_app)||app||''; GLOC.link=(r.data&&r.data.video_link)||''; GLOC.mode=(r.data&&r.data.video_mode)||md; if(!app){ lk.value=''; }
-      glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum(); if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); }
+      glocMsg('已儲存','#4F8E6E'); var sm=$('#gloc-fold small'); if(sm) sm.textContent=glocSum();
+      var vb=box.querySelector('.glc-row[data-ed="video"] .m'); if(vb) vb.innerHTML='<b>'+(GLOC.app?escA(GLOC.app):'<span class="glc-no off">沒有提供線上</span>')+'</b>'+(GLOC.app?'<small>'+(GLOC.mode==='fixed'?'固定連結，預約成功就給客人':'每次當天傳連結給客人')+'</small>':'');
+      if(SLOT_ED && SLOT_ED.refreshPlaces) SLOT_ED.refreshPlaces(); }
     catch(e){ glocMsg('儲存失敗：'+(e.message||''),'#C0506A'); }
   }
   ap.onchange=function(){ if(how) how.style.display=ap.value?'':'none'; saveVideo(); };
