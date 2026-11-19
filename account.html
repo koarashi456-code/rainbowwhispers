@@ -1172,6 +1172,8 @@ async function saveGuideLocs(){
 }
 // 服務地點：平常每個地點只顯示一行摘要，點了才展開編輯（一次只開一個）；GLOC.edit＝正在編輯的地點編號，或 'video'
 function glocStation(x){ var st=String(x.t_station||'').trim(); if(!st) return ''; if(/車站$/.test(st)) return st; return st.replace(/站$/,'')+(x.t_type||'捷運')+'站'; }
+// 捷運有站名可以挑；公車站牌、火車站讓引路人自己打
+function glocStPh(t){ return t==='公車'?'站牌名稱，例：重新路口':t==='火車'?'火車站，例：板橋':'捷運站，例：三重站'; }
 function glocLine(x){ return x.area?'<b class="glc-one" title="'+escA(x.area+glocStation(x))+'">'+escA(x.area)+'<span class="glc-st">'+escA(glocStation(x))+'</span></b>':'<b><span class="glc-no">還沒選地區</span></b>'; }
 function drawGuideLocs(){
   var box=$('#g-locs'); if(!box) return;
@@ -1189,7 +1191,7 @@ function drawGuideLocs(){
         '<div class="glc-l">地址<small>不公開</small></div><input class="glc-in" data-f="address" maxlength="200" value="'+escA(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓">'+
         '<div class="glc-l">報到提醒<small>不公開</small></div><input class="glc-in" data-f="note" maxlength="200" value="'+escA(x.note)+'" placeholder="例：到了按 3 樓電鈴">'+
         '<div class="glc-l">附近交通</div><div class="glc-tr"><select class="glc-in" data-f="t_type" aria-label="交通方式">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
-          '<input class="glc-in" data-f="t_station" maxlength="30" list="rw-stations" value="'+escA(x.t_station)+'" placeholder="站名" aria-label="站名"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5" aria-label="走路幾分鐘"><span>分</span></div>'+
+          '<input class="glc-in" data-f="t_station" maxlength="30"'+(x.t_type==='捷運'?' list="rw-stations"':'')+' value="'+escA(x.t_station)+'" placeholder="'+glocStPh(x.t_type)+'" aria-label="站名"><span>走路</span><input class="glc-in glc-walk" data-f="t_walk" type="number" min="1" max="120" inputmode="numeric" value="'+escA(x.t_walk)+'" placeholder="5" aria-label="走路幾分鐘"><span>分</span></div>'+
         '<input class="glc-in" data-f="t_tip" maxlength="100" value="'+escA(x.t_tip)+'" placeholder="交通補充（選填），例：附近有停車場" style="margin-top:6px" aria-label="交通補充">'+
         '<div class="glc-acts"><button type="button" class="glc-del" data-rm="'+i+'">刪除這個地點</button><button type="button" class="glc-done" data-done>完成</button></div></div>';
     });
@@ -1220,6 +1222,8 @@ function drawGuideLocs(){
       if(GLOC.L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(GLOC.L[i].area); return; }
       GLOC.L[i].area=v; glocRowsSync(); saveGuideLocs(); }}); }
     ed.querySelectorAll('[data-f]').forEach(function(inp){ inp.addEventListener('change',function(){ GLOC.L[i][inp.getAttribute('data-f')]=inp.value; saveGuideLocs(); }); });
+    var tty=ed.querySelector('[data-f="t_type"]'), tst=ed.querySelector('[data-f="t_station"]');
+    if(tty && tst) tty.addEventListener('change',function(){ if(tty.value==='捷運') tst.setAttribute('list','rw-stations'); else tst.removeAttribute('list'); tst.placeholder=glocStPh(tty.value); });
     ed.querySelector('[data-rm]').onclick=async function(){ var x=GLOC.L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; GLOC.L.splice(i,1); GLOC.edit=null; drawGuideLocs(); await saveGuideLocs(); };
     if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
   }
