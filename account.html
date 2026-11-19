@@ -286,7 +286,8 @@
   .gx-note-dot{font-size:11px;color:#B5713F}
   /* 客戶列表像筆記本：一人一行，淡淡橫線＋左邊紅色邊線（點進去看明細時不畫線） */
   #g-members.nb-cust{position:relative}
-  #g-members.nb-cust::before{content:"";position:absolute;top:0;bottom:0;left:94px;width:1px;background:#F0CFCA;pointer-events:none}
+  #g-members.nb-cust:not(.gx-mode){border:0;background:none;padding:0 4px}  /* 客戶列表不要外框 */
+  #g-members.nb-cust::before{content:"";position:absolute;top:0;bottom:0;left:82px;width:1px;background:#F0CFCA;pointer-events:none}
   #g-members.nb-cust.gx-mode::before{display:none}
   #g-members.nb-cust>.grow.gx{padding:0;border-top:1px solid #EEE4D3}
   #g-members.nb-cust>.grow.gx:first-child{border-top:0}
@@ -312,8 +313,9 @@
   #g-members.gx-mode .gx.open{border-top:0}
   #g-members.gx-mode .gc-kvs{border-top-color:#F3EBDD}#g-members.gx-mode .gc-kvs>div{border-bottom-color:#F3EBDD}
   #g-members.gx-mode .pkc.cmp{border-color:#F0E6D6;background:#FFFCF6}
-  .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;margin:0 0 10px;outline:none}
-  .g-search:focus{border-color:#C9A7DE}
+  .g-search{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#F1E9DC;border:0;border-radius:12px;min-height:40px;padding:8px 14px;margin:0 0 10px;outline:none}
+  .g-search::placeholder{color:#8F7A5E}
+  .g-search:focus{background:#EDE3D3;box-shadow:0 0 0 2px #E2CFEE}  /* 搜尋框：不要外框，淡淡的底色就好（像 iPhone 的搜尋欄） */
   .g-noresult{font-size:13px;color:var(--soft);text-align:center;padding:14px 0}
   .gc-orders{margin-top:8px;border-top:1px dashed #EFE3CE}
   .gc-o{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed #EFE3CE}
