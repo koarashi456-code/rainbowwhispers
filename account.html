@@ -237,7 +237,12 @@
   .grole small{display:block;font-size:11px;color:var(--soft)}.grole.on{background:var(--brush);border-color:var(--brush);color:#fff}.grole.on small{color:#EBDCC8}
   .gp-min{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--soft);margin-top:4px}
   .gp-min select{font:inherit;font-size:12.5px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:8px;padding:2px 4px}
-  .grm-btn{font:inherit;font-size:13px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:6px 14px;cursor:pointer;margin-top:10px}
+  .grm-btn{flex:none;font:inherit;font-size:13px;color:var(--brush);background:#fff;border:1.5px solid #E6D7BF;border-radius:999px;min-height:36px;padding:0 12px;cursor:pointer}
+  .gc-card .grow-top{align-items:center}.gc-card .grow-name{font-size:17px;font-weight:600}
+  .gc-kvs{margin-top:8px;border-top:1px solid #F1E7D6}
+  .gc-kvs>div{display:flex;gap:12px;font-size:13.5px;padding:7px 0;border-bottom:1px solid #F1E7D6}
+  .gc-kvs>div span:first-child{flex:none;width:34px;color:var(--soft);font-size:12.5px}
+  .gc-kvs>div span:last-child{flex:1;min-width:0;color:var(--ink);overflow-wrap:anywhere}
   .grm-opt{display:flex;gap:9px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 11px;margin-top:7px;cursor:pointer;text-align:left}
   .grm-opt.on{border-color:#C9A7DE;background:#FBF7FE}.grm-opt input{margin-top:5px}.grm-opt b{font-size:13.5px;color:var(--brush)}.grm-opt div{font-size:12px;color:var(--soft)}
   .grm-opt.off{opacity:.5;cursor:default}
@@ -946,9 +951,10 @@ async function loadGuideCustomers(){
     var mail=[m.contact,m.email].filter(function(v){ return /@/.test(String(v||'')); })[0]||'';
     var sum='<span class="gx-main"><b><span class="gc-dname">'+gcName(m.alias,m.name)+'</span></b><small>'+(mail?escA(mail):'<span style="color:#B5A88E">沒有留信箱</span>')+'</small></span><span class="gx-go">›</span>';
     var det='<div class="gc-card" data-cid="'+escA(m.id)+'">'
-      +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span><span class="grow-amt">'+money(m.spend)+'</span></div>'
-      +'<div class="grow-sub">'+(info||'—')+'　·　'+(m.bookings||0)+' 次</div>'
-      +'<button type="button" class="grm-btn" data-remind="'+escA(m.id)+'">🔔 提醒客人</button>'
+      +'<div class="grow-top"><span class="gc-nm"><span class="grow-name gc-dname">'+gcName(m.alias,m.name)+'</span><button type="button" class="gc-edit" title="修改稱呼（只有你看得到）" aria-label="修改稱呼" data-alias="'+escA(m.alias||'')+'" data-orig="'+escA(m.name||'')+'">✎</button></span>'
+        +'<button type="button" class="grm-btn" data-remind="'+escA(m.id)+'">🔔 提醒客人</button></div>'
+      +'<div class="gc-kvs">'+(m.contact?'<div><span>'+(/@/.test(m.contact)?'信箱':'聯絡')+'</span><span>'+escA(m.contact)+'</span></div>':'')+(m.phone?'<div><span>電話</span><span>'+escA(m.phone)+'</span></div>':'')+(m.area?'<div><span>地區</span><span>'+escA(m.area)+'</span></div>':'')
+        +'<div><span>消費</span><span>'+(m.bookings||0)+' 次・'+money(m.spend)+'</span></div></div>'
       +'<div class="gc-note-l">我的備註（只有你看得到）</div>'
       +'<textarea class="gc-note" maxlength="1000" placeholder="例：喜歡溫和陪伴，下次想聊感情…">'+escA(m.note||'')+'</textarea>'
       +'<div class="gc-saved"></div>'
