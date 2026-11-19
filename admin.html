@@ -1439,7 +1439,7 @@ function renderTx(){
   if(!rows.length){ $('#txlist').innerHTML='<div class="muted" style="padding:24px;text-align:center">沒有符合的紀錄</div>'; return; }
   var foot='<div class="txfoot"><span>有效 <b>'+valid.length+'</b> 筆 · 營收 <b>'+money(sum)+'</b></span><span>退費 <b>'+refunds.length+'</b> 筆／<b>'+money(refAmt)+'</b></span></div>';
   if(isM()){  // 手機：先看摘要，點進去才看明細
-    $('#txlist').innerHTML='<div class="m-list">'+rows.map(txMRow).join('')+'</div>'+foot.replace('class="txfoot"','class="txfoot" style="border:1px solid var(--line);border-radius:12px;margin-top:10px"');
+    $('#txlist').innerHTML='<div class="nb-list">'+rows.map(txMRow).join('')+'</div>'+foot.replace('class="txfoot"','class="txfoot" style="border:1px solid var(--line);border-radius:12px;margin-top:10px"');
     $('#txlist').querySelectorAll('.m-row').forEach(function(r){ r.onclick=function(){ openTxDetail(r.getAttribute('data-id'),r.getAttribute('data-kind')); }; });
     return;
   }
@@ -2299,10 +2299,15 @@ function txDetailHtml(t){
   return h+'<div class="m-saved"></div><div class="m-btns">'+(c?'<button type="button" data-mcust>看這位客人</button>':'')+'<button type="button" class="dl" data-del>刪除</button></div></div>';
 }
 function txMRow(t){
-  var tp=isTopup(t), c=custById(t.customer_id);
-  var cname=c?adName(c):esc(goneCust(t));
-  var sub=tp?fmtFull(t.created_at)+'・'+esc(t.method||''):esc(guideName(t.guide_id))+'・'+(t.appointment_at?fmtAppt(t.appointment_at):'未定時間');
-  return '<button type="button" class="m-row" data-id="'+t.id+'"'+(tp?' data-kind="topup"':'')+'><span class="mn"><b>'+cname+'</b>　'+(tp?'儲值':esc(t.service||'—'))+'<small>'+sub+'</small></span><span class="rt"><span class="am"'+(tp?' style="color:#3F7A5E"':'')+'>'+(tp?'+':'')+money(t.amount)+'</span>'+(tp?'<span class="status-badge st-topup">儲值</span>':statusBadge(t.status))+'</span><span class="go">›</span></button>';
+  // 手機：像筆記本一樣一筆一行（日期 時間｜客人｜引路人・項目｜金額｜狀態），點一下看明細
+  var tp=isTopup(t), c=custById(t.customer_id), cname=c?adName(c):esc(goneCust(t));
+  var w=tp?String(t.created_at||''):String(t.appointment_at||''), m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(w), d='—', tm=tp?'儲值':'';
+  if(tp){ var dd=new Date(t.created_at); if(!isNaN(dd)) d=(dd.getMonth()+1)+'/'+String(dd.getDate()).padStart(2,'0'); }
+  else if(m){ d=(+m[2])+'/'+m[3]; tm=m[4]+':'+m[5]; } else tm='未定';
+  var what=tp?esc(t.method||'儲值'):esc(guideName(t.guide_id))+'・'+esc(String(t.service||'—').split('｜')[0].replace(/（[^）]*）$/,''));
+  var dim=(t.status==='已取消'||t.status==='已退費');
+  return '<button type="button" class="m-row nb-row'+(dim?' dim':'')+'" data-id="'+t.id+'"'+(tp?' data-kind="topup"':'')+'><span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+cname+'</span><span class="nb-s">'+what+'</span>'+
+    '<span class="nb-a"'+(tp?' style="color:#3F7A5E"':'')+'>'+(tp?'+':'')+money(t.amount)+'</span>'+(tp?'<span class="status-badge st-topup">儲值</span>':statusBadge(t.status))+'</button>';
 }
 function soMRow(t){
   var c=custById(t.customer_id);

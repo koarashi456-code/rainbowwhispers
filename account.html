@@ -771,10 +771,12 @@ function gRow(o){
   var d=p?(p.mo+'/'+String(p.d).padStart(2,'0')):'—', sub=p?(GWD[new Date(p.y,p.mo-1,p.d).getDay()]+' '+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0')):'未定時間', buy=!p&&gIsBuy(o);
   if(buy){ var bd0=gBuyAt(o); if(bd0){ d=(bd0.getMonth()+1)+'/'+String(bd0.getDate()).padStart(2,'0'); } sub='購買'; }
   var search=[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' ').toLowerCase();
-  return '<button type="button" class="orow'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'">'
-    +'<span class="od'+(buy?' buy':'')+'"><b>'+d+'</b><small>'+sub+'</small></span>'
-    +'<span class="om"><div class="t">'+escA(o.customer_name||'客戶')+'</div><div class="s">'+escA(sp.plan)+(sp.place?'｜'+escA(sp.place):'')+'</div></span>'
-    +'<span class="oright"><div class="a">'+money(o.amount)+'</div>'+(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at?'<span class="cal-st vsent">已傳連結 '+gHM(o.video_sent_at)+'</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>')+'</span><span class="ogo">›</span></button>';
+  // 像筆記本一樣一筆一行：日期 時間｜客人｜方案｜金額｜狀態（點一下看明細）
+  var tm=buy?'購買':(p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):'');
+  var st=(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at)?'<span class="cal-st vsent">已傳連結</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>';
+  return '<button type="button" class="orow nb-row'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'" aria-label="'+escA(d+' '+tm+' '+(o.customer_name||'客戶')+' '+sp.plan+' '+money(o.amount)+' '+(o.status||''))+'">'
+    +'<span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+escA(o.customer_name||'客戶')+'</span>'
+    +'<span class="nb-s">'+escA(String(sp.plan||'').replace(/（[^）]*）$/,''))+(sp.place?'｜'+escA(sp.place.replace(/（實體）$/,'')):'')+'</span><span class="nb-a">'+money(o.amount)+'</span>'+st+'</button>';
 }
 function gsClose(){ var m=$('#gs-mask'); if(m) m.classList.remove('on'); }
 function gFullDT(s){ var p=wpart(s); if(!p) return '未定時間'; return p.y+'/'+p.mo+'/'+p.d+'（'+GWD[new Date(p.y,p.mo-1,p.d).getDay()]+'）'+String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'); }
@@ -866,8 +868,8 @@ async function loadGuideOrders(){
   var past=GORD.filter(function(o){ return !gUpcoming(o); }).sort(function(a,b){ return gKey(b)-gKey(a); });
   var h='', soon=up.filter(function(o){ var ms=gKey(o)-Date.now(); return gNeedLink(o) && ms>-3600e3 && ms<=24*3600e3; });
   if(soon.length) h+='<div class="gvban">🎥 24 小時內有 '+soon.length+' 筆線上預約還沒傳視訊連結，點那筆就能傳</div>';
-  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist">'+up.map(gRow).join('')+'</div>';
-  if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist">'+past.map(gRow).join('')+'</div>';
+  if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist nb-list">'+up.map(gRow).join('')+'</div>';
+  if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist nb-list">'+past.map(gRow).join('')+'</div>';
   bx.innerHTML=h;
   bx.querySelectorAll('[data-gi]').forEach(function(b){ b.onclick=function(){ openGOrder(+b.getAttribute('data-gi')); }; });
 }

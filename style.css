@@ -108,3 +108,18 @@ button,a,label,select,input{-webkit-tap-highlight-color:transparent}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* ===== 條列像筆記本：一筆一行，淡淡的橫線＋左邊一條紅色邊線（交易紀錄用） ===== */
+.nb-list{position:relative;background:#FFFDF8;border:1px solid var(--line);border-radius:14px;overflow:hidden;padding:0}
+.nb-list::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none}
+.nb-list .nb-row{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;min-height:44px;margin:0;padding:0 10px;font:inherit;text-align:left;color:var(--ink);background:none;border:0;border-bottom:1px solid #EEE4D3;border-radius:0;cursor:pointer}
+.nb-list .nb-row:last-child{border-bottom:0}
+.nb-list .nb-row:active{background:#FBF6EC}
+.nb-d{flex:none;width:72px;font-size:11.5px;color:var(--soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nb-d b{font-size:13px;font-weight:600;color:var(--brush);margin-right:3px}
+.nb-n{flex:none;max-width:4.8em;padding-left:4px;font-size:13.5px;font-weight:600;color:var(--brush);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-s{flex:1;min-width:0;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-a{flex:none;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nb-list .nb-row .cal-st,.nb-list .nb-row .status-badge{flex:none;font-size:11px;padding:1px 7px;margin:0;white-space:nowrap}
+.nb-list .nb-row.dim .nb-n,.nb-list .nb-row.dim .nb-a{color:#9C8B74}
+@media (max-width:360px){ .nb-s{display:none} }
