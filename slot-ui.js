@@ -33,26 +33,26 @@ function tagHtml(places,all){
     return '<span class="ptag '+(v==='線上'?'pt-o':CLS[i%CLS.length])+'" title="'+esc(v)+'">'+esc(short(v))+'</span>'; }).join('');
 }
 var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 12px;outline:none}'+
-  '.rs-lab2{font-size:12.5px;color:var(--soft);margin:16px 2px 8px}.rs-lab2:first-child{margin-top:0}.rs-lab2 small{font-size:11.5px;color:#A9967E;margin-left:4px}'+
+  '.rs-lab2{font-size:12.5px;color:var(--soft);margin:16px 2px 8px}.rs-lab2:first-child{margin-top:0}.rs-lab2 small{font-size:12.5px;color:#A9967E;margin-left:4px}'+
   '.rs-plc{display:flex;flex-wrap:wrap;gap:7px}.rs-plc button{font:inherit;font-size:13px;color:var(--ink);background:#fff;border:1.5px solid #EFE3CE;border-radius:999px;padding:7px 13px;cursor:pointer}'+
   '.rs-plc button.on{background:#E9F3EC;border-color:#8CC49A;color:#2F6B4C;font-weight:500}'+
   '.rs-tm{display:flex;flex-wrap:wrap;gap:7px}.rs-tm span{font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:7px 12px;cursor:pointer;user-select:none}'+
   '.rs-tm span.on{background:var(--rainbow);color:#4A3A2A;border-color:transparent;font-weight:500}.rs-tm span.has{background:#F3EFE6;color:#B5A88E;cursor:default}'+
-  '.rs-tm span.has i{font-style:normal;font-size:10.5px;margin-left:4px;color:#A9967E}.rs-plc button .c{display:inline-block;min-width:18px;font-size:11px;font-weight:600;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:0 6px;margin-left:5px}'+
+  '.rs-tm span.has i{font-style:normal;font-size:11.5px;margin-left:4px;color:#A9967E}.rs-plc button .c{display:inline-block;min-width:18px;font-size:12px;font-weight:600;background:var(--rainbow);color:#4A3A2A;border-radius:999px;padding:0 6px;margin-left:5px}'+
   '.rs-sum{font-size:12.5px;color:var(--brush)}'+
   '.rs-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}'+
   '.rs-pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;padding:6px 10px 6px 12px}'+
-  '.rs-pill.bk{background:#F3EFE6;color:#8E8065}.rs-pill .rm{color:#C0506A;font-size:15px;cursor:pointer;line-height:1}.rs-pill .bkt{font-size:11px;color:#8E8065;background:#E7DEC9;border-radius:999px;padding:1px 8px}'+
-  '.ptag{font-size:10.5px;border-radius:999px;padding:1px 7px;white-space:nowrap}'+
+  '.rs-pill.bk{background:#F3EFE6;color:#8E8065}.rs-pill .rm{color:#C0506A;font-size:15px;cursor:pointer;line-height:1}.rs-pill .bkt{font-size:12px;color:#8E8065;background:#E7DEC9;border-radius:999px;padding:1px 8px}'+
+  '.ptag{font-size:11.5px;border-radius:999px;padding:1px 7px;white-space:nowrap}'+
   '.pt-a{background:#E4F2E7;color:#3F7A5E}.pt-b{background:#EAE4F7;color:#6E4F9E}.pt-c{background:#FBE7CC;color:#A5643A}.pt-d{background:#F6E1E8;color:#A4506E}.pt-e{background:#E6EDE0;color:#5E7448}.pt-o{background:#E3EEF6;color:#4F7392}.pt-all{background:#F1EBDD;color:#8A7659}'+
   '.rs-go{font:inherit;font-size:13px;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;padding:8px 18px;cursor:pointer}.rs-go:disabled{opacity:.6}'+
   '.rs-cal{background:#fff;border:1.5px solid #EFE3CE;border-radius:14px;padding:10px 10px 12px}'+
   '.rs-cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.rs-cal-h span{font-family:"Noto Serif TC",serif;font-size:16px;font-weight:600;color:var(--brush)}'+
   '.rs-cal-h button{font:inherit;font-size:20px;line-height:1;color:var(--brush);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:999px;width:34px;height:34px;cursor:pointer}.rs-cal-h button:disabled{opacity:.35;cursor:default}'+
-  '.rs-cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.rs-cal-w span{font-size:11.5px;color:var(--soft);text-align:center;padding:2px 0 4px}'+
+  '.rs-cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.rs-cal-w span{font-size:12.5px;color:var(--soft);text-align:center;padding:2px 0 4px}'+
   '.rs-cd{font:inherit;position:relative;aspect-ratio:1/1;min-height:36px;border:1.5px solid transparent;border-radius:10px;background:#FBF6EC;color:var(--ink);font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;cursor:pointer}'+
   '.rs-cd:disabled{background:transparent;color:#CFC3B0;cursor:default}.rs-cd.today{border-color:#E7C9A6}.rs-cd.sel{background:var(--rainbow);color:#4A3A2A;font-weight:600}'+
-  '.rs-cd .n{font-size:9.5px;color:#3F7A5E;line-height:1;white-space:nowrap}.rs-cd.sel .n{color:#4A3A2A}'+
+  '.rs-cd .n{font-size:11px;color:#3F7A5E;line-height:1;white-space:nowrap}.rs-cd.sel .n{color:#4A3A2A}'+
   '.rs-picked{font-size:13px;color:var(--brush);font-weight:500;margin-top:10px}'+
   '.rs-fold{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;text-align:left;background:#fff;border:1.5px solid #EFE3CE;border-radius:14px;padding:10px 12px;cursor:pointer;color:inherit;margin-top:8px}.rs-fold:first-child{margin-top:0}'+
   '.rs-fic{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:#E4F2E7}.rs-fic.b{background:#FBE7CC}'+
@@ -61,7 +61,7 @@ var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;co
   '.rs-fold.open{border-bottom-left-radius:0;border-bottom-right-radius:0}'+
   '.rs-fbody{background:#fff;border:1.5px solid #EFE3CE;border-top:0;border-radius:0 0 14px 14px;padding:10px 12px 12px}'+
   '.rs-day{margin-top:12px;padding-top:10px;border-top:1px dashed #EFE3CE}.rs-day-h{font-size:15px;color:var(--brush);font-weight:600}'+
-  '.rs-note{font-size:11.5px;color:var(--soft);margin-top:12px;line-height:1.7}.rs-empty{font-size:12.5px;color:var(--soft);margin-top:4px}';
+  '.rs-note{font-size:12.5px;color:var(--soft);margin-top:12px;line-height:1.7}.rs-empty{font-size:12.5px;color:var(--soft);margin-top:4px}';
 function css(){ if(document.getElementById('rs-css')) return; var s=document.createElement('style'); s.id='rs-css'; s.textContent=CSS; document.head.appendChild(s); }
 
 /* 排時段畫面。api：

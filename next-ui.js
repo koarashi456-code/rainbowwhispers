@@ -25,9 +25,9 @@ var CSS='.nx-card{background:var(--card,#FFFDF8);border:1px solid var(--line,#EC
   '.nx-m{flex:1;min-width:0}.nx-m b{display:block;font-size:14.5px;color:var(--brush,#6B4A33)}.nx-d{font-size:12.5px;color:var(--soft,#8A7659);line-height:1.6}'+
   '.nx-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}'+
   '.nx-pill{font:inherit;border:1.5px solid #EFE3CE;background:#FBF6EC;border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--brush,#6B4A33);text-decoration:none;display:inline-flex;align-items:center;gap:5px;line-height:1.5}'+
-  '.nx-pill.pri{border-color:transparent;background:var(--rainbow);color:#4A3A2A;font-weight:500}.nx-pill small{font-size:11px;color:var(--soft,#8A7659)}.nx-pill:disabled{opacity:.7;cursor:default}'+
-  '.nx-done{font-size:11px;background:#E4F2E7;color:#3F7A5E;border-radius:999px;padding:0 7px}'+
-  '.nx-test{display:flex;flex-direction:column;align-items:flex-start;gap:0;border-radius:14px;padding:7px 12px;width:100%;box-sizing:border-box}.nx-test b{font-size:14px;font-weight:500;white-space:nowrap;display:flex;align-items:center;gap:6px}.nx-test small{font-size:11.5px}'+
+  '.nx-pill.pri{border-color:transparent;background:var(--rainbow);color:#4A3A2A;font-weight:500}.nx-pill small{font-size:12px;color:var(--soft,#8A7659)}.nx-pill:disabled{opacity:.7;cursor:default}'+
+  '.nx-done{font-size:12px;background:#E4F2E7;color:#3F7A5E;border-radius:999px;padding:0 7px}'+
+  '.nx-test{display:flex;flex-direction:column;align-items:flex-start;gap:0;border-radius:14px;padding:7px 12px;width:100%;box-sizing:border-box}.nx-test b{font-size:14px;font-weight:500;white-space:nowrap;display:flex;align-items:center;gap:6px}.nx-test small{font-size:12.5px}'+
   '.nx-g{display:flex;gap:10px;align-items:center;background:#FBF6EC;border-radius:12px;padding:8px 10px;margin-top:8px;text-decoration:none;color:inherit}'+
   '.nx-g img{flex:none;width:42px;height:42px;border-radius:50%;object-fit:cover;background:#F4EAD4}'+
   '.nx-g b{font-size:14px;color:var(--brush,#6B4A33)}.nx-g small{display:block;font-size:12px;color:var(--soft,#8A7659)}'+
