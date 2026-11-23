@@ -76,16 +76,14 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   }catch(e){}
 })();
 
-// 手機版底部分頁列（首頁／測驗／引路人／訂單／我的）：≤ 768px 才出現；我的後台不放
+// 手機版底部分頁列（首頁／測驗／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台不放
 (function(){
   var path=(location.pathname.split('/').pop()||'index.html');
   if(/^(admin|phone)\.html$/.test(path) || document.querySelector('.rw-tab')) return;
   var T=[
     {h:'index.html', t:'首頁', on:/^(index\.html|)$/, i:'<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>'},
     {h:'tests.html', t:'測驗', on:/^(tests|quiz|chakra|numerology)\.html$/, i:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>'},
-    {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'},
-    {h:'orders.html', t:'訂單', on:/^orders\.html$/, i:'<path d="M7 3.5h10a1 1 0 0 1 1 1V20l-2.5-1.5L13 20l-2.5-1.5L8 20l-2-1.5V4.5a1 1 0 0 1 1-1Z"/><path d="M9.5 8.5h5M9.5 12h5"/>'},
-    {h:'account.html', t:'我的', on:/^account\.html$/, i:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10" r="2.8"/><path d="M6.8 17.8c1.2-1.9 3-2.9 5.2-2.9s4 1 5.2 2.9"/>'}
+    {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'}
   ];
   var css=document.createElement('style');
   css.textContent='.rw-tab{display:none}@media (max-width:768px){'+
