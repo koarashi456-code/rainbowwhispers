@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="style.css?v=20261123">
 <style>
   .admin-bar{position:sticky;top:0;z-index:40;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-  .admin-bar-in{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;gap:10px}
+  .admin-bar-in{max-width:none;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;gap:10px}
   .admin-title{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px;display:flex;align-items:center;gap:8px}
   .a-ring{flex:none;width:24px;height:24px;border-radius:50%;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
   .a-ring::after{content:"";width:12px;height:12px;border-radius:50%;background:#FFFDF8}
@@ -54,11 +54,12 @@
   @media(max-width:640px){ #glist::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none;z-index:1} }
   .abtn{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;text-decoration:none;display:inline-block}
   .abtn:hover{background:var(--tint)}
-  .tabbar{max-width:960px;margin:0 auto;display:flex;gap:4px;padding:0 18px 10px;flex-wrap:wrap}
+  .tabbar{max-width:none;margin:0 auto;display:flex;gap:4px;padding:0 18px 10px;flex-wrap:wrap}
   .tabbar button{font:inherit;font-size:14px;color:var(--soft);background:none;border:none;padding:8px 14px;border-radius:999px;cursor:pointer}
   .tabbar button.on{background:var(--brush);color:#fff;font-weight:500}
 
-  .wrap{max-width:960px;margin:0 auto;padding:18px 18px 60px}
+  .wrap{max-width:none;margin:0 auto;padding:18px 18px 60px}
+  @media(min-width:641px){ .admin-bar-in{padding:12px 28px 6px} .tabbar{padding:0 28px 10px} .wrap{padding:20px 28px 60px} }  /* 電腦：滿版 */
 
   .login{max-width:340px;margin:9vh auto;padding:0 20px;text-align:center}
   .login .logo{width:64px;height:64px;border-radius:50%;margin:0 auto 16px;background:conic-gradient(from 200deg,#E8927C,#F0C66B,#9FD49A,#7FC8D9,#A99BE0,#E6A3C3,#E8927C);opacity:.9}
