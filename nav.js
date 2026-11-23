@@ -55,6 +55,8 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   try{
     var nav=document.querySelector('.rw-nav'), navIn=nav&&nav.querySelector('.rw-nav-in'); if(!navIn || nav.classList.contains('v2')) return;
     nav.classList.add('v2');
+    var pg=(location.pathname.split('/').pop()||'index.html'), home=/^(index\.html)?$/.test(pg);
+    if(pg==='account.html') nav.classList.add('rw-nav-mhide');   // 我的（會員中心）：手機版上面不要這排
     var br=navIn.querySelector('.rw-brand'); if(br) br.innerHTML='<i class="rw-ring" aria-hidden="true"></i>彩之語';
     var cur=''; try{ cur=new URLSearchParams(location.search).get('area')||localStorage.getItem('rw_area')||''; }catch(e){}
     var ar=document.createElement('label'); ar.className='rw-area';
@@ -64,8 +66,9 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
     sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
     var mb=document.createElement('a'); mb.className='rw-mbtn'; mb.href='account.html'; mb.textContent=(window.rwMemberToken&&window.rwMemberToken())?'會員':'登入／註冊';
     var cb=navIn.querySelector('.rw-burger-cb');
-    navIn.insertBefore(ar, br?br.nextSibling:navIn.firstChild);
-    navIn.insertBefore(sp, cb); navIn.insertBefore(sb, cb); navIn.appendChild(mb);   // 小鈴鐺之後會插在 cb 前面＝搜尋和會員中間
+    // 「全部地區」和 🔍 只放在首頁；其他頁只有 彩之語｜🔔｜會員
+    if(home) navIn.insertBefore(ar, br?br.nextSibling:navIn.firstChild);
+    navIn.insertBefore(sp, cb); if(home) navIn.insertBefore(sb, cb); navIn.appendChild(mb);   // 小鈴鐺之後會插在 cb 前面＝搜尋和會員中間
     // 選地區：首頁直接篩選；其他頁帶到首頁的引路人
     ar.querySelector('select').onchange=function(){ var v=this.value; try{ localStorage.setItem('rw_area',v); }catch(e){}
       if(window.rwOnArea) window.rwOnArea(v); else location.href='index.html'+(v?'?area='+encodeURIComponent(v):'')+'#hn-gsec'; };
