@@ -12,7 +12,46 @@
 <style>
   .admin-bar{position:sticky;top:0;z-index:40;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
   .admin-bar-in{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;gap:10px}
-  .admin-title{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px}
+  .admin-title{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px;display:flex;align-items:center;gap:8px}
+  .a-ring{flex:none;width:24px;height:24px;border-radius:50%;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
+  .a-ring::after{content:"";width:12px;height:12px;border-radius:50%;background:#FFFDF8}
+  /* 右上角三條線選單（回網站、重新整理、登出） */
+  .amenu-wrap{position:relative}
+  .amenu-btn{width:44px;height:44px;border:0;background:none;border-radius:10px;color:var(--brush);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+  .amenu-btn:hover,.amenu-btn[aria-expanded=true]{background:var(--tint)}
+  .amenu-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .amenu{position:absolute;right:0;top:calc(100% + 6px);width:200px;background:#FFFDF8;border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 36px -16px rgba(120,90,60,.45);padding:6px;z-index:80;display:flex;flex-direction:column}
+  .amenu[hidden]{display:none}
+  .amenu a,.amenu button{font:inherit;font-size:15px;color:var(--ink);background:none;border:0;text-align:left;min-height:44px;padding:0 14px;border-radius:10px;text-decoration:none;display:flex;align-items:center;cursor:pointer}
+  .amenu a:hover,.amenu button:hover{background:var(--tint)}
+  .amenu .out{color:#B4566E}
+  .admin-bar .bell{border:0!important;background:none!important;width:44px;height:44px}
+  /* 返回：純文字，不要框 */
+  .m-back{border:0!important;background:none!important;padding:0 8px 0 0!important;min-height:44px;font-size:15px!important;font-weight:500;color:var(--brush)!important}
+  /* 搜尋框、篩選：不要外框，淡底色（跟網站一樣） */
+  .filters input,.filters select{background:#F1E9DC!important;border:0!important;border-radius:12px!important;min-height:42px}
+  .filters input::placeholder{color:#8F7A5E}
+  .filters input:focus,.filters select:focus{box-shadow:0 0 0 2px #E2CFEE}
+  /* 客戶管理：像筆記本，一人一行（姓名｜信箱），不要外框 */
+  #list{background:none!important;border:0!important;border-radius:0!important;position:relative}
+  #list .cust.collapsed .cav,#list .cust.collapsed .cright{display:none}
+  #list .cust.collapsed .crow-h{min-height:46px;padding:0 6px;gap:8px}
+  #list .cust.collapsed .cmain{display:flex;align-items:center;gap:12px}
+  #list .cust.collapsed .cmain .t{flex:none;width:72px;font-size:13.5px}
+  #list .cust.collapsed .cmain .s{flex:1;min-width:0;margin:0;font-size:12.5px}
+  #list .cust.crow{border-bottom-color:#EEE4D3}
+  @media(max-width:640px){ #list::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none;z-index:1} }
+  /* 引路人管理：一個列表，一人一行（姓名｜地區・方式｜上架中） */
+  #glist{background:none;position:relative}
+  #glist>.cust{background:none;border:0;border-bottom:1px solid #EEE4D3;border-radius:0;margin:0;box-shadow:none;padding:0}
+  #glist>.cust:not(.collapsed){padding:0 6px 12px}
+  #glist>.cust:last-child{border-bottom:0}
+  #glist>.cust.collapsed>.chead{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 6px;margin:0}
+  #glist>.cust.collapsed>.chead .caret{display:none}
+  #glist .chead .gnm{flex:none;width:72px;font-size:14px;color:var(--brush);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #glist .chead .gsub{flex:1;min-width:0;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #glist>.cust:not(.collapsed) .gsub{display:none}
+  @media(max-width:640px){ #glist::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none;z-index:1} }
   .abtn{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;text-decoration:none;display:inline-block}
   .abtn:hover{background:var(--tint)}
   .tabbar{max-width:960px;margin:0 auto;display:flex;gap:4px;padding:0 18px 10px;flex-wrap:wrap}
@@ -106,10 +145,39 @@
   .rp-flabel{font-size:13px;color:var(--soft)}
   .rp-dates{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
   .rp-dates .in-sm{flex:1;min-width:0}
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin-bottom:10px}
-  .stat{background:#FFFDF8;border:1px solid var(--line);border-radius:12px;padding:12px 13px;min-width:0}
-  .stat .k{font-size:12px;color:var(--soft)}
-  .stat .v{font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush);margin-top:3px;word-break:break-word}
+  /* 報表數字：條列（標籤在左、數字在右） */
+  .stats{display:block;background:#FFFDF8;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:12px}
+  .stat{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:0 14px;border-bottom:1px solid #EEE4D3;min-width:0}
+  .stat:last-child{border-bottom:0}
+  .stat .k{font-size:14px;color:var(--soft)}
+  .stat .v{font-size:15px;font-weight:600;color:var(--brush);text-align:right;font-variant-numeric:tabular-nums;word-break:break-word}
+  #rp-summary .stats:first-child .stat:first-child{min-height:58px}
+  #rp-summary .stats:first-child .stat:first-child .k{color:var(--ink);font-weight:500}
+  #rp-summary .stats:first-child .stat:first-child .v{font-size:24px}
+  /* 報表圖表：每月營收長條、付款方式／引路人業績比例條 */
+  .grp-h{font-size:14px;font-weight:600;color:var(--brush);margin:16px 2px 8px}.grp-h small{font-size:12px;font-weight:400;color:var(--soft);margin-left:8px}
+  .grp-card{background:#FFFDF8;border:1px solid var(--line);border-radius:14px;padding:14px 14px 10px;margin-bottom:12px}
+  .grp-plot{position:relative;height:150px;margin:18px 0 0 52px;border-bottom:1px solid #DCCDB6}
+  .grp-tk{position:absolute;left:0;right:0;border-top:1px solid #F1E8DA;height:0}
+  .grp-tk span{position:absolute;right:100%;margin-right:8px;top:-8px;font-size:11px;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .grp-cols{position:absolute;inset:0;display:flex}
+  .grp-col{flex:1;position:relative;font:inherit;background:none;border:0;padding:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;min-width:0}
+  .grp-col:hover,.grp-col.on{background:rgba(181,113,63,.06)}
+  .grp-col .bar{position:relative;display:block;width:22px;max-width:60%;background:#B5713F;border-radius:4px 4px 0 0}
+  .grp-col .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;font-size:11.5px;font-weight:600;color:var(--brush);white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
+  .grp-col.lab .v,.grp-col.on .v,.grp-col:hover .v,.grp-col:focus-visible .v{display:block}
+  .grp-cols:has(.grp-col.on) .grp-col.lab:not(.on) .v{display:none}
+  .grp-ms{display:flex;margin-left:52px;padding-top:6px}.grp-ms span{flex:1;text-align:center;font-size:11.5px;color:var(--soft)}.grp-ms span.cur{color:var(--brush);font-weight:600}
+  .grp-tbl{margin-top:10px;border-top:1px solid #F1E8DA;padding-top:6px}
+  .grp-tbl summary{font-size:12.5px;color:var(--brush);cursor:pointer;min-height:32px;display:flex;align-items:center;list-style:none}.grp-tbl summary::-webkit-details-marker{display:none}
+  .grp-tbl summary::after{content:"▾";margin-left:4px;font-size:11px}.grp-tbl[open] summary::after{content:"▴"}
+  .grp-tbl div{display:flex;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid #F3EBDD}.grp-tbl div:last-child{border-bottom:0}
+  .grp-tbl div span:first-child{flex:1;color:var(--ink)}.grp-tbl div span:nth-child(2){color:var(--soft);width:44px;text-align:right;font-variant-numeric:tabular-nums}.grp-tbl div b{width:80px;text-align:right;color:var(--brush);font-variant-numeric:tabular-nums}
+  .grp-mt{padding:6px 14px}
+  .grp-m{display:flex;align-items:center;gap:10px;min-height:44px;border-bottom:1px solid #F3EBDD}.grp-m:last-child{border-bottom:0}
+  .grp-m .n{flex:none;width:72px;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .grp-m .tr{flex:1;height:8px;border-radius:999px;background:#F1E3D3;overflow:hidden}.grp-m .tr i{display:block;height:100%;background:#B5713F;border-radius:999px}
+  .grp-m .a{flex:none;width:92px;text-align:right;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}.grp-m .a small{display:inline-block;width:36px;font-size:11.5px;font-weight:400;color:var(--soft)}
   .in-sm{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;outline:none}
   .rptable{width:100%;border-collapse:collapse;font-size:14px}
   .rptable th,.rptable td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
@@ -476,7 +544,7 @@
 <div id="app" style="display:none">
   <div class="admin-bar">
     <div class="admin-bar-in">
-      <div class="admin-title">彩之語後台</div>
+      <div class="admin-title"><i class="a-ring" aria-hidden="true"></i>彩之語後台</div>
       <div style="display:flex;gap:8px;align-items:center">
         <div class="bell-wrap">
           <button class="bell" id="bell" title="通知" aria-label="通知">
@@ -494,9 +562,14 @@
             <div id="nlist"></div>
           </div>
         </div>
-        <a class="abtn" href="index.html">回網站</a>
-        <button class="abtn" id="refresh">重新整理</button>
-        <button class="abtn" id="logout">登出</button>
+        <div class="amenu-wrap">
+          <button type="button" class="amenu-btn" id="amenu-btn" aria-label="選單" aria-expanded="false" aria-controls="amenu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+          <div class="amenu" id="amenu" hidden>
+            <a href="index.html">回網站</a>
+            <button type="button" id="refresh">重新整理</button>
+            <button type="button" id="logout" class="out">登出</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="tabbar">
@@ -887,7 +960,7 @@ function card(c){
   return '<div class="cust crow collapsed" data-id="'+c.id+'">'+
     '<div class="chead crow-h">'+
       '<span class="cav '+(mem?'m':'q')+'">'+esc(ini)+'</span>'+
-      '<span class="cmain"><div class="t"><b class="a-dname">'+adName(c)+'</b><button type="button" class="a-edit" data-aedit title="修改稱呼（只有後台看得到）" aria-label="修改稱呼">✎</button></div><div class="s">'+sub+'</div></span>'+
+      '<span class="cmain"><div class="t"><b class="a-dname">'+adName(c)+'</b><button type="button" class="a-edit" data-aedit title="修改稱呼（只有後台看得到）" aria-label="修改稱呼">✎</button></div><div class="s">'+(c.contact?esc(c.contact):'<span style="color:#B5A88E">沒有留聯絡方式</span>')+'</div></span>'+
       '<span class="cright"><div class="a">'+amt[0]+'</div><div class="k">'+amt[1]+'</div></span><span class="cgo">›</span>'+
     '</div>'+
     '<div class="cbody">'+
@@ -1025,7 +1098,7 @@ function renderGuides(){
 }
 function guideCard(g){
   return '<div class="cust collapsed" data-id="'+g.id+'">'+
-    '<div class="chead"><span class="caret">▾</span> <b style="color:var(--brush)">'+esc(g.name||'(未命名引路人)')+'</b> '+guideBadge(g)+'</div>'+
+    '<div class="chead"><span class="caret">▾</span> <b class="gnm">'+esc(g.name||'(未命名引路人)')+'</b><span class="gsub">'+esc([g.region,g.service_mode].filter(Boolean).join('・'))+'</span>'+guideBadge(g)+'</div>'+
     '<div class="cbody">'+
     guidePhotoHtml(g)+
     '<div class="cust-grid">'+
@@ -1603,6 +1676,29 @@ var rpExp=document.getElementById('rp-export'); if(rpExp) rpExp.onclick=rpExport
 (function(){ var sel=document.getElementById('tx-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=30){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
 
 /* ===== 報表 ===== */
+// 報表圖表：比例條（由多到少，百分比加起來剛好 100）、每月營收長條（近 6 個月，點長條看金額）
+function rpMeters(title,sub,L){
+  var P=L.map(function(x){ return {t:x[0], v:Number(x[1])||0}; }), tot=P.reduce(function(a,x){ return a+x.v; },0); P.sort(function(a,b){ return b.v-a.v; });
+  if(tot){ P.forEach(function(x){ var r=x.v*100/tot; x.pc=Math.floor(r); x.fr=r-x.pc; }); var left=100-P.reduce(function(a,x){ return a+x.pc; },0);
+    P.slice().sort(function(a,b){ return b.fr-a.fr; }).forEach(function(x){ if(left>0 && x.v>0){ x.pc++; left--; } }); }
+  return (title?'<div class="grp-h">'+title+'<small>'+sub+'</small></div>':'<div class="grp-h" style="margin-top:4px"><small style="margin-left:0">'+sub+'</small></div>')+
+    '<div class="grp-card grp-mt">'+P.map(function(x){ var pc=tot?x.pc:0; return '<div class="grp-m" role="img" aria-label="'+esc(x.t)+' '+money(x.v)+'，'+pc+'%"><span class="n">'+esc(x.t)+'</span><span class="tr"><i style="width:'+(tot?x.v*100/tot:0)+'%"></i></span><span class="a">'+money(x.v)+'<small>'+pc+'%</small></span></div>'; }).join('')+'</div>';
+}
+function rpNice(v){ if(v<=0) return 1000; var e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e, S=[1,1.2,1.5,2,2.5,3,4,5,6,8,10]; for(var i=0;i<S.length;i++){ if(f<=S[i]) return S[i]*e; } return 10*e; }
+function rpMonthsHtml(){
+  var t=new Date(), M=[];
+  for(var i=5;i>=0;i--){ var d=new Date(t.getFullYear(),t.getMonth()-i,1); M.push({k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), y:d.getFullYear(), m:d.getMonth()+1, v:0, n:0}); }
+  TX.forEach(function(x){ if(x.status==='已取消'||x.status==='已退費') return; var a=Number(x.amount||0); if(a<=0) return; var d=cmpKeyTx(x); if(!d||isNaN(d)) return;
+    var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); M.forEach(function(o){ if(o.k===k){ o.v+=a; o.n++; } }); });
+  var mx=Math.max.apply(null,M.map(function(x){ return x.v; })), top=rpNice(mx), cur=M[M.length-1], hi=M.reduce(function(a,x){ return x.v>a.v?x:a; },M[0]);
+  return '<div class="grp-h">每月營收<small>近 6 個月・點長條看金額</small></div><div class="grp-card"><div class="grp-plot">'+
+    '<div class="grp-tk" style="bottom:100%"><span>'+money(top)+'</span></div><div class="grp-tk" style="bottom:50%"><span>'+money(top/2)+'</span></div>'+
+    '<div class="grp-cols">'+M.map(function(x){ var pct=x.v?Math.max(2,x.v*100/top):0, lab=(x===cur||(x===hi&&x.v>0));
+      return '<button type="button" class="grp-col'+(lab?' lab':'')+'" aria-label="'+x.m+' 月營收 '+money(x.v)+'，'+x.n+' 筆"><span class="bar" style="height:'+pct+'%"><span class="v">'+money(x.v)+'</span></span></button>'; }).join('')+'</div></div>'+
+    '<div class="grp-ms">'+M.map(function(x){ return '<span'+(x===cur?' class="cur"':'')+'>'+x.m+' 月</span>'; }).join('')+'</div>'+
+    '<details class="grp-tbl"><summary>看每月數字</summary>'+M.slice().reverse().map(function(x){ return '<div><span>'+x.y+' 年 '+x.m+' 月</span><span>'+x.n+' 筆</span><b>'+money(x.v)+'</b></div>'; }).join('')+'</details></div>';
+}
+function rpBindCols(box){ if(!box) return; box.querySelectorAll('.grp-col').forEach(function(b){ b.onclick=function(){ var on=b.classList.contains('on'); box.querySelectorAll('.grp-col.on').forEach(function(x){ x.classList.remove('on'); }); if(!on) b.classList.add('on'); }; }); }
 function stat(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
 function inRange(d){
   var from=$('#rp-from').value, to=$('#rp-to').value;
@@ -1624,7 +1720,8 @@ function renderReport(){
   var discSum=valid.reduce(function(a,t){return a+Number(t.discount||0);},0);
   $('#rp-summary').innerHTML=
     '<div class="stats">'+stat('有效營收',money(total))+stat('交易筆數',valid.length+' 筆')+stat('退費',refunds.length+' 筆／'+money(refundAmt))+stat('儲值收入',money(topupIn))+(discSum?stat('優惠折抵（彩之語吸收）',money(discSum)):'')+'</div>'+
-    '<div class="stats">'+stat('現金',money(byM.現金))+stat('刷卡',money(byM.刷卡))+stat('匯款',money(byM.匯款))+stat('儲值折抵',money(byM.儲值))+'</div>';
+    rpMonthsHtml()+rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金],['儲值折抵',byM.儲值]]);
+  rpBindCols($('#rp-summary'));
   var g={};
   rows.forEach(function(t){
     var k=isShopTx(t)?'__shop__':(t.guide_id||'__none__');
@@ -1635,7 +1732,7 @@ function renderReport(){
   });
   var keys=Object.keys(g).sort(function(a,b){return g[b].amount-g[a].amount;});
   if(!keys.length){ $('#rp-guides').innerHTML='<div class="muted" style="padding:20px;text-align:center">此範圍沒有交易</div>'; return; }
-  var h='';
+  var h=rpMeters('','誰的營收比較多（有效營收）',keys.map(function(k){ return [k==='__shop__'?'商品訂單':k==='__none__'?'未指定':guideName(k), g[k].amount]; }));
   keys.forEach(function(k){
     var gg=g[k], name=k==='__shop__'?'🛍️ 商品訂單':k==='__none__'?'（未指定引路人）':guideName(k);
     h+='<div class="gblock'+(RP_OPEN[k]?'':' collapsed')+'" data-k="'+esc(k)+'"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span class="gh-meta">'+gg.count+' 筆 · 有效 '+money(gg.amount)+(gg.refund?' · 退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
@@ -2361,6 +2458,12 @@ function openCustDetail(cid){
   var home=$('#m-home');
   if(home) home.addEventListener('click',function(e){ var b=e.target.closest('[data-mgo]'); if(!b) return; var t=b.getAttribute('data-mgo');
     if(t==='shop-orders'){ goTab('shop'); var ob=document.querySelector('[data-shopv="orders"]'); if(ob) ob.click(); } else goTab(t); });
+  (function(){ var btn=document.getElementById('amenu-btn'), mn=document.getElementById('amenu'); if(!btn||!mn) return;
+    function set(on){ mn.hidden=!on; btn.setAttribute('aria-expanded',on); }
+    btn.onclick=function(e){ e.stopPropagation(); set(mn.hidden); };
+    document.addEventListener('click',function(e){ if(!mn.hidden && !mn.contains(e.target)) set(false); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
+    mn.addEventListener('click',function(e){ if(e.target.closest('a,button')) set(false); }); })();
   var title=document.querySelector('.admin-title'); if(title){ title.style.cursor='pointer'; title.onclick=function(){ if(isM()) mGoHome(); }; }
   var ta=$('#m-txadd'), tf=$('#m-txf'), tx=$('#tab-tx');
   if(ta) ta.onclick=function(){ var on=tx.classList.toggle('m-show-add'); ta.textContent=on?'收起新增':'＋ 新增交易'; };
