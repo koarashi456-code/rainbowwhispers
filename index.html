@@ -1,8 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>彩之語 Rainbow Whisper｜在你迷惘的時候，先被好好聽見</title>
 <meta name="description" content="彩之語是身心靈引路人媒合平台。做一個約 3 分鐘的心靈導航測驗，遇見最適合你的引路人。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,94 +21,248 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#FAF4E6">
+<style>
+  /* 手機版首頁模板：上面一條可關的 LINE 提示 → 黏在上面的標題列（地區、搜尋、通知、登入）→ 搜尋框 → 左右滑的分類 →
+     左右滑的大圖卡 → 測驗清單 → 各區引路人（篩選＋左右滑卡片）→ 原本的配對說明 → 頁尾 → 底部分頁列。
+     顏色、字體、彩虹都沿用彩之語；電腦上置中成一欄。 */
+  :root{--hn-w:560px;--hn-pad:16px}
+  body{background:var(--cream)}
+  .hn{max-width:var(--hn-w);margin:0 auto;background:var(--cream);min-height:100vh}
+  /* LINE 提示條 */
+  .hn-promo{display:flex;align-items:center;gap:10px;padding:8px var(--hn-pad);background:#FBF4E6;border-bottom:1px solid #F0E5D2;font-size:13px;color:var(--ink)}
+  .hn-promo .x{flex:none;width:32px;height:32px;margin-left:-8px;border:0;background:none;color:#A8957C;font-size:18px;cursor:pointer}
+  .hn-promo .t{flex:1;min-width:0;line-height:1.4}
+  .hn-promo a{flex:none;font-size:13px;font-weight:600;color:#fff;background:#06C755;border-radius:999px;padding:7px 14px;text-decoration:none}
+  /* 搜尋框 */
+  .hn-search{display:flex;align-items:center;gap:8px;margin:6px var(--hn-pad) 0;background:#F1E9DC;border-radius:14px;padding:0 14px;min-height:46px}
+  .hn-search svg{flex:none;width:19px;height:19px;fill:none;stroke:#8F7A5E;stroke-width:1.9;stroke-linecap:round}
+  .hn-search input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:15px;color:var(--ink);outline:none;padding:10px 0}
+  .hn-search input::placeholder{color:#958066}
+  /* 左右滑的一排 */
+  .hn-row{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scroll-padding:0 var(--hn-pad);padding:0 var(--hn-pad);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .hn-row::after{content:"";flex:none;width:1px}  /* 最後一張右邊也留白 */
+  .hn-row::-webkit-scrollbar{display:none}
+  .hn-row>*{scroll-snap-align:start;flex:none}
+  /* 分類 */
+  .hn-cats{margin-top:14px;padding-bottom:2px}
+  .hn-cat{display:flex;align-items:center;gap:7px;height:44px;padding:0 14px 0 6px;background:#FFFDF8;border:1px solid #ECE0CC;border-radius:14px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+  .hn-cat i{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .hn-cat i svg{width:18px;height:18px;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  /* 大圖卡（左右滑，旁邊露一點下一張） */
+  .hn-hero{position:relative;margin-top:16px}
+  .hn-hero .hn-row{gap:10px;scroll-snap-type:x mandatory;scroll-padding:0 var(--hn-pad)}
+  .hn-bn{position:relative;width:calc(100% - 44px);max-width:480px;height:206px;border-radius:22px;overflow:hidden;text-decoration:none;color:#4A3A2A;padding:20px 20px 60px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-end}  /* 下面留一行給右下角的箭頭 */
+  .hn-bn .tag{position:absolute;top:16px;left:18px;font-size:12px;font-weight:600;background:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px}
+  .hn-bn h3{font-family:"Noto Serif TC",serif;font-size:23px;line-height:1.35;margin:0;position:relative}
+  .hn-bn p{font-size:13.5px;margin:6px 0 0;position:relative;color:#5E4B37}
+  .hn-bn .art{position:absolute;right:-26px;top:-26px;width:150px;height:150px;border-radius:50%;opacity:.9}
+  .hn-bn .art::after{content:"";position:absolute;inset:28px;border-radius:50%;background:rgba(255,253,248,.85)}
+  /* 大圖卡右下角：‹ 1 | 5 ›，點箭頭換一張（到頭那一邊變淡）；文字往上留一行，不會被蓋到 */
+  .hn-ctl{position:absolute;right:calc(var(--hn-pad) + 44px + 10px);bottom:10px;z-index:2;display:flex;align-items:center;background:rgba(74,58,42,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:999px;height:40px;padding:0 2px}
+  .hn-arr{width:40px;height:40px;border:0;padding:0;border-radius:50%;background:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .hn-arr svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .hn-arr:active{background:rgba(255,255,255,.18)}
+  .hn-arr:disabled{opacity:.35;cursor:default}
+  .hn-arr:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+  .hn-pg{font-size:12.5px;font-weight:600;color:#fff;font-variant-numeric:tabular-nums;min-width:34px;text-align:center}
+  /* 每一區 */
+  .hn-sec{margin-top:30px}
+  .hn-h{display:flex;align-items:baseline;gap:8px;padding:0 var(--hn-pad);margin-bottom:12px}
+  .hn-h h2{font-family:"Noto Serif TC",serif;font-size:20px;font-weight:700;color:var(--brush);margin:0;line-height:1.35}
+  .hn-h h2 small{font-family:"Noto Sans TC",sans-serif;font-size:14px;font-weight:600;color:#B5713F;margin-left:6px}
+  .hn-h .more{margin-left:auto;font-size:13.5px;color:var(--soft);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;padding:8px 0}
+  /* 測驗清單（左邊小圖、右邊標題） */
+  .hn-list{padding:0 var(--hn-pad)}
+  .hn-it{display:flex;gap:14px;align-items:center;padding:12px 0;border-top:1px solid #EEE4D3;text-decoration:none;color:inherit}
+  .hn-it:first-child{border-top:0;padding-top:0}
+  .hn-th{flex:none;width:84px;height:84px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+  .hn-th i{width:46px;height:46px;border-radius:50%;background:rgba(255,253,248,.85);display:flex;align-items:center;justify-content:center}
+  .hn-th svg{width:24px;height:24px;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .hn-it .m{flex:1;min-width:0}
+  .hn-chip{display:inline-block;font-size:12px;font-weight:500;color:#6A5741;background:#EFE6D8;border-radius:6px;padding:2px 8px}
+  .hn-it b{display:block;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.45;margin-top:5px}
+  .hn-it small{display:block;font-size:12.5px;color:var(--soft);margin-top:3px}
+  /* 篩選小按鍵 */
+  .hn-flt{margin-bottom:12px}
+  .hn-flt button{height:38px;padding:0 15px;border-radius:999px;border:1px solid #E2D4BE;background:#FFFDF8;font:inherit;font-size:13.5px;color:var(--ink);cursor:pointer;white-space:nowrap}
+  .hn-flt button.on{background:var(--brush);border-color:var(--brush);color:#fff;font-weight:600}
+  /* 引路人卡片 */
+  .hn-g{width:150px;text-decoration:none;color:inherit}
+  .hn-ph{position:relative;width:150px;height:150px;border-radius:16px;overflow:hidden;background:conic-gradient(from 160deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F6C9B9);display:flex;align-items:center;justify-content:center}
+  .hn-ph .ini{width:96px;height:96px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center;font-family:"Noto Serif TC",serif;font-size:32px;font-weight:700;color:var(--brush)}
+  .hn-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hn-md{position:absolute;left:8px;top:8px;display:flex;gap:4px;z-index:1}
+  .hn-md em{font-style:normal;font-size:11px;font-weight:600;background:rgba(255,253,248,.92);color:#5A7A94;border-radius:6px;padding:2px 6px}
+  .hn-g .ar{font-size:12px;color:var(--soft);margin-top:8px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hn-g .nm{font-size:15px;font-weight:700;color:var(--brush);margin-top:2px}
+  .hn-g .sv{font-size:13px;color:var(--ink);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hn-g .pr{font-size:15px;font-weight:700;color:var(--brush);margin-top:6px}.hn-g .pr small{font-size:12px;font-weight:500;color:var(--soft);margin-left:2px}
+  .hn-empty{padding:0 var(--hn-pad);font-size:13.5px;color:var(--soft)}
+  .hn-empty a{color:#3F7A5E}
+  /* 電腦：滿版（手機不變）——大圖卡一次 2～3 張、分類／測驗／引路人改成換行排，不用左右滑 */
+  @media (min-width:769px){
+    :root{--hn-pad:28px}
+    .hn{max-width:none}
+    .hn-search{max-width:640px}
+    .hn-cats{flex-wrap:wrap;overflow:visible}
+    .hn-bn{width:calc((100% - 2*var(--hn-pad) - 10px)/2);max-width:none;height:220px}
+    .hn-ctl{right:calc(var(--hn-pad) + 10px)}
+    .hn-list{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px}
+    .hn-it,.hn-it:first-child{border-top:0;padding-top:0}
+    .hn-flt{flex-wrap:wrap;overflow:visible}
+    #hn-gl,#hn-ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;overflow:visible}
+    #hn-gl::after,#hn-ol::after{display:none}
+    .hn-g{width:auto}.hn-ph{width:100%;height:auto;aspect-ratio:1/1}
+  }
+  @media (min-width:1100px){ .hn-bn{width:calc((100% - 2*var(--hn-pad) - 20px)/3)} }
+</style>
+<script src="supabase-config.js"></script>
 </head>
 <body>
+<div class="hn">
 
-<nav class="rw-nav"><div class="rw-nav-in">
-  <a class="rw-brand" href="index.html">彩之語<small>RAINBOW WHISPER</small></a>
-  <input type="checkbox" id="rw-burger" class="rw-burger-cb" aria-label="選單"><label for="rw-burger" class="rw-burger" aria-hidden="true"><span></span><span></span><span></span></label>
-  <div class="rw-links">
-    <a href="index.html" class="on">首頁</a>
-    <a href="tests.html">測驗</a>
-    <a href="booking.html">引路人・商品</a>
-    <a href="pricing.html">方案</a>
-    <a href="account.html">會員</a>
-    <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
-  </div>
-</div></nav>
-<script src="nav.js?v=20261123"></script>
+  <div class="hn-promo" id="hn-promo"><button type="button" class="x" aria-label="關閉這條提示" id="hn-promo-x">×</button><span class="t">加官方 LINE，讓真人幫你配對引路人</span><a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a></div>
 
-<section class="rw-sec rw-center">
-  <div class="rw-in">
-    <div style="width:126px;height:126px;border-radius:50%;margin:0 auto 18px;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center">
-      <div style="width:90px;height:90px;border-radius:50%;background:#FFFDF8;display:flex;align-items:center;justify-content:center">
-        <svg width="52" height="52" viewBox="0 0 54 54" aria-hidden="true">
-          <polygon points="16,23 19,28 19,41 13,41 13,28" fill="#D8ECDF" stroke="#9FCBB0" stroke-width="1"/>
-          <polygon points="38,25 41,30 41,41 35,41 35,30" fill="#FBE0CC" stroke="#E6B68C" stroke-width="1"/>
-          <polygon points="27,9 31,18 31,42 23,42 23,18" fill="#EAD9F2" stroke="#C9A7DE" stroke-width="1"/>
-          <polygon points="27,9 31,18 23,18" fill="#F4ECF9" stroke="#C9A7DE" stroke-width="1"/>
-          <polygon points="20,13 22,16 20,19 18,16" fill="#F6D6E2" stroke="#E2A7BE" stroke-width=".8"/>
-          <polygon points="36,15 38,18 36,21 34,18" fill="#D7E6F5" stroke="#A7C4E0" stroke-width=".8"/>
-        </svg>
-      </div>
+  <nav class="rw-nav"><div class="rw-nav-in">
+    <a class="rw-brand" href="index.html">彩之語<small>RAINBOW WHISPER</small></a>
+    <input type="checkbox" id="rw-burger" class="rw-burger-cb" aria-label="選單"><label for="rw-burger" class="rw-burger" aria-hidden="true"><span></span><span></span><span></span></label>
+    <div class="rw-links">
+      <a href="index.html" class="on">首頁</a>
+      <a href="tests.html">測驗</a>
+      <a href="booking.html">引路人・商品</a>
+      <a href="pricing.html">方案</a>
+      <a href="account.html">會員</a>
+      <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
     </div>
-    <div class="rw-serif" style="font-size:32px;font-weight:700;color:var(--brush);letter-spacing:.12em">彩之語</div>
-    <div style="font-size:12px;letter-spacing:.34em;color:#A78C6E;margin:4px 0 22px">RAINBOW WHISPER</div>
-    <h1 class="rw-h1" style="margin-bottom:12px">在你迷惘的時候，<br>先被好好聽見。</h1>
-    <p class="rw-p" style="margin-bottom:24px">約 3 分鐘的小測驗，看見你需要被怎麼照顧，<br>遇見最適合你的引路人。</p>
-    <a class="rw-cta" href="quiz.html">開始測驗　→</a>
-    <div style="margin-top:14px"><a class="rw-textlink" href="#how">還沒準備好？先看看我們怎麼幫你配對 ↓</a></div>
-  </div>
-</section>
+  </div></nav>
+  <script src="nav.js?v=20261123"></script>
 
-<section class="rw-sec tint rw-center">
-  <div class="rw-in">
-    <h2 class="rw-h2">你是不是也曾經這樣？</h2>
-    <div style="margin-top:22px;text-align:left">
-      <div class="rw-card" style="margin-bottom:12px;font-size:15px;color:var(--ink)">找過引路人，卻覺得「他講的好像不是我要的」</div>
-      <div class="rw-card" style="margin-bottom:12px;font-size:15px;color:var(--ink)">知道自己卡住了，卻說不清楚到底想要什麼</div>
-      <div class="rw-card" style="font-size:15px;color:var(--ink)">想找人聊聊，又怕遇到不對頻率的人</div>
+  <label class="hn-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="hn-q" type="search" placeholder="搜尋引路人、服務（塔羅、彩虹卡…）" aria-label="搜尋引路人或服務"></label>
+
+  <div class="hn-row hn-cats" id="hn-cats"></div>
+
+  <div class="hn-hero">
+    <div class="hn-row" id="hn-bns">
+      <a class="hn-bn" href="quiz.html" style="background:linear-gradient(135deg,#F8D9CB,#F8E6BE 45%,#D7ECD3)"><span class="art" style="background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9)"></span><span class="tag">免費・約 3 分鐘</span><h3>在你迷惘的時候，<br>先被好好聽見。</h3><p>心靈導航測驗，找到你的探索方向 →</p></a>
+      <a class="hn-bn" href="chakra.html" style="background:linear-gradient(135deg,#E3DDF6,#D6E8F2)"><span class="art" style="background:conic-gradient(from 90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#A9A3E3,#C6A1E2,#EE9E86)"></span><span class="tag">免費・20 題</span><h3>七大脈輪<br>能量測驗</h3><p>看看哪一輪最需要被好好照顧 →</p></a>
+      <a class="hn-bn" href="numerology.html" style="background:linear-gradient(135deg,#FBE2D3,#F6D6E2)"><span class="art" style="background:conic-gradient(from 30deg,#F6C9B9,#F1CCDB,#D4CBED,#F6C9B9)"></span><span class="tag">約 30 秒</span><h3>你的生命靈數<br>是幾號？</h3><p>輸入生日，看屬於你的天賦數字 →</p></a>
+      <a class="hn-bn" href="pricing.html" style="background:linear-gradient(135deg,#DCEFE0,#F3EDD6)"><span class="art" style="background:conic-gradient(from 160deg,#CAE6C4,#BCE0E7,#F8DEAC,#CAE6C4)"></span><span class="tag">會員</span><h3>儲值、套裝課程<br>更划算</h3><p>看看彩之語的方案 →</p></a>
+      <a class="hn-bn" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#D7F0DF,#E8F3E2)"><span class="art" style="background:conic-gradient(from 0deg,#9FD49A,#CAE6C4,#BCE0E7,#9FD49A)"></span><span class="tag">真人陪你</span><h3>不知道怎麼選？<br>讓我們幫你配</h3><p>加官方 LINE，說說你現在的狀況 →</p></a>
     </div>
-    <p class="rw-p" style="margin-top:20px">問題往往不是對方不好，而是——<b class="rw-strong">你們的頻率不合。</b></p>
+    <div class="hn-ctl"><button type="button" class="hn-arr" id="hn-prev" aria-label="上一張" disabled><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"/></svg></button><span class="hn-pg" id="hn-pg" aria-live="polite">1 | 5</span><button type="button" class="hn-arr" id="hn-next" aria-label="下一張"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></svg></button></div>
   </div>
-</section>
 
-<section class="rw-sec rw-center" id="how">
-  <div class="rw-in">
-    <h2 class="rw-h2">彩之語，怎麼陪你找到對的人</h2>
-    <div class="rw-divider"></div>
-    <div>
-      <div class="rw-step"><div class="rw-num" style="background:#FBE0CC;color:#B5713F">1</div>
-        <div><div style="font-weight:500;color:var(--ink);font-size:16px">做一個約 3 分鐘的小測驗</div><div class="rw-p" style="font-size:14px">幾個溫柔的問題，不需要任何命理資料。</div></div></div>
-      <div class="rw-step"><div class="rw-num" style="background:#D8ECDF;color:#4F8E6E">2</div>
-        <div><div style="font-weight:500;color:var(--ink);font-size:16px">找到你的相處頻率</div><div class="rw-p" style="font-size:14px">你需要被理性梳理，還是被溫柔接住？被點破，還是被陪伴？</div></div></div>
-      <div class="rw-step" style="margin-bottom:0"><div class="rw-num" style="background:#E7DBF4;color:#7A5CA8">3</div>
-        <div><div style="font-weight:500;color:var(--ink);font-size:16px">配對最適合你的引路人</div><div class="rw-p" style="font-size:14px">由你參考、由你選擇——主導權一直在你手上。</div></div></div>
+  <section class="hn-sec">
+    <div class="hn-h"><h2>先從一個小測驗開始</h2><a class="more" href="tests.html">全部測驗</a></div>
+    <div class="hn-list">
+      <a class="hn-it" href="quiz.html"><span class="hn-th" style="background:linear-gradient(135deg,#F8D9CB,#D7ECD3)"><i><svg viewBox="0 0 24 24" stroke="#B5713F"><path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/></svg></i></span><span class="m"><span class="hn-chip">免費</span><b>心靈導航測驗：找出你此刻的探索方向</b><small>20 題・約 3 分鐘</small></span></a>
+      <a class="hn-it" href="chakra.html"><span class="hn-th" style="background:linear-gradient(135deg,#E3DDF6,#D6E8F2)"><i><svg viewBox="0 0 24 24" stroke="#6E4F9E"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/></svg></i></span><span class="m"><span class="hn-chip">免費</span><b>七大脈輪能量測驗：哪一輪需要被照顧</b><small>20 題・約 3 分鐘</small></span></a>
+      <a class="hn-it" href="numerology.html"><span class="hn-th" style="background:linear-gradient(135deg,#FBE2D3,#F6D6E2)"><i><svg viewBox="0 0 24 24" stroke="#A4506E"><path d="M9 6h6M12 6v12M8 18h8"/></svg></i></span><span class="m"><span class="hn-chip">免費</span><b>生命靈數：用生日算出你的天賦數字</b><small>輸入生日・約 30 秒</small></span></a>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="rw-sec grad rw-center">
-  <div class="rw-in">
-    <h2 class="rw-h2">我們配的不是「最有名」，<br>是「最適合你」</h2>
-    <p class="rw-p" style="margin-top:12px">同樣會塔羅、紫微、占星，每位引路人的陪伴方式都不一樣——有人擅長一針見血，有人擅長溫柔承接。彩之語用「<b class="rw-strong">頻率</b>」幫你配對，因為對的陪伴，往往比厲害的技術更重要。</p>
-  </div>
-</section>
+  <section class="hn-sec" id="hn-gsec">
+    <div class="hn-h"><h2 id="hn-gh">推薦引路人<small id="hn-from"></small></h2><a class="more" href="booking.html#pick">全部</a></div>
+    <div class="hn-row hn-flt" id="hn-flt" role="tablist" aria-label="依服務篩選"></div>
+    <div class="hn-row" id="hn-gl"><span class="hn-empty">載入中…</span></div>
+  </section>
 
-<section class="rw-sec tint rw-center">
-  <div class="rw-in">
-    <h2 class="rw-h2" style="font-size:23px;margin-bottom:20px">準備好，被好好照顧了嗎？</h2>
-    <a class="rw-cta" href="quiz.html">開始我的測驗　→</a>
-  </div>
-</section>
+  <section class="hn-sec" id="hn-osec">
+    <div class="hn-h"><h2>線上就能約<small>在家也可以</small></h2><a class="more" href="booking.html#pick">全部</a></div>
+    <div class="hn-row" id="hn-ol"></div>
+  </section>
 
-<footer class="rw-footer">
-  <div class="rw-brand2 rw-serif">彩之語</div>
-  <div class="rw-foot-en">RAINBOW WHISPER</div>
-  <p class="rw-foot-note">溫馨提醒：本平台僅提供引路人媒合服務，不對命理或玄學內容的準確性與結果負責。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
-  <div class="rw-foot-links"><a href="policies.html#disclaimer">免責聲明</a>·<a href="policies.html#privacy">隱私權政策</a>·<a href="policies.html#refund">取消與退費</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
-  <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
-</footer>
 
+  <footer class="rw-footer" style="margin-top:30px">
+    <div class="rw-brand2 rw-serif">彩之語</div>
+    <div class="rw-foot-en">RAINBOW WHISPER</div>
+    <p class="rw-foot-note">溫馨提醒：本平台僅提供引路人媒合服務，不對命理或玄學內容的準確性與結果負責。我們只蒐集必要的個人資料，並妥善保護你的隱私。</p>
+    <div class="rw-foot-links"><a href="policies.html#disclaimer">免責聲明</a>·<a href="policies.html#privacy">隱私權政策</a>·<a href="policies.html#refund">取消與退費</a>·<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">聯絡我們</a></div>
+    <div class="rw-copy">© 2026 彩之語 Rainbow Whisper</div>
+  </footer>
+</div>
+<script>
+(function(){
+  function $(s){ return document.querySelector(s); }
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+  function money(n){ return '$'+Number(n||0).toLocaleString(); }
+  function ls(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v); }catch(e){ return null; } }
+
+  // LINE 提示條：按 × 就不再出現
+  if(ls('rw_hn_promo')==='x') $('#hn-promo').remove();
+  var px=$('#hn-promo-x'); if(px) px.onclick=function(){ ls('rw_hn_promo','x'); $('#hn-promo').remove(); };
+  // 共用標題列的 🔍：在首頁就直接跳到搜尋框（從別頁按會帶 #search 過來）
+  window.rwOnSearch=function(){ var q=$('#hn-q'); q.scrollIntoView({block:'center',behavior:'smooth'}); setTimeout(function(){ q.focus(); },300); };
+  if(location.hash==='#search') setTimeout(window.rwOnSearch,400);
+
+  // 分類：測驗直接去測驗頁；服務類別篩選下面的引路人
+  var CI={s:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>',c:'<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 9h6M9 13h6"/>',m:'<path d="M18 14.5A7 7 0 1 1 9.5 6a5.5 5.5 0 0 0 8.5 8.5Z"/>',d:'<path d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 0 0 10 0C17 9.5 15 7 12 3Z"/>',n:'<path d="M9 6h6M12 6v12M8 18h8"/>',o:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/>',v:'<rect x="3.5" y="6.5" width="12" height="11" rx="2"/><path d="m15.5 10.5 5-3v9l-5-3"/>',g:'<path d="M5 9h14l-1.2 10H6.2z"/><path d="M9 9a3 3 0 0 1 6 0"/>'};
+  var CATS=[
+    {t:'心靈測驗',ic:'s',bg:'#FBE0CC',st:'#B5713F',go:'tests.html'},
+    {t:'彩虹卡',ic:'c',bg:'#F6E1E8',st:'#A4506E',svc:'彩虹卡'},
+    {t:'塔羅',ic:'c',bg:'#EAD9F2',st:'#6E4F9E',svc:'塔羅'},
+    {t:'八字',ic:'m',bg:'#DCEAF2',st:'#4F7392',svc:'八字'},
+    {t:'紫微',ic:'s',bg:'#E7DBF4',st:'#7A5CA8',svc:'紫微'},
+    {t:'生命靈數',ic:'n',bg:'#FBE7CC',st:'#A5643A',go:'numerology.html'},
+    {t:'脈輪能量',ic:'o',bg:'#D8ECDF',st:'#3F7A5E',go:'chakra.html'},
+    {t:'線上諮詢',ic:'v',bg:'#E3EEF6',st:'#4F7392',online:1},
+    {t:'療癒小物',ic:'g',bg:'#F1EBDD',st:'#8A6A44',go:'booking.html'}
+  ];
+  $('#hn-cats').innerHTML=CATS.map(function(c,i){ var inner='<i style="background:'+c.bg+'"><svg viewBox="0 0 24 24" stroke="'+c.st+'">'+CI[c.ic]+'</svg></i>'+c.t;
+    return c.go?'<a class="hn-cat" href="'+c.go+'">'+inner+'</a>':'<button type="button" class="hn-cat" data-cat="'+i+'">'+inner+'</button>'; }).join('');
+
+  // 大圖卡頁數
+  var bns=$('#hn-bns'), pg=$('#hn-pg'), nb=bns.children.length;
+  function step(){ return bns.children[0].getBoundingClientRect().width+10; }
+  function upd(){ var i=Math.min(nb,Math.round(bns.scrollLeft/step())+1); pg.textContent=i+' | '+nb;
+    $('#hn-prev').disabled=bns.scrollLeft<4; $('#hn-next').disabled=bns.scrollLeft>bns.scrollWidth-bns.clientWidth-4; }
+  bns.addEventListener('scroll',upd,{passive:true}); addEventListener('resize',upd); upd();
+  $('#hn-prev').onclick=function(){ bns.scrollBy({left:-step(),behavior:'smooth'}); };
+  $('#hn-next').onclick=function(){ bns.scrollBy({left:step(),behavior:'smooth'}); };
+
+  // 引路人
+  var G=[], F={svc:'',area:'',q:'',online:false};
+  function counties(g){ return String(g.region||'').split(/[、,，\s]+/).map(function(x){ var m=/^(.{2}[市縣])/.exec(x); return m?m[1]:''; }).filter(Boolean); }
+  function isOn(g){ return /線上/.test(g.service_mode||''); }
+  function isOff(g){ return /實體/.test(g.service_mode||'') || !g.service_mode; }
+  function card(g){
+    var ar=String(g.region||'').split(/[、,，]/).map(function(x){ return x.replace(/^(.{2}[市縣])/,''); }).filter(Boolean).join('・')||(isOn(g)?'線上':'');
+    var md=(isOn(g)?'<em>線上</em>':'')+(isOff(g)?'<em style="color:#3F7A5E">實體</em>':'');
+    var photo=window.SUPA?'<img alt="" loading="lazy" src="'+esc(SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(g.id)+'.jpg')+'" onerror="this.remove()">':'';
+    return '<a class="hn-g" href="guide.html?id='+encodeURIComponent(g.id)+'"><span class="hn-ph"><span class="ini">'+esc(String(g.name||'引').slice(0,1))+'</span>'+photo+'<span class="hn-md">'+md+'</span></span>'+
+      '<div class="ar">'+esc(ar)+'</div><div class="nm">'+esc(g.name||'引路人')+'</div><div class="sv">'+esc((g.services||[]).join('・'))+'</div>'+
+      (g.price?'<div class="pr">'+money(g.price)+'<small>起</small></div>':'')+'</a>';
+  }
+  function match(g){
+    if(F.svc && (g.services||[]).indexOf(F.svc)<0) return false;
+    if(F.online && !isOn(g)) return false;
+    if(F.area && counties(g).indexOf(F.area)<0) return false;
+    if(F.q){ var s=[g.name,(g.services||[]).join(' '),g.region,g.service_mode].join(' ').toLowerCase(); if(s.indexOf(F.q)<0) return false; }
+    return true;
+  }
+  function draw(){
+    var L=G.filter(match), svcs=[];
+    G.forEach(function(g){ (g.services||[]).forEach(function(s){ if(svcs.indexOf(s)<0) svcs.push(s); }); });
+    $('#hn-flt').innerHTML=['全部'].concat(svcs).map(function(s){ var on=(s==='全部'?!F.svc:F.svc===s); return '<button type="button" role="tab" aria-selected="'+on+'" class="'+(on?'on':'')+'" data-svc="'+(s==='全部'?'':esc(s))+'">'+esc(s)+'</button>'; }).join('');
+    $('#hn-flt').querySelectorAll('[data-svc]').forEach(function(b){ b.onclick=function(){ F.svc=b.getAttribute('data-svc'); F.online=false; draw(); }; });
+    $('#hn-gh').firstChild.textContent=(F.area?'['+F.area+'] ':'')+(F.online?'線上':'')+'推薦引路人';
+    var pr=L.map(function(g){ return Number(g.price)||0; }).filter(Boolean); $('#hn-from').textContent=pr.length?money(Math.min.apply(null,pr))+' 起':'';
+    $('#hn-gl').innerHTML=L.length?L.map(card).join(''):'<span class="hn-empty">這個條件還沒有引路人，<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE 讓我們幫你找</a></span>';
+    var O=G.filter(function(g){ if(!isOn(g)) return false; if(!F.q) return true; return [g.name,(g.services||[]).join(' '),g.region].join(' ').toLowerCase().indexOf(F.q)>=0; });
+    $('#hn-ol').innerHTML=O.length?O.map(card).join(''):'<span class="hn-empty">目前沒有線上的引路人</span>';
+  }
+  $('#hn-cats').addEventListener('click',function(e){ var b=e.target.closest('[data-cat]'); if(!b) return; var c=CATS[+b.getAttribute('data-cat')];
+    F.svc=c.svc||''; F.online=!!c.online; draw(); $('#hn-gsec').scrollIntoView({behavior:'smooth',block:'start'}); });
+  $('#hn-q').addEventListener('input',function(){ F.q=this.value.trim().toLowerCase(); draw(); });
+  $('#hn-q').addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); $('#hn-gsec').scrollIntoView({behavior:'smooth',block:'start'}); } });
+  // 共用標題列的「全部地區」：在首頁直接篩選下面的引路人（從別頁選會帶 ?area= 過來）
+  window.rwOnArea=function(v){ F.area=v; draw(); };
+  try{ F.area=new URLSearchParams(location.search).get('area')||localStorage.getItem('rw_area')||''; }catch(e){}
+  if(window.SUPA) fetch(SUPA.url+'/rest/v1/public_guides?select=id,name,services,service_mode,region,price&order=created_at.desc',{headers:{apikey:SUPA.key,Authorization:'Bearer '+SUPA.key}})
+    .then(function(r){ return r.json(); }).then(function(rows){ G=Array.isArray(rows)?rows:[];
+      var C=[]; G.forEach(function(g){ counties(g).forEach(function(c){ if(C.indexOf(c)<0) C.push(c); }); });
+      draw(); if(location.hash==='#hn-gsec' && F.area) $('#hn-gsec').scrollIntoView({block:'start'}); }).catch(function(){ $('#hn-gl').innerHTML='<span class="hn-empty">暫時讀不到引路人名單，請稍後再試</span>'; });
+})();
+</script>
 </body>
 </html>
