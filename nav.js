@@ -49,6 +49,59 @@ window.rwMemberToken=function(){
   }catch(e){}
 })();
 
+// 新版標題列（每一頁一樣）：彩虹圈＋彩之語｜全部地區▾｜🔍｜🔔｜會員；手機用底部分頁列，不用漢堡選單
+var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
+(function(){
+  try{
+    var nav=document.querySelector('.rw-nav'), navIn=nav&&nav.querySelector('.rw-nav-in'); if(!navIn || nav.classList.contains('v2')) return;
+    nav.classList.add('v2');
+    var br=navIn.querySelector('.rw-brand'); if(br) br.innerHTML='<i class="rw-ring" aria-hidden="true"></i>彩之語';
+    var cur=''; try{ cur=new URLSearchParams(location.search).get('area')||localStorage.getItem('rw_area')||''; }catch(e){}
+    var ar=document.createElement('label'); ar.className='rw-area';
+    ar.innerHTML='<select id="rw-area" aria-label="選擇地區"><option value="">全部地區</option>'+RW_COUNTIES.map(function(c){ return '<option'+(c===cur?' selected':'')+'>'+c+'</option>'; }).join('')+'</select>';
+    var sp=document.createElement('span'); sp.className='rw-nsp';
+    var sb=document.createElement('button'); sb.type='button'; sb.className='rw-sbtn'; sb.setAttribute('aria-label','搜尋引路人');
+    sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
+    var mb=document.createElement('a'); mb.className='rw-mbtn'; mb.href='account.html'; mb.textContent=(window.rwMemberToken&&window.rwMemberToken())?'會員':'登入／註冊';
+    var cb=navIn.querySelector('.rw-burger-cb');
+    navIn.insertBefore(ar, br?br.nextSibling:navIn.firstChild);
+    navIn.insertBefore(sp, cb); navIn.insertBefore(sb, cb); navIn.appendChild(mb);   // 小鈴鐺之後會插在 cb 前面＝搜尋和會員中間
+    // 選地區：首頁直接篩選；其他頁帶到首頁的引路人
+    ar.querySelector('select').onchange=function(){ var v=this.value; try{ localStorage.setItem('rw_area',v); }catch(e){}
+      if(window.rwOnArea) window.rwOnArea(v); else location.href='index.html'+(v?'?area='+encodeURIComponent(v):'')+'#hn-gsec'; };
+    sb.onclick=function(){ if(window.rwOnSearch) window.rwOnSearch(); else location.href='index.html#search'; };
+  }catch(e){}
+})();
+
+// 手機版底部分頁列（首頁／測驗／引路人／訂單／我的）：≤ 768px 才出現；我的後台不放
+(function(){
+  var path=(location.pathname.split('/').pop()||'index.html');
+  if(/^(admin|phone)\.html$/.test(path) || document.querySelector('.rw-tab')) return;
+  var T=[
+    {h:'index.html', t:'首頁', on:/^(index\.html|)$/, i:'<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>'},
+    {h:'tests.html', t:'測驗', on:/^(tests|quiz|chakra|numerology)\.html$/, i:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>'},
+    {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'},
+    {h:'orders.html', t:'訂單', on:/^orders\.html$/, i:'<path d="M7 3.5h10a1 1 0 0 1 1 1V20l-2.5-1.5L13 20l-2.5-1.5L8 20l-2-1.5V4.5a1 1 0 0 1 1-1Z"/><path d="M9.5 8.5h5M9.5 12h5"/>'},
+    {h:'account.html', t:'我的', on:/^account\.html$/, i:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10" r="2.8"/><path d="M6.8 17.8c1.2-1.9 3-2.9 5.2-2.9s4 1 5.2 2.9"/>'}
+  ];
+  var css=document.createElement('style');
+  css.textContent='.rw-tab{display:none}@media (max-width:768px){'+
+    'body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}'+
+    '.rw-tab{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:90;background:rgba(255,253,248,.96);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-top:1px solid #EADFCC;padding-bottom:env(safe-area-inset-bottom)}'+
+    '.rw-tab a{flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:#8C7963;font:500 11px/1.2 "Noto Sans TC",sans-serif;-webkit-tap-highlight-color:transparent}'+
+    '.rw-tab a svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}'+
+    '.rw-tab a.on{color:#6B4A33;font-weight:700}.rw-tab a.on svg{stroke-width:2.1}'+
+    '.rw-tab .dot{display:none;width:4px;height:4px;border-radius:50%;background:linear-gradient(90deg,#EE9E86,#B0A2E4);margin-top:1px}.rw-tab a.on .dot{display:block}'+
+    '.rw-tab a:active{opacity:.6}'+
+    '.sp-bar{bottom:calc(56px + env(safe-area-inset-bottom))!important}}';
+  document.head.appendChild(css);
+  function mount(){ if(document.querySelector('.rw-tab')) return;
+    var nav=document.createElement('nav'); nav.className='rw-tab'; nav.setAttribute('aria-label','主要分頁');
+    nav.innerHTML=T.map(function(x){ var on=x.on.test(path); return '<a href="'+x.h+'"'+(on?' class="on" aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+x.i+'</svg>'+x.t+'<span class="dot"></span></a>'; }).join('');
+    document.body.appendChild(nav); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
+})();
+
 // 等頁面載入完再用 window.SUPA（有些頁面沒放 supabase-config.js，就自己載）
 function rwWithSupa(cb){
   if(window.SUPA) return cb();

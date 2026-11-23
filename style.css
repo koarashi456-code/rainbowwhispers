@@ -123,3 +123,26 @@ button,a,label,select,input{-webkit-tap-highlight-color:transparent}
 .nb-list .nb-row .cal-st,.nb-list .nb-row .status-badge{flex:none;font-size:11px;padding:1px 7px;margin:0;white-space:nowrap}
 .nb-list .nb-row.dim .nb-n,.nb-list .nb-row.dim .nb-a{color:#9C8B74}
 @media (max-width:360px){ .nb-s{display:none} }
+
+/* ===== 新版標題列（每一頁一樣）：彩虹圈＋彩之語｜全部地區▾｜（電腦：原本的連結）｜🔍｜🔔｜會員 ===== */
+.rw-nav.v2{background:rgba(250,244,234,.95);-webkit-backdrop-filter:saturate(1.3) blur(10px);backdrop-filter:saturate(1.3) blur(10px)}
+.rw-nav.v2 .rw-nav-in{justify-content:flex-start;gap:6px;padding:8px 10px 8px 16px}
+.rw-nav.v2 .rw-brand{order:1;flex-direction:row;align-items:center;gap:7px;font-size:19px;letter-spacing:.06em}
+.rw-nav.v2 .rw-brand small{display:none}
+.rw-ring{flex:none;width:24px;height:24px;border-radius:50%;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
+.rw-ring::after{content:"";width:12px;height:12px;border-radius:50%;background:#FFFDF8}
+.rw-area{order:2;position:relative;display:flex;align-items:center;min-height:40px;margin-left:4px}
+.rw-area select{appearance:none;-webkit-appearance:none;font:inherit;font-size:14px!important;font-weight:600;color:var(--brush);background:none;border:0;padding:0 16px 0 2px;cursor:pointer;max-width:112px;outline:none}
+.rw-area::after{content:"";position:absolute;right:3px;top:50%;margin-top:-2px;border:4px solid transparent;border-top:5px solid var(--brush);pointer-events:none}
+.rw-nav.v2 .rw-links{order:3;margin-left:8px}
+.rw-nav.v2 .rw-links a[href="account.html"]{display:none}
+.rw-nsp{order:4;flex:1}
+.rw-sbtn{order:5;flex:none;width:40px;height:40px;border:0;background:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--brush);cursor:pointer;padding:0}
+.rw-sbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.rw-nav.v2 .rw-bell-wrap{order:6;margin-left:0}
+.rw-nav.v2 .rw-bell{width:40px;height:40px;border:0;background:none}
+.rw-nav.v2 .rw-bell svg{width:21px;height:21px}
+.rw-mbtn{order:7;flex:none;font-size:13px;font-weight:600;color:var(--brush);background:#FFFDF8;border:1px solid #E2D4BE;border-radius:10px;min-height:40px;display:inline-flex;align-items:center;padding:0 12px;text-decoration:none;white-space:nowrap}
+.rw-nav.v2 .rw-burger,.rw-nav.v2 .rw-burger-cb{display:none!important}
+@media (max-width:768px){ .rw-nav.v2 .rw-links{display:none!important} }   /* 手機：用底部分頁列 */
+@media (max-width:360px){ .rw-nav.v2 .rw-nav-in{padding-left:12px;gap:2px} .rw-area select{max-width:88px} .rw-mbtn{padding:0 9px} }
