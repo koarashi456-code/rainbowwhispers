@@ -73,6 +73,13 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
     ar.querySelector('select').onchange=function(){ var v=this.value; try{ localStorage.setItem('rw_area',v); }catch(e){}
       if(window.rwOnArea) window.rwOnArea(v); else location.href='index.html'+(v?'?area='+encodeURIComponent(v):'')+'#hn-gsec'; };
     sb.onclick=function(){ if(window.rwOnSearch) window.rwOnSearch(); else location.href='index.html#search'; };
+    // 三條線的選單：點選單外面或按 Esc 就收起來；可以用鍵盤打開
+    var bcb=navIn.querySelector('.rw-burger-cb'), blb=navIn.querySelector('.rw-burger');
+    if(bcb && blb){ blb.removeAttribute('aria-hidden'); blb.setAttribute('role','button'); blb.setAttribute('tabindex','0'); blb.setAttribute('aria-label','選單');
+      var sync=function(){ blb.setAttribute('aria-expanded',bcb.checked); }; sync(); bcb.addEventListener('change',sync);
+      blb.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); bcb.checked=!bcb.checked; sync(); } });
+      document.addEventListener('click',function(e){ if(bcb.checked && !navIn.contains(e.target)){ bcb.checked=false; sync(); } });
+      document.addEventListener('keydown',function(e){ if(e.key==='Escape' && bcb.checked){ bcb.checked=false; sync(); } }); }
   }catch(e){}
 })();
 
