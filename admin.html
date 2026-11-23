@@ -52,6 +52,26 @@
   #glist .chead .gsub{flex:1;min-width:0;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #glist>.cust:not(.collapsed) .gsub{display:none}
   @media(max-width:640px){ #glist::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none;z-index:1} }
+  /* 點進去看明細時，不要筆記本的紅線 */
+  section.m-card-det #list::before,section.m-card-det #glist::before,#list:has(.cust:not(.collapsed))::before,#glist:has(.cust:not(.collapsed))::before{display:none}
+  /* 引路人明細：跟客戶明細一樣（頭像＋名字＋信箱、三格數字、點開的區塊、左標籤右欄位） */
+  #glist .gav,#glist .gmail{display:none}
+  #glist .gmn{flex:none;display:flex;flex-direction:column;min-width:0}
+  #glist>.cust:not(.collapsed){background:#FFFDF8;padding:12px 14px}
+  #glist>.cust:not(.collapsed)>.chead{display:flex;align-items:center;gap:12px;min-height:0;padding:0 0 4px;margin:0}
+  #glist>.cust:not(.collapsed) .caret{display:none}
+  #glist>.cust:not(.collapsed) .gav{display:flex;position:relative;overflow:hidden;flex:none;width:40px;height:40px;border-radius:50%;background:#EAD9F2;color:#6E4F9E;font-size:15px;font-weight:600;align-items:center;justify-content:center}
+  #glist .gav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #glist>.cust:not(.collapsed) .gmn{flex:1}
+  #glist>.cust:not(.collapsed) .gnm{width:auto;font-size:15.5px}
+  #glist>.cust:not(.collapsed) .gmail{display:block;font-size:12.5px;color:var(--soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cd-gbox{padding:8px 2px 2px}
+  .cd-gbox .gplans,.cd-gbox .gslots{margin-top:0!important}
+  .cd-gbox .gx-box{margin:0;border:0;padding:4px 0;background:none}
+  .gloc-box{margin:0!important;border:0!important;padding:0!important;background:none!important}
+  .gloc-box .gloc-tog.cd-tog{width:100%}
+  #glist .cd-tog[aria-expanded=true]{border-bottom-left-radius:12px;border-bottom-right-radius:12px}
+  #glist .cd-fields{margin-top:12px}
   .abtn{font:inherit;font-size:13px;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--brush);cursor:pointer;text-decoration:none;display:inline-block}
   .abtn:hover{background:var(--tint)}
   .tabbar{max-width:none;margin:0 auto;display:flex;gap:4px;padding:0 18px 10px;flex-wrap:wrap}
@@ -1098,19 +1118,25 @@ function renderGuides(){
   bindGuides();
 }
 function guideCard(g){
+  // 跟「客戶明細」同一個樣子：上面頭像＋名字＋信箱、三格數字、點開的區塊、左標籤右欄位、最下面刪除
+  var st=guideStatsOf(g.id), mine=GPLANS.filter(function(p){ return p.guide_id===g.id; }), pend=mine.filter(function(p){ return !p.approved; }).length;
+  var nm=String(g.name||'?').trim(), ini=nm?Array.from(nm)[0]:'?';
+  var jd=g.created_at?(function(d){ return (d.getMonth()+1)+'/'+d.getDate(); })(new Date(g.created_at)):'';
+  var roleTxt=(g.roles||[]).map(function(k){ var r=GROLES.filter(function(x){ return x.k===k; })[0]; return r?r.t:k; }).join('、');
+  var capTxt=(g.cap_month_hours||g.cap_day_hours)?('每月 '+(g.cap_month_hours||'不限')+'・每天 '+(g.cap_day_hours||'不限')):'上限不限';
+  function fr(k,v,top){ return '<div class="cd-fr'+(top?' top':'')+'"><span>'+k+'</span>'+v+'</div>'; }
+  function fold(k,title,hint,body){ return '<button type="button" class="cd-tog" data-gtog="'+k+'" aria-expanded="false">'+title+' <span>'+hint+'・點開 ▾</span></button><div class="cd-gbox" data-gtog-box="'+k+'" hidden>'+body+'</div>'; }
   return '<div class="cust collapsed" data-id="'+g.id+'">'+
-    '<div class="chead"><span class="caret">▾</span> <b class="gnm">'+esc(g.name||'(未命名引路人)')+'</b><span class="gsub">'+esc([g.region,g.service_mode].filter(Boolean).join('・'))+'</span>'+guideBadge(g)+'</div>'+
+    '<div class="chead"><span class="caret">▾</span>'+
+      '<span class="gav">'+esc(ini)+'<img alt="" src="'+esc(guidePhotoUrl(g.id))+'" onerror="this.remove()"></span>'+
+      '<span class="gmn"><b class="gnm">'+esc(g.name||'(未命名引路人)')+'</b><span class="gmail">'+esc(g.email||'沒有留信箱')+'</span></span>'+
+      '<span class="gsub">'+esc([g.region,g.service_mode].filter(Boolean).join('・'))+'</span>'+guideBadge(g)+'</div>'+
     '<div class="cbody">'+
-    guidePhotoHtml(g)+
-    '<div class="cust-grid">'+
-      '<label>姓名<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名"></label>'+
-      '<label>電話<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___"></label>'+
-      '<label>信箱<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com"></label>'+
-      '<label>服務方式<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體"></label>'+
-      '<label>粉絲專頁<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結"></label>'+
-    '</div>'+
+    '<div class="cd-meta">'+(jd?jd+' 加入・':'')+(g.portal_enabled?'已開通引路人後台':'還沒開通引路人後台')+'</div>'+
+    '<div class="cd-stats"><div><small>預約</small><b>'+st.n+' 筆</b></div><div><small>有效營收</small><b>'+money(st.amt)+'</b></div><div><small>客戶</small><b>'+st.c+' 位</b></div></div>'+
+    fold('photo','大頭照','公開顯示',guidePhotoHtml(g))+
     '<div class="gloc-box">'+
-      '<button type="button" class="gloc-tog" data-gloc-tog aria-expanded="false">服務地點（實體）<span data-gloc-hint>點開 ▾</span></button>'+
+      '<button type="button" class="gloc-tog cd-tog" data-gloc-tog aria-expanded="false">服務地點（實體）<span data-gloc-hint>點開 ▾</span></button>'+
       '<div data-gloc-body hidden>'+
         '<div class="gloc-h" style="margin-top:4px"><span>可以新增好幾個，客人預約時自己選</span></div>'+
         '<div data-glocs></div>'+
@@ -1118,34 +1144,42 @@ function guideCard(g){
         '<div class="gloc-tip">・引路人頁面的「服務區域」會自動顯示這些地區<br>・完整地址只有刷卡／儲值預約成功的客人看得到，而且只給客人選的那個地點</div>'+
       '</div>'+
     '</div>'+
+    fold('role','角色・接案上限',esc((roleTxt||'還沒選角色')+'・'+capTxt),
     '<div class="gx-box">'+
       '<div class="gx-l">角色 <span>（測驗配對用，最多選 2 個）</span></div>'+
       '<div data-groles>'+GROLES.map(function(r){ return '<button type="button" class="grole'+((g.roles||[]).indexOf(r.k)>=0?' on':'')+'" data-role="'+r.k+'">'+r.t+'</button>'; }).join('')+'</div>'+
       '<div class="gx-l" style="margin-top:8px">接案上限 <span>（到了自動關掉剩下的時段；空白＝不限）</span></div>'+
       '<div class="gcap">每月最多 <input class="in" type="number" min="1" max="744" step="0.5" data-gcap="cap_month_hours" value="'+(g.cap_month_hours!=null?esc(g.cap_month_hours):'')+'" placeholder="不限"> 小時　每天最多 <input class="in" type="number" min="0.5" max="24" step="0.5" data-gcap="cap_day_hours" value="'+(g.cap_day_hours!=null?esc(g.cap_day_hours):'')+'" placeholder="不限"> 小時</div>'+
-    '</div>'+
-    '<div class="cust-grid" style="margin-top:10px">'+
-      '<label>視訊軟體（線上服務）<select class="in" data-f="video_app"><option value="">— 不提供線上 —</option>'+['Google Meet','Zoom'].map(function(x){ return '<option'+(g.video_app===x?' selected':'')+'>'+x+'</option>'; }).join('')+'</select></label>'+
-      '<label>視訊連結（不公開，預約成功後給客人）<input class="in" data-f="video_link" value="'+esc(g.video_link)+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…"></label>'+
-    '</div>'+
-    '<label class="notes-l">服務項目（逗號分隔）<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字"></label>'+
-    '<label class="notes-l">自我介紹／經歷（公開顯示在引路人頁）<textarea class="in" data-f="notes" rows="5" placeholder="例：我是 XUAN，接觸彩虹卡 5 年，擅長陪你把卡住的感受說清楚…">'+esc(g.notes)+'</textarea></label>'+
-    '<label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;cursor:pointer;color:'+(g.portal_enabled?'#4F8E6E':'var(--soft)')+';font-weight:'+(g.portal_enabled?'500':'400')+'"><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台（用登記信箱 '+esc(g.email||'（未填信箱）')+' 登入，看自己的預約與會員）</label>'+
-    guidePlansHtml(g)+
+    '</div>')+
+    fold('plan','方案審核',mine.length+' 個方案'+(pend?'・'+pend+' 個待審':''),guidePlansHtml(g))+
+    fold('slot','開放時段','引路人自己排',
     '<div class="gslots" data-gslots style="margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#FBF6EC">'+
       '<div style="font-size:12.5px;color:var(--soft);font-weight:500;margin-bottom:8px">開放時段（引路人自己設定，客戶只能從這些時段預約）</div>'+
       (g.availability ? '<div data-gs-legacy style="font-size:12px;color:var(--soft);background:#fff;border:1px dashed var(--line);border-radius:10px;padding:6px 10px;margin-bottom:8px">舊的文字說明：「'+esc(g.availability)+'」（客戶頁只在沒有開放時段時顯示）<button type="button" class="del" data-gs-clear style="margin-left:6px">清除</button></div>' : '')+
       '<div data-gslots-body style="color:var(--soft);font-size:12.5px">展開後載入…</div>'+
+    '</div>')+
+    '<div class="cd-fields">'+
+      fr('姓名','<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名">')+
+      fr('電話','<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___">')+
+      fr('信箱','<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com">')+
+      fr('服務方式','<input class="in" data-f="service_mode" value="'+esc(g.service_mode)+'" placeholder="線上／實體">')+
+      fr('服務項目','<input class="in" data-f="services" value="'+esc((g.services||[]).join(', '))+'" placeholder="例：塔羅, 占星, 八字">')+
+      fr('粉絲專頁','<input class="in" data-f="fanpage" value="'+esc(g.fanpage)+'" placeholder="FB／IG 連結">')+
+      fr('視訊軟體','<select class="in" data-f="video_app"><option value="">不提供線上</option>'+['Google Meet','Zoom'].map(function(x){ return '<option'+(g.video_app===x?' selected':'')+'>'+x+'</option>'; }).join('')+'</select>')+
+      fr('視訊連結','<input class="in" data-f="video_link" value="'+esc(g.video_link)+'" placeholder="https://meet.google.com/…（不公開）">')+
+      fr('自我介紹','<textarea class="in" data-f="notes" rows="4" placeholder="公開顯示在引路人頁">'+esc(g.notes)+'</textarea>',true)+
     '</div>'+
-    '<div class="cust-actions">'+
+    '<div class="cd-foot"><label><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台</label></div>'+
+    '<div class="cd-foot">'+
       (g.pending
-        ? '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#4F8E6E;margin-right:auto;cursor:pointer;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
-        : '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft);margin-right:auto;cursor:pointer"><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>')+
+        ? '<label style="color:#4F8E6E;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
+        : '<label><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>')+
       '<span class="saved" data-saved></span><button class="del" data-del>刪除</button>'+
     '</div>'+
-    '</div>'+
-  '</div>';
+    '</div></div>';
 }
+// 引路人的三格數字：預約筆數、有效營收、客戶數（跟交易紀錄同一份資料）
+function guideStatsOf(id){ var n=0, amt=0, cs={}; TX.forEach(function(t){ if(t.guide_id!==id || isShopTx(t)) return; if(t.status==='已取消'||t.status==='已退費') return; n++; amt+=Number(t.amount||0); if(t.customer_id) cs[t.customer_id]=1; }); return {n:n, amt:amt, c:Object.keys(cs).length}; }
 function unitMinutes(u){ u=String(u||''); var m=/([\d.]+)\s*小時/.exec(u); if(m) return Math.round(Number(m[1])*60); m=/(\d+)\s*分鐘/.exec(u); return m?Number(m[1]):0; }
 function guidePlansHtml(g){
   var mine=GPLANS.filter(function(p){return p.guide_id===g.id;});
@@ -1779,6 +1813,10 @@ if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.query
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
 ['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ if(e.target.closest('.a-edit,.a-alias')) return; var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(!card) return; if(isM() && (sel==='#list'||sel==='#glist')){ mOpenCard(card); return; } card.classList.toggle('collapsed'); } }); });
 function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
+(function(){ var gl=document.getElementById('glist'); if(!gl) return;
+  gl.addEventListener('click',function(e){ var b=e.target.closest('[data-gtog]'); if(!b) return; e.stopPropagation();
+    var card=b.closest('.cust'), k=b.getAttribute('data-gtog'), box=card&&card.querySelector('[data-gtog-box="'+k+'"]'); if(!box) return;
+    box.hidden=!box.hidden; b.setAttribute('aria-expanded',!box.hidden); var sp=b.querySelector('span'); if(sp) sp.textContent=sp.textContent.replace(/點開 ▾|收起 ▴/,box.hidden?'點開 ▾':'收起 ▴'); }); })();
 bindCollapseAll('cust-collapse','#list'); bindCollapseAll('guide-collapse','#glist'); bindCollapseAll('tx-collapse','#txlist');
 
 /* ===== 商品管理（測試版商品頁）===== */
