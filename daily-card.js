@@ -6,13 +6,13 @@
 (function(){
   if(window.RWDaily) return;
   var COLORS=[
-    {n:'紅',k:'勇氣',c:'#EE9E86',d:'#B4583E'},
-    {n:'橙',k:'喜悅',c:'#F3B07C',d:'#B06A2C'},
-    {n:'黃',k:'自信',c:'#F2C56E',d:'#9A7420'},
-    {n:'綠',k:'成長',c:'#9FD49A',d:'#3F7A5E'},
-    {n:'藍',k:'平靜',c:'#86C9DA',d:'#3C7C8E'},
-    {n:'靛',k:'洞察',c:'#8FA6DE',d:'#4A5E9E'},
-    {n:'紫',k:'連結',c:'#B0A2E4',d:'#6E4F9E'}
+    {n:'紅',k:'勇氣',c:'#EE9E86',d:'#B4583E',bg:'#FBE1D8'},
+    {n:'橙',k:'喜悅',c:'#F3B07C',d:'#B06A2C',bg:'#FCE6D2'},
+    {n:'黃',k:'自信',c:'#F2C56E',d:'#9A7420',bg:'#FBEFCF'},
+    {n:'綠',k:'成長',c:'#9FD49A',d:'#3F7A5E',bg:'#E1F2DD'},
+    {n:'藍',k:'平靜',c:'#86C9DA',d:'#3C7C8E',bg:'#DAEFF5'},
+    {n:'靛',k:'洞察',c:'#8FA6DE',d:'#4A5E9E',bg:'#DFE6F7'},
+    {n:'紫',k:'連結',c:'#B0A2E4',d:'#6E4F9E',bg:'#E9E3F9'}
   ];
   var CARDS=[
     [0,'我可以為自己站出來','今天，說出一個你真正的想法。'],
@@ -95,13 +95,13 @@
     '.dc-ring{position:relative;width:46%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 200deg,#EE9E86,#F3B07C,#F2C56E,#9FD49A,#86C9DA,#8FA6DE,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center}'+
     '.dc-ring::after{content:"";width:62%;aspect-ratio:1;border-radius:50%;background:#FFFDF8}'+
     '.dc-brand{font-family:"Noto Serif TC",serif;font-size:17px;color:#6B4F35;letter-spacing:.2em}'+
-    '.dc-front{transform:rotateY(180deg);background:#FFFDF8;border:1px solid #EFE3CE;display:flex;flex-direction:column;padding:22px 22px 20px}'+
+    '.dc-front{transform:rotateY(180deg);background:radial-gradient(120% 70% at 15% 0%,rgba(255,253,248,.5),rgba(255,253,248,0) 65%),var(--bg,#FFFDF8);border:1px solid var(--c,#EFE3CE);display:flex;flex-direction:column;padding:22px 22px 20px}'+
     '.dc-band{position:absolute;left:0;right:0;top:0;height:8px;background:var(--c)}'+
     '.dc-tag{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--d)}.dc-tag i{width:10px;height:10px;border-radius:50%;background:var(--c)}'+
     '.dc-no{margin-left:auto;font-size:11.5px;font-weight:400;color:#9A8670;font-variant-numeric:tabular-nums}'+
-    '.dc-art{position:absolute;right:-30%;bottom:-22%;width:78%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,transparent 52%,var(--c) 53%,var(--c) 70%,transparent 71%);opacity:.22}'+
+    '.dc-art{position:absolute;right:-30%;bottom:-22%;width:78%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,transparent 52%,var(--c) 53%,var(--c) 70%,transparent 71%);opacity:.3}'+
     '.dc-say{position:relative;flex:1;display:flex;align-items:center;font-family:"Noto Serif TC",serif;font-size:clamp(19px,6.4vw,24px);line-height:1.5;font-weight:600;color:#4A3A2A}'+
-    '.dc-try{position:relative;font-size:13.5px;line-height:1.6;color:#5E4B37;border-top:1px dashed #E6D7BF;padding-top:10px}.dc-try b{display:block;font-size:11.5px;color:#8C7963;font-weight:500;margin-bottom:2px}'+
+    '.dc-try{position:relative;font-size:13.5px;line-height:1.6;color:#5E4B37;border-top:1px dashed var(--c,#E6D7BF);padding-top:10px}.dc-try b{display:block;font-size:11.5px;color:#8C7963;font-weight:500;margin-bottom:2px}'+
     '.dc-lock{position:absolute;inset:0;margin:auto;z-index:1;width:44px;height:44px;border-radius:50%;background:#FBF6EC;border:1px solid #EFE3CE;display:flex;align-items:center;justify-content:center}'+
     '.dc-lock svg{width:20px;height:20px;fill:none;stroke:#8C7963;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'+
     '.dc-note{color:#4A3A2A;font-size:13.5px;text-align:center;line-height:1.7;min-height:1.7em}'+
@@ -169,7 +169,7 @@
     var c=CARDS[i], col=COLORS[c[0]], d=new Date(), dl=(d.getMonth()+1)+'/'+d.getDate()+'（'+WD.charAt(d.getDay())+'）';
     var head='<div class="dc-top"><b>每日一抽<small>'+dl+'</small></b><button type="button" class="dc-x" data-dc-x aria-label="關閉">×</button></div>';
     mask.innerHTML='<div class="dc-wrap">'+head+'<div class="dc-stage"><div class="dc-card'+(fresh?'':' up')+'" aria-live="polite">'+backFace(false)+
-        '<div class="dc-face dc-front" style="--c:'+col.c+';--d:'+col.d+'"><span class="dc-band"></span><span class="dc-art" aria-hidden="true"></span>'+
+        '<div class="dc-face dc-front" style="--c:'+col.c+';--d:'+col.d+';--bg:'+col.bg+'"><span class="dc-band"></span><span class="dc-art" aria-hidden="true"></span>'+
           '<div class="dc-tag"><i></i>'+col.n+'・'+col.k+'<span class="dc-no">No.'+p2(i+1)+'</span></div>'+
           '<div class="dc-say">'+esc(c[1])+'</div>'+
           '<div class="dc-try"><b>今天試試</b>'+esc(c[2])+'</div></div>'+
