@@ -84,12 +84,12 @@
     }
     return {i:st.i, fresh:fresh};
   }
-  var CSS='.dc-mask{position:fixed;inset:0;z-index:400;background:rgba(52,38,26,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;-webkit-tap-highlight-color:transparent}'+
+  var CSS='.dc-mask{position:fixed;inset:0;z-index:400;background:linear-gradient(160deg,rgba(248,217,203,.97),rgba(248,232,196,.97) 25%,rgba(218,238,214,.97) 50%,rgba(214,232,242,.97) 75%,rgba(229,222,247,.97));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;-webkit-tap-highlight-color:transparent}'+
     '.dc-mask[hidden]{display:none}'+
     '.dc-wrap{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:12px;font-family:"Noto Sans TC",sans-serif}'+
-    '.dc-top{align-self:stretch;display:flex;align-items:center;justify-content:space-between;color:#FFFDF8}'+
+    '.dc-top{align-self:stretch;display:flex;align-items:center;justify-content:space-between;color:#4A3A2A}'+
     '.dc-top b{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;letter-spacing:.04em}.dc-top small{font-size:12.5px;opacity:.9;margin-left:8px;font-family:"Noto Sans TC",sans-serif;font-weight:400;letter-spacing:0}'+
-    '.dc-x{width:44px;height:44px;border:0;background:rgba(255,253,248,.18);color:#FFFDF8;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;margin-right:-4px}'+
+    '.dc-x{width:44px;height:44px;border:0;background:rgba(255,253,248,.7);color:#6B4F35;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;margin-right:-4px}'+
     '.dc-stage{width:min(290px,76vw,calc((100vh - 290px)*.714));width:min(290px,76vw,calc((100dvh - 290px)*.714));min-width:180px;aspect-ratio:5/7;perspective:1200px}'+
     '.dc-card{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.2,.7,.2,1)}'+
     '.dc-card.up{transform:rotateY(180deg)}'+
@@ -108,12 +108,12 @@
     '.dc-try{position:relative;font-size:13.5px;line-height:1.6;color:#5E4B37;border-top:1px dashed #E6D7BF;padding-top:10px}.dc-try b{display:block;font-size:11.5px;color:#8C7963;font-weight:500;margin-bottom:2px}'+
     '.dc-lock{position:absolute;inset:0;margin:auto;z-index:1;width:44px;height:44px;border-radius:50%;background:#FBF6EC;border:1px solid #EFE3CE;display:flex;align-items:center;justify-content:center}'+
     '.dc-lock svg{width:20px;height:20px;fill:none;stroke:#8C7963;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'+
-    '.dc-note{color:#FFFDF8;font-size:13.5px;text-align:center;line-height:1.7;min-height:1.7em}'+
+    '.dc-note{color:#4A3A2A;font-size:13.5px;text-align:center;line-height:1.7;min-height:1.7em}'+
     '.dc-btns{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}'+
-    '.dc-ok{font:inherit;font-size:15.5px;font-weight:600;color:#4A3A2A;background:var(--rainbow,linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4));border:0;border-radius:999px;min-height:48px;padding:0 34px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-width:200px;box-sizing:border-box}'+
-    '.dc-link{font:inherit;font-size:13.5px;color:#FFFDF8;background:none;border:0;min-height:44px;padding:0 10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}'+
+    '.dc-ok{font:inherit;font-size:15.5px;font-weight:600;color:#FFFDF8;background:#6B4A33;box-shadow:0 8px 20px -10px rgba(74,58,42,.6);border:0;border-radius:999px;min-height:48px;padding:0 34px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-width:200px;box-sizing:border-box}'+
+    '.dc-link{font:inherit;font-size:13.5px;color:#5E4B37;background:none;border:0;min-height:44px;padding:0 10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}'+
     '.dc-ok:active,.dc-link:active,.dc-x:active{opacity:.7}'+
-    '.dc-ok:focus-visible,.dc-link:focus-visible,.dc-x:focus-visible{outline:2px solid #FFFDF8;outline-offset:3px}'+
+    '.dc-ok:focus-visible,.dc-link:focus-visible,.dc-x:focus-visible{outline:2px solid #6B4A33;outline-offset:3px}'+
     '@media (prefers-reduced-motion:reduce){.dc-card{transition:none}}';
   var mask=null, lastFocus=null;
   function css(){ if(document.getElementById('dc-css')) return; var s=document.createElement('style'); s.id='dc-css'; s.textContent=CSS; document.head.appendChild(s); }
