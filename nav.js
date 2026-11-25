@@ -156,10 +156,10 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   }catch(e){}
 })();
 
-// 手機版底部分頁列（首頁／測驗／每日一抽／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台不放
+// 手機版底部分頁列（首頁／測驗／每日一抽／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台也有
 (function(){
   var path=(location.pathname.split('/').pop()||'index.html');
-  if(/^(admin|phone)\.html$/.test(path) || document.querySelector('.rw-tab')) return;
+  if(/^phone\.html$/.test(path) || document.querySelector('.rw-tab')) return;   // 我的後台也放（跟網站一樣）
   var T=[
     {h:'index.html', t:'首頁', on:/^(index\.html|)$/, i:'<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>'},
     {h:'tests.html', t:'測驗', on:/^(tests|quiz|chakra|numerology)\.html$/, i:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>'},

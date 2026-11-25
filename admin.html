@@ -12,6 +12,10 @@
 <style>
   .admin-bar{position:sticky;top:0;z-index:40;background:rgba(250,244,230,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
   .admin-bar-in{max-width:none;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px 6px;gap:10px}
+  /* 返回會員中心：純文字（手機只在後台首頁出現，裡面各頁有自己的返回） */
+  .a-back{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 10px 0 0;font-size:15px;font-weight:500;color:var(--brush);text-decoration:none}
+  .a-back:active{opacity:.6}
+  .a-back+.admin-title{margin-right:auto}
   .admin-title{font-family:"Noto Serif TC",serif;font-weight:600;color:var(--brush);font-size:18px;display:flex;align-items:center;gap:8px}
   .a-ring{flex:none;width:24px;height:24px;border-radius:50%;background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9);display:flex;align-items:center;justify-content:center}
   .a-ring::after{content:"";width:12px;height:12px;border-radius:50%;background:#FFFDF8}
@@ -275,7 +279,7 @@
   .sp-r{flex:none;text-align:right}.sp-r .a{font-size:14.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}
   .sp-st{display:inline-block;margin-top:3px;font-size:11px;padding:1px 8px;border-radius:999px;background:#EDE6DC;color:#6A5741}.sp-st.on{background:#D8ECDF;color:#3F7A5E}
   .sp-go{flex:none;color:#C2A878;font-size:20px;margin-left:-4px}
-  .sp-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:90}
+  .sp-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:200}
   .sp-mask.on{display:flex}
   .sp-box{background:#FFFDF8;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:14px 16px 20px;max-height:88vh;overflow:auto}
   @media(min-width:600px){ .sp-mask{align-items:center} .sp-box{border-radius:20px} }
@@ -527,7 +531,8 @@
   .nsub{font-size:12px;color:var(--soft);margin-top:1px;word-break:break-word}
   .nempty{padding:36px 20px;text-align:center;color:var(--soft);font-size:14px}
   @media(max-width:520px){
-    .npanel{position:fixed;top:60px;left:10px;right:10px;width:auto;max-width:none;max-height:calc(100vh - 74px)}
+    .npanel{position:fixed;top:60px;left:10px;right:10px;width:auto;max-width:none;max-height:calc(100vh - 134px)}
+    body:not(.m-at-home) .a-back{display:none}
   }
   /* 引路人卡：可預約時段（點選新增，與引路人後台同一套） */
   .gs-chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -677,6 +682,7 @@
 <div id="app" style="display:none">
   <div class="admin-bar">
     <div class="admin-bar-in">
+      <a class="a-back" href="account.html" aria-label="返回會員中心">‹ 返回</a>
       <div class="admin-title"><i class="a-ring" aria-hidden="true"></i>彩之語後台</div>
       <div style="display:flex;gap:8px;align-items:center">
         <div class="bell-wrap">
@@ -2631,5 +2637,6 @@ function openCustDetail(cid){
 init();
 </script>
 <script src="date-ph.js"></script>
+<script src="nav.js?v=20261125g"></script>   <!-- 手機底部分頁列（首頁／測驗／每日一抽／引路人）跟網站一樣 -->
 </body>
 </html>
