@@ -75,6 +75,8 @@
   .mc-list .mc-v{display:inline-flex;align-items:center;gap:6px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
   .mc-list .mc-v .chev{font-weight:400}
   .mc-list #mc-order-stat{border-bottom:0}
+  .mc-list #mc-admin .il{color:var(--brush);font-weight:600}
+  .mc-adm{font-size:11.5px;font-weight:600;color:#4A3A2A;background:var(--rainbow);border-radius:999px;padding:2px 10px}
   .mc-list #mc-pkg-wrap{border-top:1px solid var(--line)}
   .mc-pkfold{width:100%;font:inherit;background:none;border:0;border-bottom:0!important;text-align:left;color:inherit;cursor:pointer;padding:11px 0}
   .mc-pkfold .mc-v{font-weight:500;font-size:13.5px}
@@ -468,6 +470,7 @@
   </div>
   <div class="sec-lab">我的帳戶</div>
   <div class="info-card mc-list">
+    <div class="irow link" id="mc-admin" role="link" tabindex="0" style="display:none"><span class="il">我的後台</span><span class="iv mc-v"><span class="mc-adm">管理員</span><span class="chev">›</span></span></div>
     <div class="irow link" id="mc-order-stat" role="link" tabindex="0"><span class="il">我的訂單</span><span class="iv mc-v"><span id="mc-order-count">0</span> 筆<span class="chev">›</span></span></div>
     <div id="mc-pkg-wrap" style="display:none">
       <button type="button" class="irow link mc-pkfold" id="mc-pk-fold" aria-expanded="false" aria-controls="mc-pkgs"><span class="il">我的課程</span><span class="iv mc-v"><span id="mc-pk-sum"></span><span class="chev" id="mc-pk-chev">▾</span></span></button>
@@ -637,6 +640,7 @@ function enterMember(o){
   $('#seg-m').classList.add('on'); $('#seg-g').classList.remove('on');
   var mseg=$('#mseg'); if(mseg) mseg.style.display=GUIDE_DATA?'flex':'none'; // 只有引路人才看得到「會員／引路人」切換
   var nm=o.name || (o.user_metadata&&o.user_metadata.name) || '';
+  var adm=$('#mc-admin'); if(adm) adm.style.display=(o.id && o.id===ADMIN_UID)?'':'none';   // 管理員：多一行「我的後台」
   $('#mc-name').textContent=nm||'會員';
   $('#mc-mail').textContent=o.email||(o.line?'LINE 登入':'')||'';
   $('#mc-f-mail').textContent=o.email||'';
@@ -1500,8 +1504,7 @@ async function route(){
   var r=await db.auth.getSession();
   var s=r.data&&r.data.session;
   if(s){
-    if(s.user.id===ADMIN_UID){ window.location.replace('admin.html'); return; }
-    afterLogin(s.user); return;
+    afterLogin(s.user); return;   // 管理員也跟一般會員一樣進會員中心（多一行「我的後台」）
   }
   if(typeof liff!=='undefined' && liff.isLoggedIn && liff.isLoggedIn()){
     try{ var p=await liff.getProfile(); saveLineMember(p); enterMember({name:p.displayName,line:true}); return; }catch(e){}
@@ -1550,7 +1553,6 @@ $('#form').onsubmit=async function(e){
     var r2=await db.auth.signInWithPassword({email:email,password:pw});
     btn.disabled=false; btn.textContent=orig;
     if(r2.error){ msg.style.color='#C0506A'; msg.textContent='登入失敗：'+r2.error.message; return; }
-    if(r2.data.user.id===ADMIN_UID){ window.location.replace('admin.html'); return; }
     afterLogin(r2.data.user);
   }
 };
@@ -1565,6 +1567,8 @@ $('#seg-g').onclick=function(){ if(GUIDE_DATA){ enterGuide(GUIDE_DATA); } else {
 $('#seg-m').onclick=function(){ enterMember(CURRENT_USER); };
 $('#gseg-m').onclick=function(){ enterMember(CURRENT_USER); };
 // 我的訂單卡 → 訂單頁；設定走右上角齒輪
+$('#mc-admin').onclick=function(){ location.href='admin.html'; };
+$('#mc-admin').onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); location.href='admin.html'; } };
 $('#mc-order-stat').onclick=function(){ location.href='orders.html'; };
 $('#mc-order-stat').onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); location.href='orders.html'; } };
 $('#mc-gear').onclick=function(){ var e=$('#mc-pw'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); };
