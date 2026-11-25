@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261125b">
+<link rel="stylesheet" href="style.css?v=20261125c">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta property="og:type" content="website">
@@ -100,15 +100,14 @@
   .hn-g .pr{font-size:15px;font-weight:700;color:var(--brush);margin-top:6px}.hn-g .pr small{font-size:12px;font-weight:500;color:var(--soft);margin-left:2px}
   .hn-empty{padding:0 var(--hn-pad);font-size:13.5px;color:var(--soft)}
   .hn-empty a{color:#3F7A5E}
-  /* 電腦（手機不變）：整頁內容最寬 960px、置中，左右留白跟標題列對齊；大圖卡一次一張、分類／測驗／引路人改成換行排，不用左右滑 */
+  /* 電腦（手機不變）：整頁內容最寬 800px、置中，左右留白跟標題列對齊；大圖卡一次一張、分類／測驗／引路人改成換行排，不用左右滑 */
   @media (min-width:769px){
-    :root{--hn-pad:max(28px, calc(50% - 480px))}
+    :root{--hn-pad:max(28px, calc(50% - 400px))}
     .hn{max-width:none}
     .hn-search{max-width:none}
-    .hn-cats{gap:6px}   /* 分類一排排滿這一欄 */
-    .hn-cat{flex:1 0 auto;justify-content:center;padding:0 12px 0 6px;gap:6px}
-    .hn-cat i{width:28px;height:28px}
+    .hn-cats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible}   /* 分類排兩行、每格一樣寬 */
     .hn-cats::after{display:none}
+    .hn-cat{justify-content:center}
     .hn-bn{height:220px}
     .hn-list{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px}
     .hn-it,.hn-it:first-child{border-top:0;padding-top:0}
@@ -118,7 +117,6 @@
     .hn-empty{padding:0;grid-column:1/-1}
     .hn-g{width:auto}.hn-ph{width:100%;height:auto;aspect-ratio:1/1}
   }
-  @media (min-width:769px) and (max-width:1015px){ .hn-cats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible} }   /* 視窗窄一點：分類排兩行、每格一樣寬 */
 </style>
 <script src="supabase-config.js"></script>
 </head>

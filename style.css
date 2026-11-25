@@ -154,5 +154,5 @@ button,a,label,select,input{-webkit-tap-highlight-color:transparent}
   .rw-nav.v2 .rw-links a.rw-nav-line{text-align:center;margin-top:4px}
 }
 @media (max-width:768px){ .rw-nav.v2 .rw-links,.rw-nav.v2 .rw-burger{display:none!important} .rw-nav.rw-nav-mhide{display:none} }
-@media (min-width:769px){ .rw-nav.v2 .rw-nav-in{max-width:1016px;margin:0 auto;padding:10px 28px} }   /* 電腦：標題列內容最寬 960px、置中（跟首頁內容對齊） */   /* 手機：用底部分頁列；會員中心上面不放標題列 */
+@media (min-width:769px){ .rw-nav.v2 .rw-nav-in{max-width:856px;margin:0 auto;padding:10px 28px} }   /* 電腦：標題列內容最寬 800px、置中（跟首頁內容對齊） */   /* 手機：用底部分頁列；會員中心上面不放標題列 */
 @media (max-width:360px){ .rw-nav.v2 .rw-nav-in{padding-left:12px;gap:2px} .rw-area select{max-width:88px} .rw-mbtn{padding:0 9px} }
