@@ -276,15 +276,24 @@
   .ct-row .n{flex:none;width:58px;color:var(--soft)}
   .ct-row .r{flex:1;min-width:0}.ct-row .r b{color:var(--brush);font-weight:600}.ct-row .r small{display:block;font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ct-row .d{flex:none;width:44px;text-align:right;font-size:11.5px;color:var(--soft)}
-  .cr-row{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid #F1E7D6;padding:9px 11px;cursor:pointer;color:inherit}
-  .cr-row:last-child{border-bottom:0}.cr-row:hover{background:#FBF6EC}
-  .cr-d.buy{background:#EAD9F2}.cr-d.buy small{color:#6E4F9E;font-weight:600}
-  .cr-d{flex:none;width:46px;text-align:center;background:#FBF6EC;border-radius:10px;padding:4px 0;line-height:1.2}.cr-d.tp{background:#EFE7F8}
+  /* 消費／儲值紀錄：一筆一行（日期｜項目｜金額＋狀態 ▾），點一下在原地往下打開明細，不跳頁 */
+  .cr-item{border-bottom:1px solid #F1E7D6}.cr-item:last-child{border-bottom:0}
+  .cr-row{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;padding:6px 10px;cursor:pointer;color:inherit}
+  .cr-row:hover{background:#FBF6EC}.cr-row:active{opacity:.7}
+  .cr-d.buy small{color:#6E4F9E;font-weight:600}
+  .cr-d{flex:none;width:46px;text-align:left;line-height:1.25}
   .cr-d b{display:block;font-size:13.5px;color:var(--brush)}.cr-d small{display:block;font-size:10.5px;color:var(--soft);white-space:nowrap}
   .cr-m{flex:1;min-width:0}.cr-m .t{font-size:13.5px;color:var(--ink);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cr-m .s{font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .cr-r{flex:none;width:80px;text-align:right}.cr-r .a{font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}.cr-r .a.plus{color:#3F7A5E}
-  .cr-r .status-badge{font-size:11px;padding:1px 8px;margin-top:2px}
-  .cr-go{flex:none;color:#C2A878;font-size:18px;margin-left:-4px}
+  .cr-r .st{font-size:11px;color:#A5643A;margin-top:1px}
+  .cr-r .st.done{color:#3F7A5E}.cr-r .st.gone{color:#A0907A}.cr-r .st.no{color:#C0506A}.cr-r .st.tp{color:#6E4F9E}
+  .cr-go{flex:none;color:#C2A878;font-size:12px;transition:transform .15s}
+  .cr-item.open .cr-go{transform:rotate(180deg)}
+  .cr-more{padding:0 12px 10px 66px}
+  .cr-kv{display:flex;gap:10px;font-size:12.5px;line-height:1.5;padding:3px 0}
+  .cr-kv span{flex:none;width:5.5em;color:var(--soft)}
+  .cr-kv b{flex:1;min-width:0;font-weight:500;color:var(--ink);word-break:break-all}
+  .cd-pkbox{margin-top:8px}
   .cd-pk-h{font-size:12.5px;color:var(--soft);font-weight:500;margin:10px 0 6px}
   .xf-src{display:flex;flex-direction:column;gap:2px;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:9px 12px;margin-top:10px}.xf-src b{color:var(--brush);font-size:14.5px}.xf-src span{font-size:12.5px;color:var(--soft)}
   .xf-list{display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:220px;overflow:auto}
@@ -966,9 +975,18 @@ function custRecHtml(cid){
   if(!L.length) return '<div class="cd-tog off">消費／儲值紀錄 <span>還沒有紀錄</span></div>';
   L.sort(function(a,b){ return a.sort<b.sort?1:a.sort>b.sort?-1:0; });
   var rows=L.map(function(r){ var t=r.t, tp=r.k==='tp', title, sub, amt, bd;
-    if(tp){ title=isCouponTopup(t)?'優惠折抵':'儲值'; sub=[isCouponTopup(t)?'系統':t.method, t.notes].filter(Boolean).map(esc).join('・'); amt='<div class="a plus">+'+money(t.amount)+'</div>'; bd='<span class="status-badge st-topup">'+(isCouponTopup(t)?'折抵':'儲值')+'</span>'; }
-    else { var shop=isShopTx(t); title=esc(String(t.service||'—').replace(/^商品：/,'商品・')); sub=[shop?'':guideName(t.guide_id), t.method==='課程'?'用課程堂數':t.method, t.order_ref].filter(Boolean).map(esc).join('・'); amt='<div class="a">'+(t.method==='課程'?'1 堂':money(t.amount))+'</div>'; bd=statusBadge(shop?shopStLabel(t.status):t.status); }
-    return '<button type="button" class="cr-row" data-crk="'+r.k+'" data-crid="'+esc(r.id)+'"><span class="cr-d'+(tp?' tp':'')+(r.buy?' buy':'')+'"><b>'+r.d+'</b><small>'+r.w+'</small></span><span class="cr-m"><div class="t">'+title+'</div><div class="s">'+(sub||'—')+'</div></span><span class="cr-r">'+amt+bd+'</span><span class="cr-go">›</span></button>'; });
+    function kv(a,b){ return b?'<div class="cr-kv"><span>'+a+'</span><b>'+b+'</b></div>':''; }
+    var more;
+    if(tp){ title=isCouponTopup(t)?'優惠折抵':'儲值'; sub=[isCouponTopup(t)?'系統':t.method, t.notes].filter(Boolean).map(esc).join('・'); amt='<div class="a plus">+'+money(t.amount)+'</div>'; bd='<div class="st tp">'+(isCouponTopup(t)?'折抵':'儲值')+'</div>';
+      more=kv('日期',fmtFull(t.created_at))+kv('方式',esc(isCouponTopup(t)?'系統折抵':(t.method||'—')))+kv('備註',esc(t.notes||'')); }
+    else { var shop=isShopTx(t), stx=shop?shopStLabel(t.status):(t.status||'—'), sc=stx==='已完成'?' done':(stx==='已取消'||stx==='已退費')?' gone':stx==='未出席'?' no':'';
+      title=esc(String(t.service||'—').replace(/^商品：/,'商品・')); sub=[shop?'':guideName(t.guide_id), t.method==='課程'?'用課程堂數':t.method, t.order_ref].filter(Boolean).map(esc).join('・'); amt='<div class="a">'+(t.method==='課程'?'1 堂':money(t.amount))+'</div>'; bd='<div class="st'+sc+'">'+esc(stx)+'</div>';
+      var place=t.location?(t.location==='線上'?'線上視訊':t.location==='實體'?'實體':t.location+'（實體）'):'';
+      more=(shop?'':r.buy?kv('購買日期',fmtFull(t.created_at)):kv('時間',t.appointment_at?fmtApptFull(t.appointment_at):'未定時間'))+
+        kv(shop?'商品':'項目',title)+kv('地點',esc(place))+
+        ((t.method==='匯款'&&t.pay_last5)?kv('匯款末五碼',esc(t.pay_last5)):'')+
+        (t.reschedule_count?kv('改期',t.reschedule_count+' 次'):'')+kv('下單日',fmtFull(t.created_at))+kv('備註',esc(t.notes||'')); }
+    return '<div class="cr-item" data-crk="'+r.k+'" data-crid="'+esc(r.id)+'"><button type="button" class="cr-row" aria-expanded="false"><span class="cr-d'+(tp?' tp':'')+(r.buy?' buy':'')+'"><b>'+r.d+'</b><small>'+r.w+'</small></span><span class="cr-m"><div class="t">'+title+'</div><div class="s">'+(sub||'—')+'</div></span><span class="cr-r">'+amt+bd+'</span><span class="cr-go">▾</span></button><div class="cr-more" hidden>'+more+'</div></div>'; });
   return '<button type="button" class="cd-tog" data-tog="r">消費／儲值紀錄 <span data-tog-hint>'+L.length+' 筆・點開 ▾</span></button><div class="cr-list" data-tog-box="r" hidden>'+rows.join('')+'</div>';
 }
 // 點一筆紀錄：手機開明細頁（返回回到這位客人），電腦跳到那筆
@@ -1027,10 +1045,14 @@ function card(c){
   '</div>';
 }
 // 客人的套裝課程（SQL：admin_packages、package_adjust、admin_transfer_package；畫面在 course-ui.js）
-function custPkgsHtml(cid){ if(!window.RWCourse) return ''; var L=PKGS.filter(function(k){ return k.customer_id===cid; }); return L.length?'<div class="cd-pk-h">套裝課程</div>'+L.map(function(k){ return RWCourse.card(k,'admin'); }).join(''):''; }
+// 套裝課程：跟其他區塊一樣收合，點「套裝課程」才往下打開（按了記錄一堂等等之後保持打開）
+var CPK_OPEN={};
+function custPkgsHtml(cid){ if(!window.RWCourse) return ''; var L=PKGS.filter(function(k){ return k.customer_id===cid; }); if(!L.length) return ''; var rem=L.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0), op=!!CPK_OPEN[cid];
+  return '<button type="button" class="cd-tog'+(op?' open':'')+'" data-pktog aria-expanded="'+op+'">套裝課程 <span>'+L.length+' 個・剩 '+rem+' 堂・'+(op?'收起 ▴':'點開 ▾')+'</span></button><div class="cd-pkbox"'+(op?'':' hidden')+'>'+L.map(function(k){ return RWCourse.card(k,'admin'); }).join('')+'</div>'; }
 async function reloadPkgs(){ try{ var pk=await db.rpc('admin_packages'); if(!pk.error && Array.isArray(pk.data)) PKGS=pk.data; }catch(e){} }
 function bindCustPkgs(el,cid){
   var box=el.querySelector('[data-cpk]'); if(!box || !window.RWCourse) return;
+  var tg=box.querySelector('[data-pktog]'); if(tg) tg.onclick=function(){ CPK_OPEN[cid]=!CPK_OPEN[cid]; if(!CPK_OPEN[cid]) delete CPK_OPEN[cid]; var op=!!CPK_OPEN[cid], pb=box.querySelector('.cd-pkbox'); pb.hidden=!op; tg.classList.toggle('open',op); tg.setAttribute('aria-expanded',op); tg.querySelector('span').textContent=tg.querySelector('span').textContent.replace(/(點開 ▾|收起 ▴)$/,op?'收起 ▴':'點開 ▾'); };
   RWCourse.bind(box,PKGS.filter(function(k){ return k.customer_id===cid; }),{
     adjust:async function(id,d,at){ var x=await db.rpc('package_adjust',{p_package_id:id,p_delta:d,p_at:at,p_note:null}); if(x.error) throw new Error(x.error.message); },
     refundDone:async function(id){ var x=await db.rpc('admin_complete_refund',{p_package_id:id}); if(x.error) throw new Error(x.error.message); },
@@ -1071,7 +1093,7 @@ function bindCards(){
     var id=el.getAttribute('data-id');
     bindCustPkgs(el,id);
     el.querySelectorAll('[data-tog]').forEach(function(b){ b.onclick=function(){ var k=b.getAttribute('data-tog'), box=el.querySelector('[data-tog-box="'+k+'"]'), h=b.querySelector('[data-tog-hint]'); if(!box) return; box.hidden=!box.hidden; if(!b._t) b._t=h?h.textContent:''; if(h) h.textContent=box.hidden?b._t:'收起 ▴'; b.classList.toggle('open',!box.hidden); }; });
-    el.querySelectorAll('[data-crid]').forEach(function(b){ b.onclick=function(){ openCustRecord(b.getAttribute('data-crk'),b.getAttribute('data-crid')); }; });
+    el.querySelectorAll('.cr-item>.cr-row').forEach(function(b){ b.onclick=function(){ var it=b.parentNode, op=!it.classList.contains('open'); it.classList.toggle('open',op); b.setAttribute('aria-expanded',op); it.querySelector('.cr-more').hidden=!op; }; });   // 點一下在原地打開／收起，不跳頁
     el.querySelectorAll('[data-deltp]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆儲值？會移到「刪除紀錄」可還原；餘額會重算。'))return; var tid=btn.getAttribute('data-deltp'); if(await softDelete('topups',tid,TOPUPS)){ render(); renderTx(); renderTrash(); } }; });
     el.querySelectorAll('[data-deltx]').forEach(function(btn){ btn.onclick=async function(){ if(!confirm('刪除這筆消費紀錄？會移到「刪除紀錄」，可還原。'))return; var tid=btn.getAttribute('data-deltx'); if(await softDelete('transactions',tid,TX)){ render(); renderTx(); renderTrash(); } }; });
     el.querySelectorAll('[data-f]').forEach(function(inp){
