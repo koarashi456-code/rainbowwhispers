@@ -222,17 +222,20 @@
   .rpg-none{font-size:13px;color:var(--soft);padding:18px 4px;text-align:center}
   @media(max-width:640px){ .rpg-in,.rpg-q input{font-size:16px} }
   /* 每位引路人業績：一人一行，點了在原地打開他的報表 */
-  .rpg{border-bottom:1px solid #F3EBDD}.rpg:last-child{border-bottom:0}
-  .rpg .grp-m{border-bottom:0}
+  .rpg-list .rpg-row{border-bottom:1px solid #F3EBDD}.rpg-list .rpg-row:last-child{border-bottom:0}
+  .rpg-row:hover{background:#FBF6EC}
   .rpg-row{font:inherit;width:100%;background:none;border:0;padding:4px 0;text-align:left;cursor:pointer;color:inherit;min-height:52px}
   .rpg-row:active{opacity:.7}
   .rpg-row .n{width:84px;line-height:1.3}.rpg-row .n b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis}.rpg-row .n small{display:block;font-size:11px;color:var(--soft)}
-  .rpg-go{flex:none;color:#C2A878;font-size:12px;transition:transform .15s}.rpg.open .rpg-go{transform:rotate(180deg)}
-  .rpg-more{padding:2px 0 14px}
+  .rpg-go{flex:none;color:#C2A878;font-size:20px;line-height:1}
+  .rpg-qmsg{flex-basis:100%;font-size:12.5px;color:#B4566E}.rpg-qmsg:empty{display:none}
+  /* 引路人報表（點進去的那一頁）：電腦也用「‹ 返回」這一頁 */
+  #tab-report.m-in-det>*:not(.m-detail){display:none!important}
+  #tab-report.m-in-det>.m-detail{display:block}
+  #tab-report.m-in-det .m-top{display:flex}
+  #rpg-body .grp-card{border:0;background:none;padding:0 0 4px;margin-bottom:4px}
+  #rpg-body .grp-card.grp-mt{padding:0}
   .rpg-sum{font-size:12.5px;color:var(--soft);line-height:1.7;padding:6px 2px 0}.rpg-sum b{color:var(--brush);font-weight:600}
-  .rpg-more .grp-card{border:0;background:none;padding:0 0 4px;margin-bottom:4px}
-  .rpg-more .grp-card.grp-mt{padding:0}
-  .rpg-more .cr-list{border-radius:10px}
   .in-sm{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;outline:none}
   .rptable{width:100%;border-collapse:collapse;font-size:14px}
   .rptable th,.rptable td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
@@ -809,12 +812,7 @@
         <button class="abtn" id="rp-clear">全部</button>
       </div>
       <div id="rp-summary"></div>
-      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><span style="display:flex;gap:8px"><button class="abtn" id="rp-export">匯出 CSV</button><button class="abtn" id="rp-collapse">全部展開</button></span></div>
-      <div class="rpg-filter">
-        <select id="rpg-per" class="rpg-in" aria-label="期間"><option value="all">全部期間</option><option value="month">本月</option><option value="last">上個月</option><option value="3m">近 3 個月</option><option value="year">今年</option><option value="custom">自訂期間…</option></select>
-        <label class="rpg-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="rpg-q" type="search" placeholder="搜尋引路人" aria-label="搜尋引路人"></label>
-        <div class="rpg-dates" id="rpg-dates" hidden><input id="rpg-from" type="date" class="rpg-in" aria-label="開始日期"><span>~</span><input id="rpg-to" type="date" class="rpg-in" aria-label="結束日期"></div>
-      </div>
+      <div class="sec-head" style="margin:18px 0 10px"><h3 class="rp-h" style="margin:0">每位引路人業績</h3><span style="display:flex;gap:8px"><button class="abtn" id="rp-export">匯出 CSV</button></span></div>
       <div id="rp-guides"></div>
     </section>
 
@@ -1856,15 +1854,15 @@ var txExp=document.getElementById('tx-export'); if(txExp) txExp.onclick=txExport
 function rpExportCSV(){
   function cell(v){ v=(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; }
   function line(a){ return a.map(cell).join(','); }
-  var rows=TX.filter(function(t){ return rpgIn(cmpKeyTx(t)) && rpgMatch(rpgKey(t)); });   // 跟「每位引路人業績」的期間、搜尋一樣
+  var rows=TX.filter(function(t){ return inRange(cmpKeyTx(t)); });
   var isValid=function(t){ return t.status!=='已取消'&&t.status!=='已退費'; };
   var valid=rows.filter(isValid), refunds=rows.filter(function(t){return t.status==='已退費';});
   var sum=function(a){ return a.reduce(function(x,t){return x+Number(t.amount||0);},0); };
   var byM={現金:0,刷卡:0,匯款:0,儲值:0}; valid.forEach(function(t){ if(byM[t.method]!==undefined) byM[t.method]+=Number(t.amount||0); });
-  var topupIn=sum(TOPUPS.filter(function(t){return !isCouponTopup(t) && rpgIn(new Date(t.created_at||0));}));
+  var topupIn=sum(TOPUPS.filter(function(t){return !isCouponTopup(t) && inRange(new Date(t.created_at||0));}));
   var discSum=valid.reduce(function(a,t){return a+Number(t.discount||0);},0);
-  var L=[], qv=String(($('#rpg-q')||{}).value||'').trim();
-  L.push(line(['彩之語報表', rpgLabel()+(qv?'・搜尋「'+qv+'」':'')]));
+  var L=[];
+  L.push(line(['彩之語報表', rpTopLabel()]));
   L.push(line(['有效營收',sum(valid),'交易筆數',valid.length,'退費筆數',refunds.length,'退費金額',sum(refunds),'儲值收入',topupIn,'優惠折抵（彩之語吸收）',discSum]));
   L.push(line(['現金',byM.現金,'刷卡',byM.刷卡,'匯款',byM.匯款,'儲值折抵',byM.儲值]));
   L.push('');
@@ -1881,7 +1879,7 @@ function rpExportCSV(){
   });
   var blob=new Blob(['\ufeff'+L.join('\r\n')],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='彩之語報表_'+rpgLabel().replace(/[\/ ]/g,'').replace('~','-')+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},800);
+  a.href=url; a.download='彩之語報表_'+rpTopLabel().replace(/[\/ ]/g,'').replace('~','-')+'.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(url);},800);
 }
 var rpExp=document.getElementById('rp-export'); if(rpExp) rpExp.onclick=rpExportCSV;
 (function(){ var sel=document.getElementById('tx-time'); if(sel){ var h='<option value="">選時間</option>'; for(var hh=0;hh<24;hh++){ for(var mm=0;mm<60;mm+=30){ var v=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm; h+='<option value="'+v+'">'+v+'</option>'; } } sel.innerHTML=h; } })();
@@ -1921,20 +1919,21 @@ function inRange(d){
 }
 var RP_OPEN={};  // 報表裡展開中的引路人（重畫時保留）
 // 每位引路人業績：自己的期間＋搜尋引路人（跟上面總覽的日期範圍分開）
+var RPG={k:'', per:'all', from:'', to:''};
 function rpgRange(){
-  var per=($('#rpg-per')||{}).value||'all', t=new Date(), y=t.getFullYear(), m=t.getMonth(), a=null, b=null;
+  var per=RPG.per||'all', t=new Date(), y=t.getFullYear(), m=t.getMonth(), a=null, b=null;
   if(per==='month'){ a=new Date(y,m,1); b=new Date(y,m+1,0,23,59,59); }
   else if(per==='last'){ a=new Date(y,m-1,1); b=new Date(y,m,0,23,59,59); }
   else if(per==='3m'){ a=new Date(y,m-2,1); b=new Date(y,m+1,0,23,59,59); }
   else if(per==='year'){ a=new Date(y,0,1); b=new Date(y,11,31,23,59,59); }
-  else if(per==='custom'){ var f=$('#rpg-from').value, to=$('#rpg-to').value; a=f?new Date(f+'T00:00:00'):null; b=to?new Date(to+'T23:59:59'):null; }
+  else if(per==='custom'){ var f=RPG.from, to=RPG.to; a=f?new Date(f+'T00:00:00'):null; b=to?new Date(to+'T23:59:59'):null; }
   return [a,b];
 }
 function rpgIn(d){ var r=rpgRange(); if(!r[0] && !r[1]) return true; if(!d || isNaN(d)) return false; if(r[0] && d<r[0]) return false; if(r[1] && d>r[1]) return false; return true; }
 function rpgLabel(){ var r=rpgRange(), f=function(d){ return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }; return (!r[0]&&!r[1])?'全部期間':(r[0]?f(r[0]):'最早')+' ~ '+(r[1]?f(r[1]):'今天'); }
 function rpgKey(t){ return isShopTx(t)?'__shop__':(t.guide_id||'__none__'); }
 function rpgName(k){ return k==='__shop__'?'商品訂單':k==='__none__'?'未指定':guideName(k); }
-function rpgMatch(k){ var q=String(($('#rpg-q')||{}).value||'').trim().toLowerCase(); return !q || String(rpgName(k)).toLowerCase().indexOf(q)>=0; }
+function rpTopLabel(){ var f=$('#rp-from').value, t=$('#rp-to').value; return (f||t)?((f||'最早').replace(/-/g,'/')+' ~ '+(t||'今天').replace(/-/g,'/')):'全部期間'; }
 // 一位引路人的報表（跟引路人後台的報表一樣：摘要、每月營收、付款方式），下面是這段期間的交易，一筆一行、點一下在原地打開
 function rpGuideReport(k,gg){
   var keyOf=function(t){ return isShopTx(t)?'__shop__':(t.guide_id||'__none__'); };
@@ -1959,6 +1958,38 @@ function rpTxRow(t){
     '<div class="cr-more" hidden>'+kv('時間',t.appointment_at?fmtApptFull(t.appointment_at):'未定時間')+kv('項目',esc(t.service||'—'))+kv('地點',esc(place))+
       ((t.method==='匯款'&&t.pay_last5)?kv('匯款末五碼',esc(t.pay_last5)):'')+kv('訂單',esc(t.order_ref||''))+kv('下單日',fmtFull(t.created_at))+kv('備註',esc(t.notes||''))+'</div></div>';
 }
+// 點一位引路人：進到他的報表（‹ 返回 回到報表）；這裡才有期間、搜尋引路人（打名字換看別人）
+function rpgAllKeys(){ var o={}; TX.forEach(function(t){ o[rpgKey(t)]=1; }); GUIDES.forEach(function(g){ if(!g.pending) o[g.id]=1; }); return Object.keys(o); }
+function rpgOpen(k,keep){
+  if(!keep){ var f=$('#rp-from').value, t=$('#rp-to').value; RPG.per=(f||t)?'custom':'all'; RPG.from=f; RPG.to=t; }
+  RPG.k=k;
+  var PER=[['all','全部期間'],['month','本月'],['last','上個月'],['3m','近 3 個月'],['year','今年'],['custom','自訂期間…']];
+  var html='<div class="rpg-filter">'+
+      '<select id="rpg-per" class="rpg-in" aria-label="期間">'+PER.map(function(x){ return '<option value="'+x[0]+'"'+(RPG.per===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select>'+
+      '<label class="rpg-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="rpg-q" type="search" list="rpg-names" placeholder="搜尋引路人" aria-label="搜尋引路人，換看別人的報表" autocomplete="off"></label>'+
+      '<datalist id="rpg-names">'+rpgAllKeys().map(function(x){ return '<option value="'+esc(rpgName(x))+'">'; }).join('')+'</datalist>'+
+      '<div class="rpg-dates" id="rpg-dates"'+(RPG.per==='custom'?'':' hidden')+'><input id="rpg-from" type="date" class="rpg-in" aria-label="開始日期" value="'+esc(RPG.from)+'"><span>~</span><input id="rpg-to" type="date" class="rpg-in" aria-label="結束日期" value="'+esc(RPG.to)+'"></div>'+
+      '<div class="rpg-qmsg" id="rpg-qmsg"></div>'+
+    '</div><div id="rpg-body"></div>';
+  var sec=document.getElementById('tab-report');
+  mDetail('tab-report',rpgName(k)+' 的報表',html,function(d){
+    var body=d.querySelector('#rpg-body'), per=d.querySelector('#rpg-per'), dd=d.querySelector('#rpg-dates'), q=d.querySelector('#rpg-q'), qm=d.querySelector('#rpg-qmsg');
+    function draw(){
+      var items=TX.filter(function(t){ return rpgKey(t)===k && rpgIn(cmpKeyTx(t)); }), gg={items:items,count:0,amount:0,refund:0};
+      items.forEach(function(t){ if(t.status==='已退費') gg.refund+=Number(t.amount||0); else if(t.status!=='已取消'){ gg.count++; gg.amount+=Number(t.amount||0); } });
+      body.innerHTML='<div class="rpg-info"><b>'+rpgLabel()+'</b></div>'+rpGuideReport(k,gg)+(items.length?'':'<div class="rpg-none">這段期間沒有交易</div>');
+      rpBindCols(body);
+    }
+    per.onchange=function(){ RPG.per=per.value; dd.hidden=RPG.per!=='custom'; draw(); };
+    d.querySelector('#rpg-from').onchange=function(){ RPG.from=this.value; draw(); };
+    d.querySelector('#rpg-to').onchange=function(){ RPG.to=this.value; draw(); };
+    function find(v,loose){ v=String(v||'').trim().toLowerCase(); if(!v) return null; var K=rpgAllKeys(), ex=K.filter(function(x){ return String(rpgName(x)).toLowerCase()===v; }); if(ex.length) return ex[0]; if(!loose) return null; var pa=K.filter(function(x){ return String(rpgName(x)).toLowerCase().indexOf(v)>=0; }); return pa.length===1?pa[0]:null; }
+    q.addEventListener('input',function(){ qm.textContent=''; var x=find(q.value,false); if(x && x!==k) rpgOpen(x,true); });
+    q.addEventListener('change',function(){ var v=q.value.trim(); if(!v) return; var x=find(v,true); if(x){ if(x!==k) rpgOpen(x,true); else q.value=''; } else qm.textContent='找不到「'+v+'」'; });
+    body.addEventListener('click',function(e){ var c=e.target.closest('.cr-item>.cr-row'); if(!c) return; var it=c.parentNode, o=!it.classList.contains('open'); it.classList.toggle('open',o); c.setAttribute('aria-expanded',o); it.querySelector('.cr-more').hidden=!o; });
+    draw();
+  },function(){ mCloseDetail(sec); renderReport(); var g=document.getElementById('rp-guides'); if(g) g.scrollIntoView({block:'start'}); });
+}
 function renderReport(){
   var rows=TX.filter(function(t){ return inRange(cmpKeyTx(t)); });
   var valid=rows.filter(function(t){ return t.status!=='已取消'&&t.status!=='已退費'; });
@@ -1973,7 +2004,7 @@ function renderReport(){
     rpMonthsHtml()+rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金],['儲值折抵',byM.儲值]]);
   rpBindCols($('#rp-summary'));
   var g={};
-  TX.filter(function(t){ return rpgIn(cmpKeyTx(t)) && rpgMatch(rpgKey(t)); }).forEach(function(t){
+  rows.forEach(function(t){
     var k=rpgKey(t);
     if(!g[k]) g[k]={items:[],count:0,amount:0,refund:0};
     g[k].items.push(t);
@@ -1981,18 +2012,17 @@ function renderReport(){
     else if(t.status!=='已取消'){ g[k].count++; g[k].amount+=Number(t.amount||0); }
   });
   var keys=Object.keys(g).sort(function(a,b){return g[b].amount-g[a].amount;});
-  if(!keys.length){ $('#rp-guides').innerHTML='<div class="rpg-none">'+(String(($('#rpg-q')||{}).value||'').trim()?'找不到符合的引路人':'這段期間沒有交易')+'（'+rpgLabel()+'）</div>'; return; }
-  // 每位引路人：一人一行（名字｜比例條｜營收 ▾），點一下在原地打開他的報表（摘要、每月營收、付款方式、交易明細）
+  if(!keys.length){ $('#rp-guides').innerHTML='<div class="rpg-none">這段期間沒有交易（'+rpTopLabel()+'）</div>'; return; }
+  // 每位引路人：一人一行（名字｜比例條｜營收 ›），點一位進去看他的報表（裡面才有期間、搜尋引路人）
   var tot=keys.reduce(function(a,k){ return a+g[k].amount; },0), PC={};
   if(tot){ var P=keys.map(function(k){ var r=g[k].amount*100/tot; return {k:k, pc:Math.floor(r), fr:r-Math.floor(r), v:g[k].amount}; }), left=100-P.reduce(function(a,x){ return a+x.pc; },0);
     P.slice().sort(function(a,b){ return b.fr-a.fr; }).forEach(function(x){ if(left>0 && x.v>0){ x.pc++; left--; } }); P.forEach(function(x){ PC[x.k]=x.pc; }); }
-  var h='<div class="rpg-info"><b>'+rpgLabel()+'</b>・'+keys.length+' 位・有效營收 <b>'+money(tot)+'</b><br><small>點一位引路人那一行，看他的報表</small></div><div class="grp-card grp-mt rpg-list">';
+  var h='<div class="rpg-info"><b>'+rpTopLabel()+'</b>・'+keys.length+' 位・有效營收 <b>'+money(tot)+'</b><br><small>點一位引路人，進去看他的報表</small></div><div class="grp-card grp-mt rpg-list">';
   keys.forEach(function(k){
-    var gg=g[k], name=k==='__shop__'?'商品訂單':k==='__none__'?'未指定':guideName(k), op=!!RP_OPEN[k];
-    h+='<div class="rpg'+(op?' open':'')+'" data-k="'+esc(k)+'"><button type="button" class="grp-m rpg-row" data-rpg aria-expanded="'+op+'">'+
-      '<span class="n"><b>'+esc(name)+'</b><small>'+gg.count+' 筆'+(gg.refund?'・退費 '+money(gg.refund):'')+'</small></span>'+
-      '<span class="tr"><i style="width:'+(tot?gg.amount*100/tot:0)+'%"></i></span><span class="a">'+money(gg.amount)+'<small>'+(tot?PC[k]||0:0)+'%</small></span><span class="rpg-go">▾</span></button>'+
-      '<div class="rpg-more"'+(op?'':' hidden')+'>'+rpGuideReport(k,gg)+'</div></div>';
+    var gg=g[k];
+    h+='<button type="button" class="grp-m rpg-row" data-rpg="'+esc(k)+'" aria-label="看 '+esc(rpgName(k))+' 的報表">'+
+      '<span class="n"><b>'+esc(rpgName(k))+'</b><small>'+gg.count+' 筆'+(gg.refund?'・退費 '+money(gg.refund):'')+'</small></span>'+
+      '<span class="tr"><i style="width:'+(tot?gg.amount*100/tot:0)+'%"></i></span><span class="a">'+money(gg.amount)+'<small>'+(tot?PC[k]||0:0)+'%</small></span><span class="rpg-go">›</span></button>';
   });
   h+='</div>';
   $('#rp-guides').innerHTML=h;
@@ -2004,9 +2034,7 @@ function renderReport(){
   ['rpg-from','rpg-to'].forEach(function(id){ document.getElementById(id).addEventListener('change',renderReport); });
   q.addEventListener('input',renderReport); })();
 var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('#rp-from').value=''; $('#rp-to').value=''; renderReport(); };
-$('#rp-guides').addEventListener('click',function(e){ var r=e.target.closest('[data-rpg]'); if(r){ var w=r.parentNode, op=!w.classList.contains('open'); w.classList.toggle('open',op); r.setAttribute('aria-expanded',op); w.querySelector('.rpg-more').hidden=!op; RP_OPEN[w.getAttribute('data-k')]=op; return; } var c=e.target.closest('.cr-item>.cr-row'); if(c){ var it=c.parentNode, o=!it.classList.contains('open'); it.classList.toggle('open',o); c.setAttribute('aria-expanded',o); it.querySelector('.cr-more').hidden=!o; } });   // 點引路人、點交易：都在原地打開，不跳頁
-var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
-if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .rpg').forEach(function(b){ b.classList.toggle('open',!rpAllCollapsed); b.querySelector('[data-rpg]').setAttribute('aria-expanded',!rpAllCollapsed); b.querySelector('.rpg-more').hidden=rpAllCollapsed; RP_OPEN[b.getAttribute('data-k')]=!rpAllCollapsed; }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
+$('#rp-guides').addEventListener('click',function(e){ var r=e.target.closest('[data-rpg]'); if(r) rpgOpen(r.getAttribute('data-rpg')); });   // 點一位引路人：進去看他的報表
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
 ['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ if(e.target.closest('.a-edit,.a-alias,.gav-edit,.g-editbtn,.gm-mask')) return; var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(!card) return; if(isM() && (sel==='#list'||sel==='#glist')){ mOpenCard(card); return; } card.classList.toggle('collapsed'); } }); });
