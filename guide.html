@@ -65,9 +65,17 @@
   .pkagree{margin-top:14px;border:2px solid #EBD3A8;border-radius:14px;padding:12px 14px;background:#FFFDF8}
   .pkagree-t{background:#FBF3E4;border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.8;color:var(--ink)}.pkagree-t b{color:var(--brush)}
   .pkagree-l{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:14px;cursor:pointer;line-height:1.6;text-align:left}.pkagree-l input{margin-top:5px;width:17px;height:17px;flex:none}.pkagree-l a{color:#B5713F}
-  .gplace{display:block;margin-top:4px}.gplace b{font-weight:500;color:var(--brush)}
-  .gtr{display:inline-block;font-size:12.5px;color:#4F7392;background:#E3EEF6;border-radius:999px;padding:1px 10px;margin-left:6px}
-  .gplace small{display:block;font-size:12px;color:var(--soft);margin-top:1px}
+  /* 服務地點：只顯示地區，點了才打開哪一站 */
+  .gplaces{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}
+  .gplace{font:inherit;font-size:13.5px;font-weight:500;color:var(--brush);background:#FFFDF8;border:1px solid #EFE3CE;border-radius:999px;min-height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:4px}
+  button.gplace{cursor:pointer}button.gplace:active{opacity:.7}
+  .gplace i{font-style:normal;font-size:11px;color:#B49A7A;transition:transform .15s}
+  .gplace[aria-expanded="true"]{background:#FBF6EC;border-color:#E2CDB0}.gplace[aria-expanded="true"] i{transform:rotate(180deg)}
+  .gpl-more{display:block;margin:8px auto 0;max-width:320px;background:#FBF6EC;border-radius:12px;padding:8px 12px;line-height:1.6}
+  .gpl-more[hidden]{display:none}
+  .gpl-more b{font-weight:500;color:var(--brush);margin-right:6px}
+  .gtr{display:inline-block;font-size:12.5px;color:#4F7392;background:#E3EEF6;border-radius:999px;padding:1px 10px}
+  .gpl-more small{display:block;font-size:12px;color:var(--soft);margin-top:2px}
   .bank{background:#FBF6EC;border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;color:var(--ink);line-height:1.9}
   .bank b{color:var(--brush)}
   .bankwarn{font-size:12.5px;color:#C0506A;margin-top:8px}
@@ -296,8 +304,12 @@ function renderGuide(){
   var meta=[];
   var withTr=PLACE_INFO.filter(function(x){ return x.area && (trText(x) || String(x.tip||'').trim()); });
   if(withTr.length){
-    meta.push('服務地點：'+PLACE_INFO.filter(function(x){ return x.area; }).map(function(x){ var tr=trText(x), tip=String(x.tip||'').trim();
-      return '<span class="gplace"><b>📍 '+esc(x.area)+'</b>'+(tr?'<span class="gtr">'+esc(tr)+'</span>':'')+(tip?'<small>'+esc(tip)+'</small>':'')+'</span>'; }).join(''));
+    // 只顯示地區；點地區才在下面打開哪一站、走路幾分鐘、交通補充
+    var PA=PLACE_INFO.filter(function(x){ return x.area; });
+    meta.push('服務地點：<span class="gplaces">'+PA.map(function(x,i){ var has=!!(trText(x) || String(x.tip||'').trim());
+        return has?'<button type="button" class="gplace" data-gpl="'+i+'" aria-expanded="false">📍 '+esc(x.area)+'<i aria-hidden="true">▾</i></button>':'<span class="gplace">📍 '+esc(x.area)+'</span>'; }).join('')+'</span>'+
+      PA.map(function(x,i){ var tr=trText(x), tip=String(x.tip||'').trim(); if(!tr && !tip) return '';
+        return '<span class="gpl-more" data-gpl-box="'+i+'" hidden><b>'+esc(x.area)+'</b>'+(tr?'<span class="gtr">'+esc(tr)+'</span>':'')+(tip?'<small>'+esc(tip)+'</small>':'')+'</span>'; }).join(''));
   } else if(g.region) meta.push('服務區域：'+esc(g.region));
   // 有開放時段時以時段為準，不再顯示舊的手打文字（避免兩邊說法不一致）
   if(g.availability && !(OPEN_SLOTS && OPEN_SLOTS.length)) meta.push('可預約：'+esc(g.availability));
@@ -360,6 +372,10 @@ function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(), h
   if(grp || (OWNED.length && L.length && !grouped)) h+='</optgroup>';
   sel.innerHTML=h;
   if(OWNED.length){ var want=new URLSearchParams(location.search).get('pkg'), wi=0; OWNED.forEach(function(k,i){ if(String(k.id)===want) wi=i; }); sel.value='own:'+wi; } }
+// 引路人介紹的服務地點：點地區在下面打開那一站（一次開一個）
+document.addEventListener('click',function(e){ var b=e.target.closest('[data-gpl]'); if(!b) return; var k=b.getAttribute('data-gpl'), op=b.getAttribute('aria-expanded')!=='true';
+  document.querySelectorAll('[data-gpl]').forEach(function(x){ x.setAttribute('aria-expanded','false'); }); document.querySelectorAll('[data-gpl-box]').forEach(function(x){ x.hidden=true; });
+  if(op){ b.setAttribute('aria-expanded','true'); var bx=document.querySelector('[data-gpl-box="'+k+'"]'); if(bx) bx.hidden=false; } });
 // 服務地點：guide_places 回 {online, offline, app, areas:[…]}（SQL：guide_places）
 var PIN_IC='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
 var CAM_IC='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>';
