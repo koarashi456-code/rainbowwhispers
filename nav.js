@@ -53,7 +53,7 @@ window.rwMemberToken=function(){
 window.rwDraw=function(){
   if(window.RWDaily) return window.RWDaily.open();
   if(window._rwDrawLoading) return; window._rwDrawLoading=true;
-  var s=document.createElement('script'); s.src='daily-card.js?v=20261125b';
+  var s=document.createElement('script'); s.src='daily-card.js?v=20261125c';
   s.onload=function(){ window._rwDrawLoading=false; if(window.RWDaily) window.RWDaily.open(); };
   s.onerror=function(){ window._rwDrawLoading=false; };
   document.head.appendChild(s);

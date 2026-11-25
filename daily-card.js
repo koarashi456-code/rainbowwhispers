@@ -1,6 +1,6 @@
 /* 彩之語：每日一抽（會員專屬）
    底部分頁列「每日一抽」、電腦版 ☰ 選單、網址 #draw 都會打開。
-   會員每天可以抽一張彩虹卡；同一天再打開看到的是同一張（記在這台裝置），明天可以再抽。
+   會員每天可以抽一張彩虹卡：先攤開一排蓋著的卡讓他選一張，再翻開；同一天再打開看到的是同一張（記在這台裝置），明天可以再抽。
    沒登入：顯示「會員專屬」，請他登入／註冊。
    卡片文字是彩之語自己寫的（7 色 × 6 張），要換成自己的卡，改下面的 CARDS 就好。 */
 (function(){
@@ -75,15 +75,11 @@
   }
   function isMember(){ return !!(window.rwMemberToken && window.rwMemberToken()); }
   // 今天的卡：抽過就沿用；沒抽過就隨機抽一張（盡量不跟昨天同一張）
-  function todays(){
-    var key='rw_daily_'+who(), st=null, t=today(), fresh=false;
-    try{ st=JSON.parse(localStorage.getItem(key)||'null'); }catch(e){}
-    if(!st || st.d!==t || !(st.i>=0 && st.i<CARDS.length)){
-      var i, last=st?st.i:-1; do{ i=Math.floor(Math.random()*CARDS.length); }while(CARDS.length>1 && i===last);
-      st={d:t,i:i}; fresh=true; try{ localStorage.setItem(key,JSON.stringify(st)); }catch(e){}
-    }
-    return {i:st.i, fresh:fresh};
-  }
+  // 今天抽過的卡（沒抽過＝null）；抽卡＝從整副裡隨機一張（盡量不跟上次同一張），記下來
+  function saved(){ var st=null; try{ st=JSON.parse(localStorage.getItem('rw_daily_'+who())||'null'); }catch(e){} return st; }
+  function todays(){ var st=saved(); return (st && st.d===today() && st.i>=0 && st.i<CARDS.length)?st.i:null; }
+  function draw(){ var st=saved(), last=st?st.i:-1, i; do{ i=Math.floor(Math.random()*CARDS.length); }while(CARDS.length>1 && i===last);
+    try{ localStorage.setItem('rw_daily_'+who(),JSON.stringify({d:today(),i:i})); }catch(e){} return i; }
   var CSS='.dc-mask{position:fixed;inset:0;z-index:400;background:linear-gradient(160deg,rgba(248,217,203,.97),rgba(248,232,196,.97) 25%,rgba(218,238,214,.97) 50%,rgba(214,232,242,.97) 75%,rgba(229,222,247,.97));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;-webkit-tap-highlight-color:transparent}'+
     '.dc-mask[hidden]{display:none}'+
     '.dc-wrap{width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:12px;font-family:"Noto Sans TC",sans-serif}'+
@@ -114,7 +110,18 @@
     '.dc-link{font:inherit;font-size:13.5px;color:#5E4B37;background:none;border:0;min-height:44px;padding:0 10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}'+
     '.dc-ok:active,.dc-link:active,.dc-x:active{opacity:.7}'+
     '.dc-ok:focus-visible,.dc-link:focus-visible,.dc-x:focus-visible{outline:2px solid #6B4A33;outline-offset:3px}'+
-    '@media (prefers-reduced-motion:reduce){.dc-card{transition:none}}';
+    /* 選卡：一排蓋著的卡攤成扇形，點一張 */
+    '.dc-ask{color:#4A3A2A;text-align:center;font-size:14px;line-height:1.7}.dc-ask b{display:block;font-family:"Noto Serif TC",serif;font-size:19px;font-weight:600;margin-bottom:2px}'+
+    '.dc-fan{position:relative;width:min(340px,92vw);height:205px;margin:0}'+
+    '.dc-mini{position:absolute;left:50%;bottom:16px;width:min(88px,24vw);aspect-ratio:5/7;margin:0;padding:0;transform:translateX(-50%) rotate(0deg);transform-origin:50% 210%;border-radius:12px;background:#FFFDF8;border:1px solid #EFE3CE;box-shadow:0 10px 20px -12px rgba(74,58,42,.55);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .65s cubic-bezier(.2,.7,.2,1),opacity .35s,box-shadow .2s;-webkit-tap-highlight-color:transparent}'+
+    '.dc-mini::before{content:"";position:absolute;inset:5px;border-radius:8px;border:1px solid #EFE3CE}'+
+    '.dc-mini i{position:relative;width:46%;aspect-ratio:1;border-radius:50%;background:conic-gradient(from 200deg,#EE9E86,#F3B07C,#F2C56E,#9FD49A,#86C9DA,#8FA6DE,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center}'+
+    '.dc-mini i::after{content:"";width:60%;aspect-ratio:1;border-radius:50%;background:#FFFDF8}'+
+    '.dc-fan.open .dc-mini{transform:translateX(-50%) rotate(var(--a))}'+
+    '.dc-fan.open:not(.chosen) .dc-mini:hover,.dc-fan.open:not(.chosen) .dc-mini:focus-visible{transform:translateX(-50%) rotate(var(--a)) translateY(-16px);box-shadow:0 16px 26px -12px rgba(74,58,42,.6);outline:none}'+
+    '.dc-fan.chosen .dc-mini{opacity:.18;pointer-events:none}'+
+    '.dc-fan.chosen .dc-mini.pick{opacity:1;z-index:20;transform:translateX(-50%) rotate(0deg) translateY(-46px) scale(1.15);box-shadow:0 0 0 3px #FFFDF8,0 0 26px 6px rgba(176,162,228,.65)}'+
+    '@media (prefers-reduced-motion:reduce){.dc-card,.dc-mini{transition:none}}';
   var mask=null, lastFocus=null;
   function css(){ if(document.getElementById('dc-css')) return; var s=document.createElement('style'); s.id='dc-css'; s.textContent=CSS; document.head.appendChild(s); }
   function onKey(e){ if(e.key==='Escape') close(); }
@@ -139,20 +146,39 @@
         '<div class="dc-note"><b>每日一抽是會員專屬</b><br>登入後，每天都能抽一張彩虹卡，<br>聽聽今天想對你說的話。</div>'+
         '<div class="dc-btns"><a class="dc-ok" href="account.html">登入／註冊</a><button type="button" class="dc-link" data-dc-x>先逛逛</button></div></div>';
     } else {
-      var r=todays(), c=CARDS[r.i], col=COLORS[c[0]];
-      mask.innerHTML='<div class="dc-wrap">'+head+'<div class="dc-stage"><div class="dc-card'+(r.fresh?'':' up')+'" aria-live="polite">'+backFace(false)+
-          '<div class="dc-face dc-front" style="--c:'+col.c+';--d:'+col.d+'"><span class="dc-band"></span><span class="dc-art" aria-hidden="true"></span>'+
-            '<div class="dc-tag"><i></i>'+col.n+'・'+col.k+'<span class="dc-no">No.'+p2(r.i+1)+'</span></div>'+
-            '<div class="dc-say">'+esc(c[1])+'</div>'+
-            '<div class="dc-try"><b>今天試試</b>'+esc(c[2])+'</div></div>'+
-        '</div></div>'+
-        '<div class="dc-note">'+(r.fresh?'翻開今天的彩虹卡…':'今天已經抽過囉，這是你今天的卡。<br>明天再來抽一張。')+'</div>'+
-        '<div class="dc-btns"><button type="button" class="dc-ok" data-dc-x>收下這張卡</button><a class="dc-link" href="booking.html#pick">想聊聊這張卡？找引路人</a></div></div>';
-      if(r.fresh){ var card=mask.querySelector('.dc-card'), note=mask.querySelector('.dc-note');
-        setTimeout(function(){ card.classList.add('up'); },450);
-        setTimeout(function(){ note.innerHTML='這是你今天的卡。<br>明天可以再抽一張。'; },1200); }
+      var got=todays();
+      if(got===null){   // 還沒抽：先攤開一排蓋著的卡，讓他自己選一張
+        var N=9, A=58, fan='';
+        for(var k=0;k<N;k++){ var ang=(-A/2+A*k/(N-1)).toFixed(1); fan+='<button type="button" class="dc-mini" style="--a:'+ang+'deg;z-index:'+(k+1)+'" aria-label="選第 '+(k+1)+' 張"><i></i></button>'; }
+        mask.innerHTML='<div class="dc-wrap">'+head+
+          '<div class="dc-ask"><b>今天想聽聽什麼？</b>深呼吸，想著此刻的自己，<br>憑直覺選一張。</div>'+
+          '<div class="dc-fan" role="group" aria-label="選一張卡">'+fan+'</div>'+
+          '<div class="dc-btns"><button type="button" class="dc-link" data-dc-x>先不要</button></div></div>';
+        var fanEl=mask.querySelector('.dc-fan');
+        setTimeout(function(){ fanEl.classList.add('open'); },60);   // 洗好的牌攤開
+        fanEl.addEventListener('click',function(e){ var b=e.target.closest('.dc-mini'); if(!b || fanEl.classList.contains('chosen')) return;
+          fanEl.classList.add('chosen'); b.classList.add('pick');
+          var i=draw(); setTimeout(function(){ reveal(i,true); },700); });
+      } else reveal(got,false);
     }
     mask.hidden=false; document.body.style.overflow='hidden'; document.addEventListener('keydown',onKey);
+    var f=mask.querySelector('.dc-ok')||mask.querySelector('.dc-mini'); if(f) setTimeout(function(){ try{ f.focus({preventScroll:true}); }catch(e){} },50);
+  }
+  // 翻開這張卡（剛選的：先蓋著再翻；今天已經抽過：直接是翻開的）
+  function reveal(i,fresh){
+    var c=CARDS[i], col=COLORS[c[0]], d=new Date(), dl=(d.getMonth()+1)+'/'+d.getDate()+'（'+WD.charAt(d.getDay())+'）';
+    var head='<div class="dc-top"><b>每日一抽<small>'+dl+'</small></b><button type="button" class="dc-x" data-dc-x aria-label="關閉">×</button></div>';
+    mask.innerHTML='<div class="dc-wrap">'+head+'<div class="dc-stage"><div class="dc-card'+(fresh?'':' up')+'" aria-live="polite">'+backFace(false)+
+        '<div class="dc-face dc-front" style="--c:'+col.c+';--d:'+col.d+'"><span class="dc-band"></span><span class="dc-art" aria-hidden="true"></span>'+
+          '<div class="dc-tag"><i></i>'+col.n+'・'+col.k+'<span class="dc-no">No.'+p2(i+1)+'</span></div>'+
+          '<div class="dc-say">'+esc(c[1])+'</div>'+
+          '<div class="dc-try"><b>今天試試</b>'+esc(c[2])+'</div></div>'+
+      '</div></div>'+
+      '<div class="dc-note">'+(fresh?'翻開你選的這張…':'今天已經抽過囉，這是你今天的卡。<br>明天再來抽一張。')+'</div>'+
+      '<div class="dc-btns"><button type="button" class="dc-ok" data-dc-x>收下這張卡</button><a class="dc-link" href="booking.html#pick">想聊聊這張卡？找引路人</a></div></div>';
+    if(fresh){ var card=mask.querySelector('.dc-card'), note=mask.querySelector('.dc-note');
+      setTimeout(function(){ card.classList.add('up'); },350);
+      setTimeout(function(){ note.innerHTML='這是你今天選到的卡。<br>明天可以再抽一張。'; },1100); }
     var f=mask.querySelector('.dc-ok'); if(f) setTimeout(function(){ try{ f.focus({preventScroll:true}); }catch(e){} },50);
   }
   window.RWDaily={open:open, close:close, cards:CARDS, colors:COLORS};
