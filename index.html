@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261123">
+<link rel="stylesheet" href="style.css?v=20261125c">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta property="og:type" content="website">
@@ -48,17 +48,18 @@
   .hn-cat{display:flex;align-items:center;gap:7px;height:44px;padding:0 14px 0 6px;background:#FFFDF8;border:1px solid #ECE0CC;border-radius:14px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
   .hn-cat i{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center}
   .hn-cat i svg{width:18px;height:18px;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  /* 大圖卡（左右滑，旁邊露一點下一張） */
+  /* 大圖卡：手機、電腦都一次一張，左右滑或按 ‹ › 在同一格裡換 */
   .hn-hero{position:relative;margin-top:16px}
-  .hn-hero .hn-row{gap:10px;scroll-snap-type:x mandatory;scroll-padding:0 var(--hn-pad)}
-  .hn-bn{position:relative;width:calc(100% - 44px);max-width:480px;height:206px;border-radius:22px;overflow:hidden;text-decoration:none;color:#4A3A2A;padding:20px 20px 60px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-end}  /* 下面留一行給右下角的箭頭 */
+  .hn-hero .hn-row{gap:10px;scroll-snap-type:x mandatory;padding:0;margin:0 var(--hn-pad);scroll-padding:0}
+  .hn-hero .hn-row::after{display:none}
+  .hn-bn{position:relative;width:100%;max-width:none;height:206px;border-radius:22px;overflow:hidden;text-decoration:none;color:#4A3A2A;padding:20px 20px 60px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-end}  /* 下面留一行給右下角的箭頭 */
   .hn-bn .tag{position:absolute;top:16px;left:18px;font-size:12px;font-weight:600;background:rgba(255,255,255,.75);border-radius:999px;padding:3px 10px}
   .hn-bn h3{font-family:"Noto Serif TC",serif;font-size:23px;line-height:1.35;margin:0;position:relative}
   .hn-bn p{font-size:13.5px;margin:6px 0 0;position:relative;color:#5E4B37}
   .hn-bn .art{position:absolute;right:-26px;top:-26px;width:150px;height:150px;border-radius:50%;opacity:.9}
   .hn-bn .art::after{content:"";position:absolute;inset:28px;border-radius:50%;background:rgba(255,253,248,.85)}
   /* 大圖卡右下角：‹ 1 | 5 ›，點箭頭換一張（到頭那一邊變淡）；文字往上留一行，不會被蓋到 */
-  .hn-ctl{position:absolute;right:calc(var(--hn-pad) + 44px + 10px);bottom:10px;z-index:2;display:flex;align-items:center;background:rgba(74,58,42,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:999px;height:40px;padding:0 2px}
+  .hn-ctl{position:absolute;right:calc(var(--hn-pad) + 10px);bottom:10px;z-index:2;display:flex;align-items:center;background:rgba(74,58,42,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:999px;height:40px;padding:0 2px}
   .hn-arr{width:40px;height:40px;border:0;padding:0;border-radius:50%;background:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .hn-arr svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
   .hn-arr:active{background:rgba(255,255,255,.18)}
@@ -99,22 +100,23 @@
   .hn-g .pr{font-size:15px;font-weight:700;color:var(--brush);margin-top:6px}.hn-g .pr small{font-size:12px;font-weight:500;color:var(--soft);margin-left:2px}
   .hn-empty{padding:0 var(--hn-pad);font-size:13.5px;color:var(--soft)}
   .hn-empty a{color:#3F7A5E}
-  /* 電腦：滿版（手機不變）——大圖卡一次 2～3 張、分類／測驗／引路人改成換行排，不用左右滑 */
+  /* 電腦（手機不變）：整頁內容最寬 800px、置中，左右留白跟標題列對齊；大圖卡一次一張、分類／測驗／引路人改成換行排，不用左右滑 */
   @media (min-width:769px){
-    :root{--hn-pad:28px}
+    :root{--hn-pad:max(28px, calc(50% - 400px))}
     .hn{max-width:none}
-    .hn-search{max-width:640px}
-    .hn-cats{flex-wrap:wrap;overflow:visible}
-    .hn-bn{width:calc((100% - 2*var(--hn-pad) - 10px)/2);max-width:none;height:220px}
-    .hn-ctl{right:calc(var(--hn-pad) + 10px)}
+    .hn-search{max-width:none}
+    .hn-cats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));overflow:visible}   /* 分類排兩行、每格一樣寬 */
+    .hn-cats::after{display:none}
+    .hn-cat{justify-content:center}
+    .hn-bn{height:220px}
     .hn-list{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px}
     .hn-it,.hn-it:first-child{border-top:0;padding-top:0}
     .hn-flt{flex-wrap:wrap;overflow:visible}
     #hn-gl,#hn-ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px;overflow:visible}
     #hn-gl::after,#hn-ol::after{display:none}
+    .hn-empty{padding:0;grid-column:1/-1}
     .hn-g{width:auto}.hn-ph{width:100%;height:auto;aspect-ratio:1/1}
   }
-  @media (min-width:1100px){ .hn-bn{width:calc((100% - 2*var(--hn-pad) - 20px)/3)} }
 </style>
 <script src="supabase-config.js"></script>
 </head>
@@ -135,7 +137,7 @@
       <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
     </div>
   </div></nav>
-  <script src="nav.js?v=20261123"></script>
+  <script src="nav.js?v=20261125g"></script>
 
   <label class="hn-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="hn-q" type="search" placeholder="搜尋引路人、服務（塔羅、彩虹卡…）" aria-label="搜尋引路人或服務"></label>
 
@@ -146,7 +148,7 @@
       <a class="hn-bn" href="quiz.html" style="background:linear-gradient(135deg,#F8D9CB,#F8E6BE 45%,#D7ECD3)"><span class="art" style="background:conic-gradient(from 200deg,#F6C9B9,#F8DEAC,#CAE6C4,#BCE0E7,#D4CBED,#F1CCDB,#F6C9B9)"></span><span class="tag">免費・約 3 分鐘</span><h3>在你迷惘的時候，<br>先被好好聽見。</h3><p>心靈導航測驗，找到你的探索方向 →</p></a>
       <a class="hn-bn" href="chakra.html" style="background:linear-gradient(135deg,#E3DDF6,#D6E8F2)"><span class="art" style="background:conic-gradient(from 90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#A9A3E3,#C6A1E2,#EE9E86)"></span><span class="tag">免費・20 題</span><h3>七大脈輪<br>能量測驗</h3><p>看看哪一輪最需要被好好照顧 →</p></a>
       <a class="hn-bn" href="numerology.html" style="background:linear-gradient(135deg,#FBE2D3,#F6D6E2)"><span class="art" style="background:conic-gradient(from 30deg,#F6C9B9,#F1CCDB,#D4CBED,#F6C9B9)"></span><span class="tag">約 30 秒</span><h3>你的生命靈數<br>是幾號？</h3><p>輸入生日，看屬於你的天賦數字 →</p></a>
-      <a class="hn-bn" href="pricing.html" style="background:linear-gradient(135deg,#DCEFE0,#F3EDD6)"><span class="art" style="background:conic-gradient(from 160deg,#CAE6C4,#BCE0E7,#F8DEAC,#CAE6C4)"></span><span class="tag">會員</span><h3>儲值、套裝課程<br>更划算</h3><p>看看彩之語的方案 →</p></a>
+      <a class="hn-bn" href="pricing.html" style="background:linear-gradient(135deg,#DCEFE0,#F3EDD6)"><span class="art" style="background:conic-gradient(from 160deg,#CAE6C4,#BCE0E7,#F8DEAC,#CAE6C4)"></span><span class="tag">會員</span><h3>套裝課程<br>更划算</h3><p>看看彩之語的方案 →</p></a>
       <a class="hn-bn" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#D7F0DF,#E8F3E2)"><span class="art" style="background:conic-gradient(from 0deg,#9FD49A,#CAE6C4,#BCE0E7,#9FD49A)"></span><span class="tag">真人陪你</span><h3>不知道怎麼選？<br>讓我們幫你配</h3><p>加官方 LINE，說說你現在的狀況 →</p></a>
     </div>
     <div class="hn-ctl"><button type="button" class="hn-arr" id="hn-prev" aria-label="上一張" disabled><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"/></svg></button><span class="hn-pg" id="hn-pg" aria-live="polite">1 | 5</span><button type="button" class="hn-arr" id="hn-next" aria-label="下一張"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></svg></button></div>
@@ -206,7 +208,7 @@
     {t:'生命靈數',ic:'n',bg:'#FBE7CC',st:'#A5643A',go:'numerology.html'},
     {t:'脈輪能量',ic:'o',bg:'#D8ECDF',st:'#3F7A5E',go:'chakra.html'},
     {t:'線上諮詢',ic:'v',bg:'#E3EEF6',st:'#4F7392',online:1},
-    {t:'療癒小物',ic:'g',bg:'#F1EBDD',st:'#8A6A44',go:'booking.html'}
+    {t:'療癒小物',ic:'g',bg:'#F1EBDD',st:'#8A6A44',go:'booking.html#shop'}
   ];
   $('#hn-cats').innerHTML=CATS.map(function(c,i){ var inner='<i style="background:'+c.bg+'"><svg viewBox="0 0 24 24" stroke="'+c.st+'">'+CI[c.ic]+'</svg></i>'+c.t;
     return c.go?'<a class="hn-cat" href="'+c.go+'">'+inner+'</a>':'<button type="button" class="hn-cat" data-cat="'+i+'">'+inner+'</button>'; }).join('');

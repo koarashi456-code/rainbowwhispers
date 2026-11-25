@@ -49,6 +49,78 @@ window.rwMemberToken=function(){
   }catch(e){}
 })();
 
+// 每日一抽（會員專屬）：點分頁列「每日一抽」、選單的「每日一抽」或網址 #draw，就打開抽卡（用到才載 daily-card.js）
+window.rwDraw=function(){
+  if(window.RWDaily) return window.RWDaily.open();
+  if(window._rwDrawLoading) return; window._rwDrawLoading=true;
+  var s=document.createElement('script'); s.src='daily-card.js?v=20261125d';
+  s.onload=function(){ window._rwDrawLoading=false; if(window.RWDaily) window.RWDaily.open(); };
+  s.onerror=function(){ window._rwDrawLoading=false; };
+  document.head.appendChild(s);
+};
+document.addEventListener('click',function(e){
+  var a=e.target.closest && e.target.closest('[data-draw]'); if(!a) return;
+  e.preventDefault();
+  var cb=document.querySelector('.rw-burger-cb'); if(cb && cb.checked){ cb.checked=false; try{ cb.dispatchEvent(new Event('change')); }catch(_){} }
+  window.rwDraw();
+});
+(function(){ function go(){ if(location.hash==='#draw') window.rwDraw(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+  window.addEventListener('hashchange',go); })();
+
+// 引路人只給會員看：沒登入的人點到引路人（介紹頁、預約頁的引路人），先請他登入／註冊；免費測驗、商品不用登入
+(function(){
+  function member(){ return !!(window.rwMemberToken && window.rwMemberToken()); }
+  function page(u){ return (u.pathname.split('/').pop()||'index.html'); }
+  function isGuide(href){ try{ var u=new URL(href,location.href); if(u.origin!==location.origin) return false; var pg=page(u);
+    return /^guides?\.html$/.test(pg) || (pg==='booking.html' && u.hash!=='#shop'); }catch(e){ return false; } }
+  var CSS='.gt-mask{position:fixed;inset:0;z-index:450;background:linear-gradient(160deg,rgba(248,217,203,.97),rgba(248,232,196,.97) 25%,rgba(218,238,214,.97) 50%,rgba(214,232,242,.97) 75%,rgba(229,222,247,.97));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;font-family:"Noto Sans TC",sans-serif}'+
+    '.gt-box{width:100%;max-width:340px;background:#FFFDF8;border:1px solid #EFE3CE;border-radius:22px;box-shadow:0 18px 40px -18px rgba(40,25,10,.45);padding:26px 22px 18px;text-align:center;position:relative}'+
+    '.gt-x{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;background:none;color:#8C7963;font-size:24px;line-height:1;border-radius:50%;cursor:pointer}'+
+    '.gt-ring{position:relative;width:88px;height:88px;margin:0 auto 14px;border-radius:50%;background:conic-gradient(from 200deg,#EE9E86,#F3B07C,#F2C56E,#9FD49A,#86C9DA,#8FA6DE,#B0A2E4,#EE9E86);display:flex;align-items:center;justify-content:center}'+
+    '.gt-ring::after{content:"";position:absolute;inset:16px;border-radius:50%;background:#FFFDF8}'+
+    '.gt-ring svg{position:relative;z-index:1;width:24px;height:24px;fill:none;stroke:#8C7963;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}'+
+    '.gt-box h3{margin:0 0 6px;font-family:"Noto Serif TC",serif;font-size:20px;font-weight:600;color:#4A3A2A}'+
+    '.gt-box p{margin:0 0 18px;font-size:14px;line-height:1.75;color:#5E4B37}'+
+    '.gt-ok{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:999px;background:#6B4A33;color:#FFFDF8;font-size:15.5px;font-weight:600;text-decoration:none;box-shadow:0 8px 20px -10px rgba(74,58,42,.6)}'+
+    '.gt-alt{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:6px;padding:0 10px;font:inherit;font-size:13.5px;color:#5E4B37;background:none;border:0;text-decoration:underline;text-underline-offset:3px;cursor:pointer}'+
+    '.gt-ok:active,.gt-alt:active,.gt-x:active{opacity:.7}.gt-ok:focus-visible,.gt-alt:focus-visible,.gt-x:focus-visible{outline:2px solid #6B4A33;outline-offset:3px}';
+  var box=null, last=null;
+  function onKey(e){ if(e.key==='Escape' && box && !box.hasAttribute('data-page')) shut(); }
+  function shut(){ if(!box) return; box.remove(); box=null; document.body.style.overflow=''; document.removeEventListener('keydown',onKey); if(last && last.focus) try{ last.focus(); }catch(e){} }
+  // next＝登入後要回去的頁面；onPage＝直接打開了引路人的頁面（不能關掉，只能登入或離開）
+  function gate(next,onPage){
+    if(box) return; last=document.activeElement;
+    if(!document.getElementById('gt-css')){ var st=document.createElement('style'); st.id='gt-css'; st.textContent=CSS; document.head.appendChild(st); }
+    var shopOk=onPage && page(location)==='booking.html';
+    box=document.createElement('div'); box.className='gt-mask'; box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label','會員才能看引路人');
+    if(onPage) box.setAttribute('data-page','');
+    box.innerHTML='<div class="gt-box">'+(onPage?'':'<button type="button" class="gt-x" data-gt-x aria-label="關閉">×</button>')+
+      '<div class="gt-ring" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></div>'+
+      '<h3>加入會員，就能看引路人</h3><p>引路人的介紹、可預約時間和預約，<br>登入會員後才看得到。<br>註冊免費，免費測驗不用登入也能玩。</p>'+
+      '<a class="gt-ok" href="account.html?next='+encodeURIComponent(next||'index.html')+'">登入／註冊</a>'+
+      (onPage?(shopOk?'<button type="button" class="gt-alt" data-gt-shop>先逛商品</button>':'')+'<a class="gt-alt" href="index.html">回首頁</a>':'<button type="button" class="gt-alt" data-gt-x>先不要</button>')+
+    '</div>';
+    box.addEventListener('click',function(e){ if((e.target===box && !onPage) || e.target.closest('[data-gt-x]')) shut(); if(e.target.closest('[data-gt-shop]')){ shut(); location.hash='#shop'; } });
+    document.body.appendChild(box); document.body.style.overflow='hidden'; document.addEventListener('keydown',onKey);
+    var f=box.querySelector('.gt-ok'); if(f) setTimeout(function(){ try{ f.focus({preventScroll:true}); }catch(e){} },50);
+  }
+  window.rwGate=gate;
+  // 點到引路人的連結（首頁引路人卡片、全部、分頁列「引路人」、預約引路人…）
+  document.addEventListener('click',function(e){
+    if(member()) return;
+    var sb=e.target.closest && e.target.closest('#bk-segbar [data-v="guides"]');   // 預約頁上面的「引路人」切換
+    if(sb){ e.preventDefault(); e.stopPropagation(); gate('booking.html'); return; }
+    var a=e.target.closest && e.target.closest('a[href]'); if(!a || a.hasAttribute('data-draw') || !isGuide(a.href)) return;
+    e.preventDefault(); e.stopPropagation(); gate(a.getAttribute('href'));
+  },true);
+  // 直接打開引路人的頁面（分享的連結、書籤）
+  function check(){ if(member() || box) return; var pg=page(location);
+    if(/^guides?\.html$/.test(pg) || (pg==='booking.html' && location.hash!=='#shop')) gate(pg+location.search+location.hash,true); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',check); else check();
+  window.addEventListener('hashchange',check);
+})();
+
 // 新版標題列（每一頁一樣）：彩虹圈＋彩之語｜全部地區▾｜🔍｜🔔｜會員；手機用底部分頁列，不用漢堡選單
 var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 (function(){
@@ -66,6 +138,7 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
     sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
     var mb=document.createElement('a'); mb.className='rw-mbtn'; mb.href='account.html'; mb.textContent=(window.rwMemberToken&&window.rwMemberToken())?'會員':'登入／註冊';
     var cb=navIn.querySelector('.rw-burger-cb');
+    var lk=navIn.querySelector('.rw-links'); if(lk && !lk.querySelector('[data-draw]')){ var dr=document.createElement('a'); dr.href='#draw'; dr.setAttribute('data-draw',''); dr.textContent='每日一抽'; var t=lk.querySelector('a[href="tests.html"]'); lk.insertBefore(dr, t?t.nextSibling:lk.firstChild); }
     // 「全部地區」和 🔍 只放在首頁；其他頁只有 彩之語｜🔔｜會員
     if(home) navIn.insertBefore(ar, br?br.nextSibling:navIn.firstChild);
     navIn.insertBefore(sp, cb); if(home) navIn.insertBefore(sb, cb); navIn.appendChild(mb);   // 小鈴鐺之後會插在 cb 前面＝搜尋和會員中間
@@ -83,13 +156,14 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   }catch(e){}
 })();
 
-// 手機版底部分頁列（首頁／測驗／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台不放
+// 手機版底部分頁列（首頁／測驗／每日一抽／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台也有
 (function(){
   var path=(location.pathname.split('/').pop()||'index.html');
-  if(/^(admin|phone)\.html$/.test(path) || document.querySelector('.rw-tab')) return;
+  if(/^phone\.html$/.test(path) || document.querySelector('.rw-tab')) return;   // 我的後台也放（跟網站一樣）
   var T=[
     {h:'index.html', t:'首頁', on:/^(index\.html|)$/, i:'<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>'},
     {h:'tests.html', t:'測驗', on:/^(tests|quiz|chakra|numerology)\.html$/, i:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>'},
+    {h:'#draw', t:'每日一抽', draw:true, on:/^$^/, i:'<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><path d="M12 8.6c.3 1.7 1.1 2.5 2.8 2.8-1.7.3-2.5 1.1-2.8 2.8-.3-1.7-1.1-2.5-2.8-2.8 1.7-.3 2.5-1.1 2.8-2.8Z"/>'},
     {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'}
   ];
   var css=document.createElement('style');
@@ -105,7 +179,7 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   document.head.appendChild(css);
   function mount(){ if(document.querySelector('.rw-tab')) return;
     var nav=document.createElement('nav'); nav.className='rw-tab'; nav.setAttribute('aria-label','主要分頁');
-    nav.innerHTML=T.map(function(x){ var on=x.on.test(path); return '<a href="'+x.h+'"'+(on?' class="on" aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+x.i+'</svg>'+x.t+'<span class="dot"></span></a>'; }).join('');
+    nav.innerHTML=T.map(function(x){ var on=!x.draw && x.on.test(path); return '<a href="'+x.h+'"'+(x.draw?' data-draw':'')+(on?' class="on" aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+x.i+'</svg>'+x.t+'<span class="dot"></span></a>'; }).join('');
     document.body.appendChild(nav); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
 })();
@@ -193,7 +267,7 @@ window.addEventListener('load',function(){
     var load=isAdmin?loadAdmin:loadMember;
     function draw(pins,prev){ var h='<div class="rw-nh"><span>'+(isAdmin?'後台通知':'我的通知')+'</span>'+(isAdmin?'<a href="admin.html">到後台 ›</a>':'')+'</div>';
       h+=(pins||[]).map(function(x){ return '<a class="rw-ni pin" href="'+esc(x.link)+'"><div class="t"><span>'+esc(x.title)+'</span></div><div class="b">'+esc(x.body)+'</div></a>'; }).join('');
-      h+=LIST.length?LIST.map(function(x){ var nw=!prev || new Date(x.ts)>new Date(prev); return '<a class="rw-ni'+(nw?' new':'')+'" href="'+esc(x.link)+'"><div class="t"><span>'+(x.dot?'<i style="background:'+x.dot+'"></i>':'')+esc(x.title)+'</span><small>'+ago(x.ts)+'</small></div>'+(x.body?'<div class="b">'+esc(x.body)+'</div>':'')+'</a>'; }).join(''):((pins&&pins.length)?'':'<div class="rw-nempty">'+(isAdmin?'目前沒有新通知':'目前沒有通知<br>預約、改期、取消、儲值都會在這裡通知你')+'</div>');
+      h+=LIST.length?LIST.map(function(x){ var nw=!prev || new Date(x.ts)>new Date(prev); return '<a class="rw-ni'+(nw?' new':'')+'" href="'+esc(x.link)+'"><div class="t"><span>'+(x.dot?'<i style="background:'+x.dot+'"></i>':'')+esc(x.title)+'</span><small>'+ago(x.ts)+'</small></div>'+(x.body?'<div class="b">'+esc(x.body)+'</div>':'')+'</a>'; }).join(''):((pins&&pins.length)?'':'<div class="rw-nempty">'+(isAdmin?'目前沒有新通知':'目前沒有通知<br>預約、改期、取消都會在這裡通知你')+'</div>');
       panel.innerHTML=h; }
     function refresh(){ rwWithSupa(function(){ load().then(function(l){ LIST=l||[]; badge(); }); }); }
     document.getElementById('rw-bell').onclick=function(e){ e.stopPropagation();

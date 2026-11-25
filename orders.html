@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261123">
+<link rel="stylesheet" href="style.css?v=20261125c">
 <style>
   .owrap{max-width:560px;margin:0 auto;padding:18px 18px 60px}
   .ohead{display:flex;align-items:center;gap:10px;margin:8px 2px 4px}
@@ -145,7 +145,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js?v=20261123"></script>
+<script src="nav.js?v=20261125g"></script>
 
 <div id="ord-loading" class="oloading">載入你的訂單中…</div>
 
@@ -200,7 +200,7 @@
 </div></div>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="booking-access.js?v=20261119"></script>
+<script src="booking-access.js?v=20261125"></script>
 <script src="cal-ui.js?v=20261119"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -279,8 +279,8 @@ function openDetail(i){
 }
 // 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
 function isShop(o){ return /^商品：/.test(String(o.service||'')); }
-// 刷卡／儲值、還沒結束的預約：顯示服務地址或視訊連結（SQL：my_booking_access）
-function hasAccess(o){ return !isShop(o) && o.status==='已預約' && o.order_ref && (o.method==='刷卡'||o.method==='儲值'); }
+// 刷卡、還沒結束的預約：顯示服務地址或視訊連結（SQL：my_booking_access）
+function hasAccess(o){ return !isShop(o) && o.status==='已預約' && o.order_ref && o.method==='刷卡'; }
 var ACC={};
 // 取消預約（依取消與退費條款；退費金額由資料庫 cancel_my_order 計算）
 function canCancel(o){ return o.status==='已預約' && !isShop(o) && o.order_ref && !/-C$/.test(o.order_ref); }
@@ -305,7 +305,7 @@ async function openCancel(ref){
     (q.fee?'<div class="cx-line"><span>彩之語媒合費</span><span>'+money(q.fee)+(q.full?'':'（不退）')+'</span></div>':'')+
     (q.kept?'<div class="cx-line"><span>酌收服務費 50%</span><span class="neg">−'+money(q.kept)+'</span></div>':'')+
     '<div class="cx-line t"><span>可退金額</span><span>'+money(q.refund)+'</span></div>'+
-    '<div style="font-size:12px;color:var(--soft);margin-top:4px">'+esc(q.return_to)+(q.method==='儲值'?'（取消後馬上退回）':'，確認後 7 個工作天內完成')+'</div></div>';
+    '<div style="font-size:12px;color:var(--soft);margin-top:4px">'+esc(q.return_to)+'，確認後 7 個工作天內完成'+'</div></div>';
   h+='<ul class="cx-rules"><li'+(q.full?' class="on"':'')+'>1. 服務開始前 24 小時（含）以上取消：全額退費，或免費改期一次。</li><li'+(q.full?'':' class="on"')+'>2. 服務開始前未滿 24 小時取消：服務費酌收 50%，其餘退還；或改期一次（限一次）。</li><li>3. 服務開始後取消、或未於預約時間出席（NO-SHOW）：恕不退費。</li></ul>';
   if(canEdit(o)) h+='<button type="button" class="cx-alt" id="cx-rs">不想取消？改成改期一次 ›</button>';
   $('#cx-body').innerHTML=h; $('#cx-go').disabled=false;

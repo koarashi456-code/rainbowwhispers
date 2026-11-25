@@ -1,5 +1,5 @@
 /* 彩之語：預約成功後給客人的「服務地址／線上視訊」區塊（預約完成頁、我的訂單共用）
-   資料來自 SQL：my_booking_access(p_ref)，只有刷卡／儲值的訂單、下單會員本人拿得到；
+   資料來自 SQL：my_booking_access(p_ref)，只有刷卡的訂單、下單會員本人拿得到；
    引路人有好幾個地點時，只給客人預約時選的那個（acc.area） */
 (function(){
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }

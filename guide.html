@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261123">
+<link rel="stylesheet" href="style.css?v=20261125c">
 <style>
   .wrap{max-width:560px;margin:0 auto;padding:26px 18px 60px}
   .testbar{max-width:560px;margin:12px auto 0;padding:8px 18px}
@@ -65,9 +65,17 @@
   .pkagree{margin-top:14px;border:2px solid #EBD3A8;border-radius:14px;padding:12px 14px;background:#FFFDF8}
   .pkagree-t{background:#FBF3E4;border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.8;color:var(--ink)}.pkagree-t b{color:var(--brush)}
   .pkagree-l{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:14px;cursor:pointer;line-height:1.6;text-align:left}.pkagree-l input{margin-top:5px;width:17px;height:17px;flex:none}.pkagree-l a{color:#B5713F}
-  .gplace{display:block;margin-top:4px}.gplace b{font-weight:500;color:var(--brush)}
-  .gtr{display:inline-block;font-size:12.5px;color:#4F7392;background:#E3EEF6;border-radius:999px;padding:1px 10px;margin-left:6px}
-  .gplace small{display:block;font-size:12px;color:var(--soft);margin-top:1px}
+  /* 服務地點：只顯示地區，點了才打開哪一站 */
+  .gplaces{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:6px}
+  .gplace{font:inherit;font-size:13.5px;font-weight:500;color:var(--brush);background:#FFFDF8;border:1px solid #EFE3CE;border-radius:999px;min-height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:4px}
+  button.gplace{cursor:pointer}button.gplace:active{opacity:.7}
+  .gplace i{font-style:normal;font-size:11px;color:#B49A7A;transition:transform .15s}
+  .gplace[aria-expanded="true"]{background:#FBF6EC;border-color:#E2CDB0}.gplace[aria-expanded="true"] i{transform:rotate(180deg)}
+  .gpl-more{display:block;margin:8px auto 0;max-width:320px;background:#FBF6EC;border-radius:12px;padding:8px 12px;line-height:1.6}
+  .gpl-more[hidden]{display:none}
+  .gpl-more b{font-weight:500;color:var(--brush);margin-right:6px}
+  .gtr{display:inline-block;font-size:12.5px;color:#4F7392;background:#E3EEF6;border-radius:999px;padding:1px 10px}
+  .gpl-more small{display:block;font-size:12px;color:var(--soft);margin-top:2px}
   .bank{background:#FBF6EC;border-radius:12px;padding:14px 16px;margin-top:14px;font-size:14px;color:var(--ink);line-height:1.9}
   .bank b{color:var(--brush)}
   .bankwarn{font-size:12.5px;color:#C0506A;margin-top:8px}
@@ -114,7 +122,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js?v=20261123"></script>
+<script src="nav.js?v=20261125g"></script>
 
 <div class="testbar"><span>測試版本 · 匯款為測試流程，請勿真的匯款</span></div>
 
@@ -201,11 +209,11 @@
 
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="booking-access.js?v=20261119"></script>
+<script src="booking-access.js?v=20261125"></script>
 <script src="cal-ui.js?v=20261119"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
-var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, PKG_PLANS=[], OWNED=[], MEMBER_BALANCE=0, MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
+var guide=null, MEMBER=null, PAY_METHOD='刷卡', PLACES=[], PLACE=null, PKG_PLANS=[], OWNED=[], MEMBER_NAME='', MEMBER_PHONE='', MEMBER_AREA='';
 function $(s){return document.querySelector(s);}
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function money(n){return '$'+Number(n||0).toLocaleString();}
@@ -269,7 +277,7 @@ async function loadGuide(){
   var id=getId();
   if(!id || !window.SUPA){ show('notfound'); return; }
   try{ var sr=await db.auth.getSession(); MEMBER=(sr.data&&sr.data.session)?sr.data.session.user:null; }catch(e){ MEMBER=null; }
-  if(MEMBER){ try{ var ar=await db.rpc('my_account'); if(!ar.error && ar.data){ MEMBER_BALANCE=Number(ar.data.balance||0); MEMBER_NAME=ar.data.name||''; MEMBER_PHONE=ar.data.phone||''; MEMBER_AREA=ar.data.area||''; } }catch(e){} }
+  if(MEMBER){ try{ var ar=await db.rpc('my_account'); if(!ar.error && ar.data){ MEMBER_NAME=ar.data.name||''; MEMBER_PHONE=ar.data.phone||''; MEMBER_AREA=ar.data.area||''; } }catch(e){} }
   try{
     var res=await db.from('public_guides').select('*').eq('id',id);
     if(res.error || !res.data || !res.data.length){ show('notfound'); return; }
@@ -296,8 +304,12 @@ function renderGuide(){
   var meta=[];
   var withTr=PLACE_INFO.filter(function(x){ return x.area && (trText(x) || String(x.tip||'').trim()); });
   if(withTr.length){
-    meta.push('服務地點：'+PLACE_INFO.filter(function(x){ return x.area; }).map(function(x){ var tr=trText(x), tip=String(x.tip||'').trim();
-      return '<span class="gplace"><b>📍 '+esc(x.area)+'</b>'+(tr?'<span class="gtr">'+esc(tr)+'</span>':'')+(tip?'<small>'+esc(tip)+'</small>':'')+'</span>'; }).join(''));
+    // 只顯示地區；點地區才在下面打開哪一站、走路幾分鐘、交通補充
+    var PA=PLACE_INFO.filter(function(x){ return x.area; });
+    meta.push('服務地點：<span class="gplaces">'+PA.map(function(x,i){ var has=!!(trText(x) || String(x.tip||'').trim());
+        return has?'<button type="button" class="gplace" data-gpl="'+i+'" aria-expanded="false">📍 '+esc(x.area)+'<i aria-hidden="true">▾</i></button>':'<span class="gplace">📍 '+esc(x.area)+'</span>'; }).join('')+'</span>'+
+      PA.map(function(x,i){ var tr=trText(x), tip=String(x.tip||'').trim(); if(!tr && !tip) return '';
+        return '<span class="gpl-more" data-gpl-box="'+i+'" hidden><b>'+esc(x.area)+'</b>'+(tr?'<span class="gtr">'+esc(tr)+'</span>':'')+(tip?'<small>'+esc(tip)+'</small>':'')+'</span>'; }).join(''));
   } else if(g.region) meta.push('服務區域：'+esc(g.region));
   // 有開放時段時以時段為準，不再顯示舊的手打文字（避免兩邊說法不一致）
   if(g.availability && !(OPEN_SLOTS && OPEN_SLOTS.length)) meta.push('可預約：'+esc(g.availability));
@@ -360,6 +372,10 @@ function fillPlans(){ var sel=$('#f-plan'); if(!sel) return; var L=planList(), h
   if(grp || (OWNED.length && L.length && !grouped)) h+='</optgroup>';
   sel.innerHTML=h;
   if(OWNED.length){ var want=new URLSearchParams(location.search).get('pkg'), wi=0; OWNED.forEach(function(k,i){ if(String(k.id)===want) wi=i; }); sel.value='own:'+wi; } }
+// 引路人介紹的服務地點：點地區在下面打開那一站（一次開一個）
+document.addEventListener('click',function(e){ var b=e.target.closest('[data-gpl]'); if(!b) return; var k=b.getAttribute('data-gpl'), op=b.getAttribute('aria-expanded')!=='true';
+  document.querySelectorAll('[data-gpl]').forEach(function(x){ x.setAttribute('aria-expanded','false'); }); document.querySelectorAll('[data-gpl-box]').forEach(function(x){ x.hidden=true; });
+  if(op){ b.setAttribute('aria-expanded','true'); var bx=document.querySelector('[data-gpl-box="'+k+'"]'); if(bx) bx.hidden=false; } });
 // 服務地點：guide_places 回 {online, offline, app, areas:[…]}（SQL：guide_places）
 var PIN_IC='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
 var CAM_IC='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B5713F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>';
@@ -389,15 +405,9 @@ function renderPayOptions(){
   if(sp0 && sp0.own){ var k=sp0.own, rem=Number(k.remaining)||0, po0=$('#pay-options'); if(!po0) return;
     po0.innerHTML='<label class="paybox sel" data-pay="課程"><span class="dot"></span><span>用課程堂數（'+esc(k.label||'套裝課程')+'，剩 <b>'+rem+'</b> 堂）<small>這次扣 1 堂，不用再付錢；扣完剩 '+(rem-1)+' 堂</small></span></label>';
     PAY_METHOD='課程'; COUPON=null; return; }
-  var svcAmt=serviceAmount(), canStore=!!(MEMBER && svcAmt>0 && MEMBER_BALANCE>=svcAmt);
-  var opts='';
-  if(MEMBER){
-    opts+='<label class="paybox'+(canStore?'':' dis')+'" data-pay="儲值"'+(canStore?'':' data-dis="1"')+'><span class="dot"></span><span>儲值餘額（餘額 '+money(MEMBER_BALANCE)+'）'+
-      (canStore?'':(svcAmt>0?'<small>餘額不足這次的 '+money(svcAmt)+'，<a href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE 儲值 ›</a></small>':'<small>選好方案後，餘額夠就能用儲值付款</small>'))+'</span></label>';
-  }
-  opts+='<label class="paybox" data-pay="刷卡"'+(opts?' style="margin-top:8px"':'')+'><span class="dot"></span> 刷卡（信用卡）</label>';
+  var opts='<label class="paybox" data-pay="刷卡"><span class="dot"></span> 刷卡（信用卡）</label>';
   var po=$('#pay-options'); if(!po) return; po.innerHTML=opts;
-  PAY_METHOD=canStore?'儲值':'刷卡';
+  PAY_METHOD='刷卡';
   po.querySelectorAll('.paybox').forEach(function(el){ el.classList.toggle('sel', el.getAttribute('data-pay')===PAY_METHOD);
     el.onclick=function(e){ if(el.getAttribute('data-dis')){ return; } PAY_METHOD=el.getAttribute('data-pay'); po.querySelectorAll('.paybox').forEach(function(x){ x.classList.toggle('sel', x===el); }); }; });
   renderCoupon();
@@ -443,10 +453,9 @@ $('#to-pay').onclick=function(){
   if(bad.length){ err.textContent = (!plan ? '請選方案' : needPlace ? '請選服務地點' : !when ? (slotMode()?'請選預約時段':'請選預約日期與時間') : '請把有 * 的欄位填完整'); return; }
   // 訂單摘要
   var amt=serviceAmount();
-  var isStore=(PAY_METHOD==='儲值');
   var disc=couponDiscount(amt);
   var total=amt-disc;
-  var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
+  var totalLabel=(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var h='';
   h+='<div class="sumline"><span>引路人</span><span>'+esc(guide.name||'')+'</span></div>';
   h+='<div class="sumline"><span>方案</span><span>'+planLabelFull(plan)+(plan&&plan.own?'（用堂數）':'')+'</span></div>';
@@ -466,8 +475,6 @@ $('#to-pay').onclick=function(){
   var mb='';
   if(PAY_METHOD==='課程'){
     var rk=Number(plan.own.remaining)||0; mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">用課程堂數</div>送出後從「'+esc(plan.own.label||'套裝課程')+'」扣 <b>1</b> 堂，扣完剩 <b>'+(rk-1)+'</b> 堂。取消這次預約，這堂會自動退回。</div>';
-  } else if(PAY_METHOD==='儲值'){
-    mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">以儲值餘額付款</div>送出後自動從你的儲值折抵 <b>'+money(total)+'</b>，折抵後餘額約 <b>'+money(Math.max(0,MEMBER_BALANCE-total))+'</b>。</div>';
   } else if(PAY_METHOD==='匯款'){
     mb='<div class="bank"><div style="font-weight:500;color:var(--brush);margin-bottom:4px">匯款資訊（測試）</div>銀行：<b>玉山銀行（808）</b><br>戶名：<b>彩之語 Rainbow Whisper</b><br>帳號：<b>0000-0000-0000-0000</b><div class="bankwarn">⚠️ 這是測試流程，請勿真的匯款。正式帳號會在我們確認預約後提供。</div></div>'+
        '<div class="field" style="margin-top:12px;margin-bottom:0"><div class="lbl">轉帳帳號末 5 碼 <span class="req">*</span></div><input class="in" id="f-last5" inputmode="numeric" maxlength="5" placeholder="匯款完成後填上，方便我們對帳"></div>';
@@ -504,10 +511,9 @@ $('#do-submit').onclick=async function(){
     if(!/^\d{3,5}$/.test(last5)){ if(l5el) l5el.style.borderColor='#C0506A'; err.textContent='帳號末 5 碼請填數字'; return; }
   }
   var amt=serviceAmount();
-  var isStore=(PAY_METHOD==='儲值');
   var disc=couponDiscount(amt);
   var total=amt-disc;
-  var totalLabel=isStore?'以儲值支付':(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
+  var totalLabel=(PAY_METHOD==='匯款'?'匯款總額':'應付總額');
   var nm=(($('#f-name')||{}).value||'').trim(), ph=(($('#f-phone')||{}).value||'').trim();
   btn.disabled=true; btn.textContent='送出中…';
   try{
@@ -535,7 +541,7 @@ $('#do-submit').onclick=async function(){
     });
     if(res.error) throw new Error(res.error.message);
     var ref=res.data||('RW'+Date.now().toString().slice(-8));
-    // 套用優惠到這筆訂單（儲值付款會把折抵加回餘額）
+    // 套用優惠到這筆訂單
     var cpWarn='';
     if(COUPON){ try{ var ap=await db.rpc('apply_coupon',{p_code:COUPON.code,p_ref:ref}); if(ap.error || !ap.data || !ap.data.ok) cpWarn=(ap.data&&ap.data.msg)||'優惠編號沒有套用成功'; }catch(e){ cpWarn='優惠編號沒有套用成功'; } }
     // 記下客人選的地點（SQL：set_my_booking_location）
@@ -543,7 +549,7 @@ $('#do-submit').onclick=async function(){
     // 買套裝課程：開通課程，這次的時間就是第 1 堂（SQL：start_my_package）
     var pkWarn='';
     if(plan && plan.pkg){ try{ var sp=await db.rpc('start_my_package',{p_ref:ref,p_plan_id:plan.pkg.id}); if(sp.error || !sp.data || !sp.data.ok) pkWarn=(sp.error&&sp.error.message)||'課程沒有開通成功'; }catch(e){ pkWarn='課程沒有開通成功'; } }
-    // 刷卡／儲值：預約成功直接給地址或視訊連結（SQL：my_booking_access）
+    // 刷卡：預約成功直接給地址或視訊連結（SQL：my_booking_access）
     var acc=window.RWAccess?await RWAccess.load(db,ref):null;
     sendBookingEmail({ref:ref, name:nm, email:email, phone:ph, guide:(guide.name||''), plan:((planTxt||'—')+(plan&&plan.pkg?'（套裝課程 '+plan.pkg.sessions+' 堂，這次第 1 堂）':'')), place:(placeTxt||'—'), when:fmtWhen(when), method:PAY_METHOD, total:money(total)+(disc&&!cpWarn?'（已折抵 '+COUPON.code+' −'+money(disc)+'）':''), access:(window.RWAccess?RWAccess.text(acc):'')});
     $('#done-ref').textContent='訂單編號 '+ref;

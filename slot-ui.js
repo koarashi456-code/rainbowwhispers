@@ -63,6 +63,9 @@ var CSS='.rs-sel{width:100%;box-sizing:border-box;font:inherit;font-size:14px;co
   '.rs-fbody{background:#fff;border:1.5px solid #EFE3CE;border-top:0;border-radius:0 0 14px 14px;padding:10px 12px 12px}'+
   '.rs-top{font-size:13px;color:var(--soft);margin:0 2px 10px}.rs-top b{color:var(--brush)}'+
   '.rs-day{margin-top:12px;padding-top:12px;border-top:1px dashed #E6D7BF;max-width:440px;box-sizing:border-box}'+
+  /* 放得下時（框寬 720 以上，例如我的後台）：左邊月曆、右邊這一天的時段；窄的地方照舊上下排 */
+  '.rs-fbody{container-type:inline-size}'+
+  '@container (min-width:720px){.rs-split{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:24px;align-items:start}.rs-split .rs-day{margin-top:0;padding:0 0 0 24px;border-top:0;border-left:1px dashed #E6D7BF;max-width:520px;min-height:100%}.rs-split .rs-tm{grid-template-columns:repeat(6,minmax(0,1fr))}}'+
   '.rs-day-h{font-size:16px;color:var(--brush);font-weight:600;display:flex;align-items:center;gap:8px}.rs-tdy{font-size:12px;font-weight:500;color:#A5643A;background:#FBE7CC;border-radius:999px;padding:1px 8px}'+
   '.rs-tg{font-size:12.5px;color:var(--soft);margin:12px 2px 6px}'+
   '.rs-add{font:inherit;font-size:14px;font-weight:500;color:var(--brush);background:#fff;border:1.5px dashed #D9C7A8;border-radius:999px;min-height:42px;padding:0 18px;margin-top:12px;cursor:pointer}'+
@@ -102,7 +105,7 @@ function editor(el,api){
     var sum=S.rows.length?'可約 '+(S.rows.length-tkAll)+' 個・已被預約 '+tkAll+' 個'+(nextS?'・最近 '+dayLabel(nextS.slice(0,10))+' '+nextS.slice(11):''):'還沒開任何時段';
     var h='<button type="button" class="rs-fold'+(S.open?' open':'')+'" data-rs-fold aria-expanded="'+S.open+'"><span class="rs-fic">📅</span><span class="rs-fm"><b>可預約時間</b><small>'+esc(sum)+'</small></span><span class="rs-fgo">'+(S.open?'收起 ▴':'修改 ▾')+'</span></button>';
     if(!S.open){ el.innerHTML=h; el.querySelector('[data-rs-fold]').onclick=function(){ S.open=true; draw(); }; return; }
-    h+='<div class="rs-fbody"><div data-rs-cal></div>';
+    h+='<div class="rs-fbody"><div class="rs-split"><div data-rs-cal></div>';
     // 選到的那一天
     var D=B[S.date]||[], have={}; D.forEach(function(x){ have[x.t]=true; });
     h+='<div class="rs-day"><div class="rs-day-h">'+dayLabel(S.date)+(S.date===tk0?'<span class="rs-tdy">今天</span>':'')+'</div>';
@@ -130,7 +133,7 @@ function editor(el,api){
       var nPick=nPicked(), sum=multi()?S.all.filter(function(x){ return cnt(x.v); }).map(function(x){ return esc(short(x.v))+' '+cnt(x.v)+' 個'; }).join('・'):'';
       h+='<div class="rs-acts"><button type="button" class="rs-go" data-rs-add'+(nPick?'':' disabled')+'>'+(nPick?'新增 '+nPick+' 個時段':'點上面的時間')+'</button>'+(D.length?'<button type="button" class="rs-cancel" data-rs-close>取消</button>':'')+'<span data-rs-msg class="rs-msg">'+(sum?'這次：'+sum:'')+'</span></div>';
     }
-    h+='</div>';
+    h+='</div></div>';
     if(multi()) h+='<div class="rs-note">線上和各地區分開開時段，同一個時間只能給一個地點。</div>';
     if(!S.editable) h+='<div class="rs-note" style="color:#B07A2E">⚠️ 目前只能檢視（請先在 Supabase 執行時段的 SQL）</div>';
     h+='</div>';
