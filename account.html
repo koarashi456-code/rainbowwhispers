@@ -69,7 +69,7 @@
   .irow input.iv:focus{color:var(--brush)}
   .irow.link{cursor:pointer} .irow.link .il{color:var(--brush)}
   .chev{color:#C9B79A;font-size:16px}
-  /* 我的帳戶：儲值餘額／我的訂單／我的課程 一行一項，課程點開才看 */
+  /* 我的帳戶：我的訂單／我的課程 一行一項，課程點開才看 */
   .mc-list .irow{min-height:48px;box-sizing:border-box}
   .mc-list .irow .il{color:var(--ink)}
   .mc-list .mc-v{display:inline-flex;align-items:center;gap:6px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
@@ -409,7 +409,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js?v=20261125e"></script>
+<script src="nav.js?v=20261125f"></script>
 
 <div id="loading" class="acc"><p class="sub" style="margin-top:20px">載入中…</p></div>
 
@@ -417,7 +417,7 @@
 <div id="authbox" class="acc" style="display:none">
   <div class="logo"></div>
   <h1>彩之語</h1>
-  <div class="sub" id="acc-sub">登入後就能預約引路人、查看訂單和儲值紀錄</div>
+  <div class="sub" id="acc-sub">登入後就能預約引路人、查看訂單</div>
 
   <!-- 用戶帳號／引路人帳號 切換：先關閉，只開放用戶登入。要開放引路人登入說明時，把下一行的 display:none 拿掉即可（已開通的引路人一樣用 Email 登入，登入後看得到引路人後台）。 -->
   <div class="tabs" id="atype-tabs" style="margin-bottom:16px;display:none">
@@ -468,7 +468,6 @@
   </div>
   <div class="sec-lab">我的帳戶</div>
   <div class="info-card mc-list">
-    <div class="irow"><span class="il">儲值餘額</span><span class="iv mc-v" id="mc-balance">$0</span></div>
     <div class="irow link" id="mc-order-stat" role="link" tabindex="0"><span class="il">我的訂單</span><span class="iv mc-v"><span id="mc-order-count">0</span> 筆<span class="chev">›</span></span></div>
     <div id="mc-pkg-wrap" style="display:none">
       <button type="button" class="irow link mc-pkfold" id="mc-pk-fold" aria-expanded="false" aria-controls="mc-pkgs"><span class="il">我的課程</span><span class="iv mc-v"><span id="mc-pk-sum"></span><span class="chev" id="mc-pk-chev">▾</span></span></button>
@@ -608,7 +607,7 @@
 <script src="area.js?v=20261119"></script>
 <script src="cal-ui.js?v=20261119"></script>
 <script src="slot-ui.js?v=20261125"></script>
-<script src="course-ui.js?v=20261119"></script>
+<script src="course-ui.js?v=20261125"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
@@ -712,13 +711,12 @@ async function saveOnboard(){
     setTimeout(function(){ location.href='index.html'; },700);
   }catch(e){ msg.textContent='儲存失敗：'+(e.message||'請稍後再試'); b.disabled=false; b.textContent='完成，開始探索'; }
 }
-// 會員自助：讀自己的儲值餘額＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
+// 會員自助：讀自己的資料＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
 async function loadMyAccount(){
   try{
     var r=await db.rpc('my_account');
     if(r.error || !r.data) return;
     if(r.data.disabled){ $('#mc-order-count').textContent='—'; return; }
-    $('#mc-balance').textContent=money(r.data.balance);
     if(r.data.name) $('#mc-name').textContent=r.data.name;
     $('#mc-f-name').value=r.data.name||''; $('#mc-f-phone').value=r.data.phone||''; $('#mc-f-area').value=r.data.area||''; if(MC_AREA) MC_AREA.set(r.data.area||'');
     if(!r.data.name || !r.data.phone || !r.data.area) openOnboard(r.data);  // 第一次（或資料不完整）：先填基本資料
@@ -755,7 +753,7 @@ function drawGuideReport(){
     '<div class="grp-ms">'+M.map(function(x){ return '<span'+(x===cur?' class="cur"':'')+'>'+x.m+' 月</span>'; }).join('')+'</div>'+
     '<details class="grp-tbl"><summary>看每月數字</summary>'+M.slice().reverse().map(function(x){ return '<div><span>'+x.y+' 年 '+x.m+' 月</span><span>'+x.n+' 筆</span><b>'+money(x.v)+'</b></div>'; }).join('')+'</details></div>';
   // 付款方式（佔有效營收的比例；由多到少）
-  var P=[['刷卡',rp.m_card],['匯款',rp.m_transfer],['現金',rp.m_cash],['儲值折抵',rp.m_stored]].map(function(x){ return {t:x[0], v:Number(x[1])||0}; });
+  var P=[['刷卡',rp.m_card],['匯款',rp.m_transfer],['現金',rp.m_cash]].map(function(x){ return {t:x[0], v:Number(x[1])||0}; });
   var tot=P.reduce(function(a,x){ return a+x.v; },0); P.sort(function(a,b){ return b.v-a.v; });
   // 百分比加起來剛好 100（四捨五入後多的、少的補給小數最大的）
   if(tot){ P.forEach(function(x){ var r=x.v*100/tot; x.pc=Math.floor(r); x.fr=r-x.pc; }); var left=100-P.reduce(function(a,x){ return a+x.pc; },0);
@@ -1530,7 +1528,7 @@ function setAtype(t){
   $('#at-guide').classList.toggle('on',t==='guide');
   $('#user-auth').style.display=(t==='user')?'block':'none';
   $('#guide-auth').style.display=(t==='guide')?'block':'none';
-  $('#acc-sub').textContent=(t==='user')?'登入後就能預約引路人、查看訂單和儲值紀錄':'給彩之語的引路人';
+  $('#acc-sub').textContent=(t==='user')?'登入後就能預約引路人、查看訂單':'給彩之語的引路人';
 }
 $('#at-user').onclick=function(){setAtype('user');};
 $('#at-guide').onclick=function(){setAtype('guide');};

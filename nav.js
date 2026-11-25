@@ -267,7 +267,7 @@ window.addEventListener('load',function(){
     var load=isAdmin?loadAdmin:loadMember;
     function draw(pins,prev){ var h='<div class="rw-nh"><span>'+(isAdmin?'後台通知':'我的通知')+'</span>'+(isAdmin?'<a href="admin.html">到後台 ›</a>':'')+'</div>';
       h+=(pins||[]).map(function(x){ return '<a class="rw-ni pin" href="'+esc(x.link)+'"><div class="t"><span>'+esc(x.title)+'</span></div><div class="b">'+esc(x.body)+'</div></a>'; }).join('');
-      h+=LIST.length?LIST.map(function(x){ var nw=!prev || new Date(x.ts)>new Date(prev); return '<a class="rw-ni'+(nw?' new':'')+'" href="'+esc(x.link)+'"><div class="t"><span>'+(x.dot?'<i style="background:'+x.dot+'"></i>':'')+esc(x.title)+'</span><small>'+ago(x.ts)+'</small></div>'+(x.body?'<div class="b">'+esc(x.body)+'</div>':'')+'</a>'; }).join(''):((pins&&pins.length)?'':'<div class="rw-nempty">'+(isAdmin?'目前沒有新通知':'目前沒有通知<br>預約、改期、取消、儲值都會在這裡通知你')+'</div>');
+      h+=LIST.length?LIST.map(function(x){ var nw=!prev || new Date(x.ts)>new Date(prev); return '<a class="rw-ni'+(nw?' new':'')+'" href="'+esc(x.link)+'"><div class="t"><span>'+(x.dot?'<i style="background:'+x.dot+'"></i>':'')+esc(x.title)+'</span><small>'+ago(x.ts)+'</small></div>'+(x.body?'<div class="b">'+esc(x.body)+'</div>':'')+'</a>'; }).join(''):((pins&&pins.length)?'':'<div class="rw-nempty">'+(isAdmin?'目前沒有新通知':'目前沒有通知<br>預約、改期、取消都會在這裡通知你')+'</div>');
       panel.innerHTML=h; }
     function refresh(){ rwWithSupa(function(){ load().then(function(l){ LIST=l||[]; badge(); }); }); }
     document.getElementById('rw-bell').onclick=function(e){ e.stopPropagation();

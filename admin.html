@@ -304,7 +304,7 @@
   .ct-row .n{flex:none;width:58px;color:var(--soft)}
   .ct-row .r{flex:1;min-width:0}.ct-row .r b{color:var(--brush);font-weight:600}.ct-row .r small{display:block;font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ct-row .d{flex:none;width:44px;text-align:right;font-size:11.5px;color:var(--soft)}
-  /* 消費／儲值紀錄：一筆一行（日期｜項目｜金額＋狀態 ▾），點一下在原地往下打開明細，不跳頁 */
+  /* 消費紀錄：一筆一行（日期｜項目｜金額＋狀態 ▾），點一下在原地往下打開明細，不跳頁 */
   .cr-item{border-bottom:1px solid #F1E7D6}.cr-item:last-child{border-bottom:0}
   .cr-row{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;padding:6px 10px;cursor:pointer;color:inherit}
   .cr-row:hover{background:#FBF6EC}.cr-row:active{opacity:.7}
@@ -432,7 +432,7 @@
   #so-badge:empty{display:none}
   .status-badge.st-ship{background:#DCEAF2;color:#4E7A94}
   .sp-add-row .in{font:inherit;font-size:14px;color:var(--ink);background:#FBF6EC;border:1.5px solid #EFE3CE;border-radius:9px;padding:8px 10px;outline:none;box-sizing:border-box}
-  /* 可搜尋下拉（新增交易／儲值的客戶、引路人） */
+  /* 可搜尋下拉（新增交易的客戶、引路人） */
   .cbx{position:relative;display:block}
   .cbx-input{width:100%;box-sizing:border-box}
   .cbx-pop{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 30px -16px rgba(120,90,60,.45);max-height:230px;overflow-y:auto;z-index:40;display:none}
@@ -711,7 +711,7 @@
       <button data-tab="tx">交易紀錄</button>
       <button data-tab="cal">行事曆</button>
       <button data-tab="report">報表</button>
-      <button data-tab="shop">商品・儲值</button>
+      <button data-tab="shop">商品</button>
       <button data-tab="trash">刪除紀錄</button>
     </div>
   </div>
@@ -772,7 +772,7 @@
           <label>項目<input class="in" id="tx-service" placeholder="例：塔羅 60 分"></label>
           <label>預約／服務時間<span style="display:flex;gap:8px"><input class="in" id="tx-date" type="date" style="flex:1.3"><select class="in" id="tx-time" style="flex:1"></select></span></label>
           <label>金額 *<input class="in" id="tx-amount" type="number" min="0" placeholder="0"></label>
-          <label>付款方式<select class="in" id="tx-method"><option>現金</option><option>刷卡</option><option>匯款</option><option>儲值</option></select></label>
+          <label>付款方式<select class="in" id="tx-method"><option>現金</option><option>刷卡</option><option>匯款</option></select></label>
           <label>狀態<select class="in" id="tx-status"><option>已預約</option><option>已完成</option><option>未出席</option><option>已取消</option><option>已退費</option></select></label>
           <label>備註<input class="in" id="tx-notes" placeholder="選填"></label>
         </div>
@@ -787,7 +787,7 @@
         <span style="color:var(--soft)">~</span>
         <input id="tx-fto" type="date" class="in-sm" style="flex:none">
         <select id="tx-fstatus"><option value="">全部狀態</option><option>已預約</option><option>已完成</option><option>未出席</option><option>已取消</option><option>已退費</option></select>
-        <select id="tx-fmethod"><option value="">全部付款</option><option>現金</option><option>刷卡</option><option>匯款</option><option>儲值</option></select>
+        <select id="tx-fmethod"><option value="">全部付款</option><option>現金</option><option>刷卡</option><option>匯款</option></select>
         <select id="tx-fguide"><option value="">全部引路人</option></select>
         <input id="tx-search" placeholder="搜尋 客戶／訂單編號／項目…" style="flex:1;min-width:150px">
         <button class="abtn" id="tx-clear">清除</button>
@@ -818,29 +818,7 @@
 
     <!-- 刪除紀錄 -->
     <section id="tab-shop" style="display:none">
-      <div class="shop-seg"><button type="button" class="on" data-shopv="items">商品清單</button><button type="button" data-shopv="orders">商品訂單 <span id="so-badge"></span></button><button type="button" data-shopv="topups">儲值紀錄</button><button type="button" data-shopv="coupons">優惠編號</button></div>
-      <div id="shop-topups" style="display:none">
-      <div class="formcard">
-        <h3>新增儲值</h3>
-        <div class="fgrid">
-          <label>客戶 *<span class="cbx"><input class="in cbx-input" id="tp-cust-q" placeholder="打字搜尋客戶…" autocomplete="off"><input type="hidden" id="tp-cust"><div class="cbx-pop" id="tp-cust-pop"></div></span></label>
-          <label>日期<input class="in" id="tp-date" type="date"></label>
-          <label>金額 *<input class="in" id="tp-amount" type="number" min="0" max="20000" placeholder="0（上限 20,000）"></label>
-          <label>方式<select class="in" id="tp-method"><option>現金</option><option>刷卡</option><option>匯款</option></select></label>
-          <label>備註<input class="in" id="tp-notes" placeholder="選填"></label>
-        </div>
-        <button class="addbtn" id="tp-add">新增儲值</button>
-        <span class="saved" id="tp-msg" style="margin-left:10px"></span>
-      </div>
-        <div class="filters" style="align-items:center">
-          <input id="tpl-search" placeholder="搜尋 客戶／備註…" style="flex:1;min-width:150px">
-          <select id="tpl-fmethod"><option value="">全部方式</option><option>現金</option><option>刷卡</option><option>匯款</option><option value="__coupon">優惠折抵</option></select>
-          <input id="tpl-ffrom" type="date" class="in-sm" style="flex:none"><span style="color:var(--soft)">~</span><input id="tpl-fto" type="date" class="in-sm" style="flex:none">
-          <button class="abtn" id="tpl-export">匯出 CSV</button>
-        </div>
-        <div class="muted" id="tpl-count" style="font-size:12.5px;margin:6px 2px"></div>
-        <div id="tpl-list"></div>
-      </div>
+      <div class="shop-seg"><button type="button" class="on" data-shopv="items">商品清單</button><button type="button" data-shopv="orders">商品訂單 <span id="so-badge"></span></button><button type="button" data-shopv="coupons">優惠編號</button></div>
       <div id="shop-coupons" style="display:none">
         <div class="muted" style="font-size:12.5px;margin:4px 2px 10px">優惠只折引路人服務費（彩之語吸收，引路人業績照原價）；只有會員能用，預約時輸入。</div>
         <div id="cp-list"></div>
@@ -886,7 +864,7 @@
 <script src="area.js?v=20261119"></script>
 <script src="cal-ui.js?v=20261119"></script>
 <script src="slot-ui.js?v=20261125"></script>
-<script src="course-ui.js?v=20261119"></script>
+<script src="course-ui.js?v=20261125"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -983,7 +961,6 @@ async function loadAll(){
   var err=res.slice(0,4).find(function(x){return x.error;});
   if(err){ $('#list').innerHTML='<div class="muted">讀取失敗：'+esc(err.error.message)+'（三張新表若尚未建立，請先跑建表 SQL）</div>'; }
   fillSelects();
-  try{ if(!$('#tp-date').value) $('#tp-date').value=new Date().toISOString().slice(0,10); }catch(e){}
   CAL_SLOTS=null;
   render(); renderGuides(); renderTx(); renderReport(); renderTrash(); renderShopOrders();
   if(activeTab==='cal') renderCal(true);
@@ -991,7 +968,7 @@ async function loadAll(){
 }
 
 /* ===== 金額彙總 ===== */
-// 預約用優惠編號＋儲值付款時，系統會把折抵加回餘額（topups 方式「優惠折抵」）
+// 舊資料：以前用儲值付款時，優惠折抵會記成 topups（方式「優惠折抵」）；現在網站已經沒有儲值
 function isCouponTopup(t){ return t && (t.method==='優惠折抵' || /^優惠折抵/.test(String(t.notes||''))); }
 function custAgg(cid){
   var topup=0, credit=0, used=0, spent=0;
@@ -1021,15 +998,6 @@ function render(){
   $('#list').innerHTML=rows.map(card).join('');
   bindCards();
 }
-function customerRecords(cid){
-  var txs=TX.filter(function(t){return t.customer_id===cid;});
-  var tps=TOPUPS.filter(function(t){return t.customer_id===cid;});
-  if(!txs.length && !tps.length) return '<div class="muted" style="padding:6px 0">尚無消費／儲值紀錄</div>';
-  var h='';
-  txs.forEach(function(t){ h+='<div class="rec"><span><small>'+(t.appointment_at?fmtAppt(t.appointment_at):'未定時間')+'</small>　消費　'+esc(t.service||'—')+'　<small>'+esc(guideName(t.guide_id))+(t.method?' · '+esc(t.method):'')+(t.order_ref?' · '+esc(t.order_ref):'')+'</small></span><span>'+money(t.amount)+'　'+statusBadge(t.status)+'<button class="recdel" data-deltx="'+t.id+'" title="刪除">✕</button></span></div>'; });
-  tps.forEach(function(t){ h+='<div class="rec"><span><small>'+fmtDay(t.created_at)+'</small>　'+(isCouponTopup(t)?'優惠折抵':'儲值')+'　<small>'+esc(t.method||'')+'</small></span><span style="color:#3F7A5E">+'+money(t.amount)+'<button class="recdel" data-deltp="'+t.id+'" title="刪除">✕</button></span></div>'; });
-  return h;
-}
 // 客戶明細：測驗結果（一種測驗一行＋配對條件），平常收起來
 function tdate(v){ var m=/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/.exec(String(v||'')); return m?(+m[2])+'/'+(+m[3]):esc(String(v||'')); }
 function custTestsHtml(c){
@@ -1044,15 +1012,13 @@ function custTestsHtml(c){
   if(!rows.length) return '<div class="cd-tog off">測驗結果 <span>還沒做過測驗</span></div>';
   return '<button type="button" class="cd-tog" data-tog="t">測驗結果 <span data-tog-hint>'+(n?n+' 種測驗':'')+(best?(n?'＋':'')+'配對條件':'')+'・點開 ▾</span></button><div class="ct-list" data-tog-box="t" hidden>'+rows.join('')+'</div>';
 }
-// 客戶明細：消費／儲值紀錄（一筆一行，點進去看明細），平常收起來
+// 客戶明細：消費紀錄（一筆一行，點一下在原地打開），平常收起來
 function custRecHtml(cid){
   var WD=['日','一','二','三','四','五','六'];
   var L=[];
   TX.filter(function(t){ return t.customer_id===cid; }).forEach(function(t){ var p=t.appointment_at&&!isShopTx(t)?wpart(t.appointment_at):null, d=p?new Date(p.y,p.mo-1,p.d):new Date(t.created_at||0), buy=!p&&/^課程購買：/.test(String(t.service||''));
     L.push({k:'tx', id:t.id, buy:buy, sort:p?p.y+'-'+gsP2(p.mo)+'-'+gsP2(p.d)+'T'+gsP2(p.h)+':'+gsP2(p.mi):String(t.created_at||''), d:(d.getMonth()+1)+'/'+gsP2(d.getDate()), w:buy?'購買':WD[d.getDay()]+(p?' '+gsP2(p.h)+':'+gsP2(p.mi):''), t:t}); });
-  TOPUPS.filter(function(t){ return t.customer_id===cid; }).forEach(function(t){ var d=new Date(t.created_at||0);
-    L.push({k:'tp', id:t.id, sort:String(t.created_at||''), d:(d.getMonth()+1)+'/'+gsP2(d.getDate()), w:WD[d.getDay()], t:t}); });
-  if(!L.length) return '<div class="cd-tog off">消費／儲值紀錄 <span>還沒有紀錄</span></div>';
+  if(!L.length) return '<div class="cd-tog off">消費紀錄 <span>還沒有紀錄</span></div>';
   L.sort(function(a,b){ return a.sort<b.sort?1:a.sort>b.sort?-1:0; });
   var rows=L.map(function(r){ var t=r.t, tp=r.k==='tp', title, sub, amt, bd;
     function kv(a,b){ return b?'<div class="cr-kv"><span>'+a+'</span><b>'+b+'</b></div>':''; }
@@ -1067,26 +1033,7 @@ function custRecHtml(cid){
         ((t.method==='匯款'&&t.pay_last5)?kv('匯款末五碼',esc(t.pay_last5)):'')+
         (t.reschedule_count?kv('改期',t.reschedule_count+' 次'):'')+kv('下單日',fmtFull(t.created_at))+kv('備註',esc(t.notes||'')); }
     return '<div class="cr-item" data-crk="'+r.k+'" data-crid="'+esc(r.id)+'"><button type="button" class="cr-row" aria-expanded="false"><span class="cr-d'+(tp?' tp':'')+(r.buy?' buy':'')+'"><b>'+r.d+'</b><small>'+r.w+'</small></span><span class="cr-m"><div class="t">'+title+'</div><div class="s">'+(sub||'—')+'</div></span><span class="cr-r">'+amt+bd+'</span><span class="cr-go">▾</span></button><div class="cr-more" hidden>'+more+'</div></div>'; });
-  return '<button type="button" class="cd-tog" data-tog="r">消費／儲值紀錄 <span data-tog-hint>'+L.length+' 筆・點開 ▾</span></button><div class="cr-list" data-tog-box="r" hidden>'+rows.join('')+'</div>';
-}
-// 點一筆紀錄：手機開明細頁（返回回到這位客人），電腦跳到那筆
-function openCustRecord(k,id){
-  if(k==='tp'){
-    if(!isM()){ openTopupDetail(id); return; }
-    var t=TOPUPS.find(function(x){ return x.id===id; }); if(!t) return;
-    var o=Object.assign({_kind:'topup'},t);
-    mDetail('tab-customers',isCouponTopup(t)?'優惠折抵明細':'儲值明細',txDetailHtml(o),function(d){
-      bindTxRow(d.querySelector('.m-card'),d.querySelector('.m-saved'));
-      var cb=d.querySelector('[data-mcust]'); if(cb) cb.onclick=function(){ backToCust(t.customer_id); };
-    },function(){ backToCust(t.customer_id); });
-    return;
-  }
-  var tx=TX.find(function(x){ return x.id===id; }); if(!tx) return;
-  if(!isM() || isShopTx(tx)){ openTxDetail(id); return; }
-  mDetail('tab-customers','交易明細',txDetailHtml(tx),function(d){
-    bindTxRow(d.querySelector('.m-card'),d.querySelector('.m-saved'));
-    var cb=d.querySelector('[data-mcust]'); if(cb) cb.onclick=function(){ backToCust(tx.customer_id); };
-  },function(){ backToCust(tx.customer_id); });
+  return '<button type="button" class="cd-tog" data-tog="r">消費紀錄 <span data-tog-hint>'+L.length+' 筆・點開 ▾</span></button><div class="cr-list" data-tog-box="r" hidden>'+rows.join('')+'</div>';
 }
 function backToCust(cid){ var sec=document.getElementById('tab-customers'); mCloseDetail(sec); render(); var card=document.querySelector('#list .cust[data-id="'+cid+'"]'); if(card){ mOpenCard(card); var b=card.querySelector('[data-tog="r"]'); if(b) b.click(); } }
 // 客戶管理：一行一位（頭像、名字、類型、餘額／消費），點一下打開精簡版明細
@@ -1097,19 +1044,20 @@ function card(c){
   var jd=c.created_at?(function(d){ return (d.getMonth()+1)+'/'+d.getDate(); })(new Date(c.created_at)):'';
   var myPk=PKGS.filter(function(k){ return k.customer_id===c.id; }), pkRem=myPk.reduce(function(a,k){ return a+(Number(k.remaining)||0); },0);
   var sub=[mem?'會員':'過路客', nav, c.contact||(jd?jd+' 加入':'')].filter(Boolean).map(esc).join('・')+(myPk.length?'<span style="color:#6E4F9E">・課程剩 '+pkRem+' 堂</span>':'');
-  var amt=a.balance>0?[money(a.balance),'餘額']:a.spent>0?[money(a.spent),'累計消費']:['—','還沒消費'];
+  var amt=a.spent>0?[money(a.spent),'累計消費']:['—','還沒消費'];
+  var nBk=TX.filter(function(t){ return t.customer_id===c.id && !isShopTx(t) && t.status!=='已取消' && t.status!=='已退費'; }).length;
   function fr(k,v,top){ return '<div class="cd-fr'+(top?' top':'')+'"><span>'+k+'</span>'+v+'</div>'; }
   return '<div class="cust crow collapsed" data-id="'+c.id+'">'+
     '<div class="chead crow-h">'+
       '<span class="tbd'+(mem?' tp':'')+'">'+(mem?'會員':'過路客')+'</span>'+
       '<span class="cav '+(mem?'m':'q')+'">'+esc(ini)+'</span>'+
       '<span class="cmain"><div class="t"><b class="a-dname">'+adName(c)+'</b><button type="button" class="a-edit" data-aedit title="修改稱呼（只有後台看得到）" aria-label="修改稱呼">✎</button></div><div class="s">'+(c.contact?esc(c.contact):'<span style="color:#B5A88E">沒有留聯絡方式</span>')+'</div></span>'+
-      '<span class="crs">'+(a.balance>0?'餘額 '+money(a.balance):a.spent>0?'消費 '+money(a.spent):'')+'</span>'+
+      '<span class="crs">'+(a.spent>0?'消費 '+money(a.spent):'')+'</span>'+
       '<span class="cright"><div class="a">'+amt[0]+'</div><div class="k">'+amt[1]+'</div></span><span class="cgo">›</span>'+
     '</div>'+
     '<div class="cbody">'+
     '<div class="cd-meta">'+(jd?jd+' 加入・':'')+'代碼 '+esc(c.ref_code||'—')+'</div>'+
-    '<div class="cd-stats"><div><small>餘額</small><b>'+money(a.balance)+'</b></div><div><small>累積消費</small><b>'+money(a.spent)+'</b></div><div><small>儲值</small><b>'+money(a.topup)+'</b></div></div>'+
+    '<div class="cd-stats"><div><small>累積消費</small><b>'+money(a.spent)+'</b></div><div><small>預約</small><b>'+nBk+' 筆</b></div><div><small>課程剩</small><b>'+pkRem+' 堂</b></div></div>'+
     custTestsHtml(c)+custRecHtml(c.id)+
     '<div class="cd-pkgs" data-cpk>'+custPkgsHtml(c.id)+'</div>'+
     '<div class="cd-fields">'+
@@ -1270,7 +1218,7 @@ function guideCard(g){
         '<div class="gloc-h" style="margin-top:4px"><span>可以新增好幾個，客人預約時自己選</span></div>'+
         '<div data-glocs></div>'+
         '<button type="button" class="gloc-add" data-gloc-add>＋ 新增地點</button>'+
-        '<div class="gloc-tip">・引路人頁面的「服務區域」會自動顯示這些地區<br>・完整地址只有刷卡／儲值預約成功的客人看得到，而且只給客人選的那個地點</div>'+
+        '<div class="gloc-tip">・引路人頁面的「服務區域」會自動顯示這些地區<br>・完整地址只有刷卡預約成功的客人看得到，而且只給客人選的那個地點</div>'+
       '</div>'+
     '</div>'+
     fold('role','角色・接案上限',esc((roleTxt||'還沒選角色')+'・'+capTxt),
@@ -1617,7 +1565,7 @@ $('#add-guide').onclick=async function(){
 };
 ['g-filter','g-search','g-region','g-mode'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('change',renderGuides); e.addEventListener('input',renderGuides); } });
 
-/* ===== 交易紀錄 ＋ 儲值 ===== */
+/* ===== 交易紀錄 ===== */
 function fillSelects(){
   // 客戶／引路人改成可搜尋下拉（setupCombo 讀即時 ALL/GUIDES），這裡只填報表的引路人篩選
   $('#tx-fguide').innerHTML='<option value="">全部引路人</option>'+GUIDES.map(function(g){return '<option value="'+g.id+'">'+esc(guideLabel(g))+'</option>';}).join('');
@@ -1638,7 +1586,6 @@ function setupCombo(qId,hidId,popId,getList,labelFn,subFn){
   document.addEventListener('click',function(e){ if(e.target!==q && !pop.contains(e.target)) pop.classList.remove('open'); });
 }
 setupCombo('tx-cust-q','tx-cust','tx-cust-pop',function(){return ALL;},custLabel,function(c){return [c.contact,c.phone,c.area,c.ref_code?('代碼'+c.ref_code):''].filter(Boolean).join(' · ');});
-setupCombo('tp-cust-q','tp-cust','tp-cust-pop',function(){return ALL;},custLabel,function(c){return [c.contact,c.phone,c.area,c.ref_code?('代碼'+c.ref_code):''].filter(Boolean).join(' · ');});
 setupCombo('tx-guide-q','tx-guide','tx-guide-pop',function(){return GUIDES.filter(function(g){return !g.pending;});},guideLabel,function(g){return g.region||g.email||'';});
 function statusBadge(st){
   var cls=st==='已完成'?'st-done':st==='已取消'?'st-cancel':st==='已退費'?'st-refund':st==='未出席'?'st-noshow':st==='已出貨'?'st-ship':'st-book';
@@ -1659,21 +1606,6 @@ $('#tx-add').onclick=async function(){
   $('#tx-cust-q').value=''; $('#tx-cust').value=''; $('#tx-guide-q').value=''; $('#tx-guide').value='';
   var rr=await db.from('transactions').select('*').order('created_at',{ascending:false}); var allTx=rr.data||[]; TX=allTx.filter(function(x){return !x.deleted;}); DEL.transactions=allTx.filter(function(x){return x.deleted;}); renderTx(); render(); renderTrash();
 };
-$('#tp-add').onclick=async function(){
-  var cid=$('#tp-cust').value, amt=$('#tp-amount').value;
-  var msg=$('#tp-msg');
-  if(!cid){ msg.textContent='請先選客戶'; msg.style.color='#C0506A'; return; }
-  if(amt===''){ msg.textContent='請填金額'; msg.style.color='#C0506A'; return; }
-  if(Number(amt)>20000){ msg.textContent='單筆儲值上限 NT$20,000（依退費條款）'; msg.style.color='#C0506A'; return; }
-  msg.textContent='新增中…'; msg.style.color='var(--soft)';
-  var trow={customer_id:cid, amount:Number(amt)||0, method:$('#tp-method').value, notes:$('#tp-notes').value||null};
-  var td=$('#tp-date').value; if(td){ trow.created_at=td; }
-  var r=await db.from('topups').insert(trow);
-  if(r.error){ msg.textContent='失敗：'+r.error.message; msg.style.color='#C0506A'; return; }
-  msg.textContent='已儲值'; msg.style.color='#4F8E6E'; setTimeout(function(){msg.textContent='';},1500);
-  $('#tp-amount').value=''; $('#tp-notes').value=''; $('#tp-cust-q').value=''; $('#tp-cust').value='';
-  var rr=await db.from('topups').select('*').order('created_at',{ascending:false}); var allTp=rr.data||[]; TOPUPS=allTp.filter(function(x){return !x.deleted;}); DEL.topups=allTp.filter(function(x){return x.deleted;}); render(); renderTx(); renderTrash();
-};
 var TX_SORT={key:'appt',dir:-1};   // 預設依預約時間新→舊
 function txDate(t){ return t.appointment_at||t.created_at; }
 function cmpKeyTx(t){ if(t.appointment_at){ var p=wpart(t.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); } return new Date(t.created_at||t.appointment_at||0); }
@@ -1684,14 +1616,14 @@ function inTxRange(t){
   if(to && d>new Date(to+'T23:59:59')) return false;
   return true;
 }
-// 交易紀錄表格同時列出「消費」（transactions）與「儲值」（topups，_kind='topup'）
+// 交易紀錄表格只列「消費」（transactions）；網站已經沒有儲值
 function isTopup(t){ return t && t._kind==='topup'; }
 function isShopTx(t){ return t && !t._kind && /^商品：/.test(String(t.service||'')); }
 function txFiltered(){
   var q=$('#tx-search').value.trim().toLowerCase();
   var fs=$('#tx-fstatus').value, fg=$('#tx-fguide').value, fm=$('#tx-fmethod').value, ft=($('#tx-ftype')||{}).value||'';
   var src=[];
-  src=src.concat(TX.filter(function(t){ return !isShopTx(t); }));  // 只放引路人預約；商品訂單、儲值都在「商品・儲值」
+  src=src.concat(TX.filter(function(t){ return !isShopTx(t); }));  // 只放引路人預約；商品訂單在「商品」
   var rows=src.filter(function(t){
     if(fs && t.status!==fs) return false;
     if(fg && t.guide_id!==fg) return false;
@@ -1718,7 +1650,7 @@ function renderTx(){
   var refunds=txRows.filter(function(t){return t.status==='已退費';});
   var refAmt=refunds.reduce(function(a,t){return a+Number(t.amount||0);},0);
   var tpSum=tpRows.reduce(function(a,t){return a+Number(t.amount||0);},0);
-  $('#txcount').textContent='顯示 '+rows.length+' 筆（全部預約 '+TX.filter(function(t){return !isShopTx(t);}).length+' 筆；商品訂單、儲值紀錄在「商品・儲值」）';
+  $('#txcount').textContent='顯示 '+rows.length+' 筆（全部預約 '+TX.filter(function(t){return !isShopTx(t);}).length+' 筆；商品訂單在「商品」）';
   if(!rows.length){ $('#txlist').innerHTML='<div class="muted" style="padding:24px;text-align:center">沒有符合的紀錄</div>'; return; }
   var foot='<div class="txfoot"><span>有效 <b>'+valid.length+'</b> 筆 · 營收 <b>'+money(sum)+'</b></span><span>退費 <b>'+refunds.length+'</b> 筆／<b>'+money(refAmt)+'</b></span></div>';
   if(isM()){  // 手機：先看摘要，點進去才看明細
@@ -1730,7 +1662,7 @@ function renderTx(){
   $('#txlist').innerHTML='<div class="txbulk" id="tx-bulk"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="tx-ckall">全選本頁</label><span style="font-size:13px">已選 <b id="tx-cksel">0</b> 筆</span><span style="flex:1"></span><button class="bulkdel" id="tx-bulkdel" disabled>刪除選取</button></div>'+
     '<div class="txtable-wrap"><table class="txt"><thead><tr>'+
     '<th class="ck"></th>'+
-    '<th class="sortable" data-sort="appt">預約／儲值日期時間'+arr('appt')+'</th>'+
+    '<th class="sortable" data-sort="appt">預約日期時間'+arr('appt')+'</th>'+
     '<th>客戶</th><th>引路人</th><th>服務</th>'+
     '<th class="sortable" data-sort="amount" style="text-align:right">金額'+arr('amount')+'</th>'+
     '<th>付款</th><th>狀態</th><th>訂單編號</th><th>末5碼</th>'+
@@ -1763,7 +1695,7 @@ function txRow(t){
   if(isTopup(t)) return topupRow(t);
   var c=custById(t.customer_id);
   var cname=c?custLabel(c):goneCust(t);
-  var mOpt=['現金','刷卡','匯款','儲值'].map(function(m){return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>';}).join('');
+  var mOpt=['現金','刷卡','匯款'].map(function(m){return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>';}).join('');
   var sOpt=['已預約','已完成','未出席','已取消','已退費'].map(function(s){return '<option'+(t.status===s?' selected':'')+'>'+s+'</option>';}).join('');
   return '<tr data-id="'+t.id+'">'+
     '<td class="ck"><input type="checkbox" class="tx-ck"></td>'+
@@ -1800,7 +1732,7 @@ function bindTx(){
   };
   updateTxBulk();
 }
-// 一筆交易／儲值的欄位編輯＋刪除（電腦版表格列、手機版明細共用）
+// 一筆交易的欄位編輯＋刪除（電腦版表格列、手機版明細共用）
 function bindTxRow(tr,sv){
   var id=tr.getAttribute('data-id'), tp=tr.getAttribute('data-kind')==='topup';
   var tbl=tp?'topups':'transactions', ARR=tp?TOPUPS:TX;
@@ -1830,7 +1762,7 @@ function updateTxBulk(){
 }
 function txExportCSV(){
   var rows=txFiltered();
-  var head=['類型','預約／儲值日期時間','客戶','引路人','服務','金額','付款','狀態','訂單編號','末5碼','下單日','備註'];
+  var head=['類型','預約日期時間','客戶','引路人','服務','金額','付款','狀態','訂單編號','末5碼','下單日','備註'];
   function cell(v){ v=(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; }
   var lines=[head.map(cell).join(',')];
   rows.forEach(function(t){ var c=custById(t.customer_id);
@@ -1863,8 +1795,8 @@ function rpExportCSV(){
   var discSum=valid.reduce(function(a,t){return a+Number(t.discount||0);},0);
   var L=[];
   L.push(line(['彩之語報表', rpTopLabel()]));
-  L.push(line(['有效營收',sum(valid),'交易筆數',valid.length,'退費筆數',refunds.length,'退費金額',sum(refunds),'儲值收入',topupIn,'優惠折抵（彩之語吸收）',discSum]));
-  L.push(line(['現金',byM.現金,'刷卡',byM.刷卡,'匯款',byM.匯款,'儲值折抵',byM.儲值]));
+  L.push(line(['有效營收',sum(valid),'交易筆數',valid.length,'退費筆數',refunds.length,'退費金額',sum(refunds),'優惠折抵（彩之語吸收）',discSum]));
+  L.push(line(['現金',byM.現金,'刷卡',byM.刷卡,'匯款',byM.匯款]));
   L.push('');
   L.push(line(['引路人','預約日期時間','客戶','服務','金額','付款','狀態','訂單編號','末5碼','下單日','備註']));
   var g={}; rows.forEach(function(t){ var k=isShopTx(t)?'__shop__':(t.guide_id||'__none__'); (g[k]=g[k]||[]).push(t); });
@@ -1941,7 +1873,7 @@ function rpGuideReport(k,gg){
   var byM={現金:0,刷卡:0,匯款:0,儲值:0}; valid.forEach(function(t){ if(byM[t.method]!==undefined) byM[t.method]+=Number(t.amount||0); });
   var h='<div class="rpg-sum">有效營收 <b>'+money(gg.amount)+'</b>・<b>'+gg.count+'</b> 筆・平均客單 <b>'+money(gg.count?Math.round(gg.amount/gg.count):0)+'</b>・退費 <b>'+nRef+'</b> 筆'+(gg.refund?'／'+money(gg.refund):'')+'</div>';
   h+=rpMonthsHtml(function(t){ return keyOf(t)===k; });
-  h+=rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金],['儲值折抵',byM.儲值]]);
+  h+=rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金]]);
   gg.items.sort(function(a,b){ return cmpKeyTx(b)-cmpKeyTx(a); });
   h+='<div class="grp-h">交易明細<small>'+gg.items.length+' 筆・點一筆看明細</small></div><div class="cr-list">'+gg.items.map(rpTxRow).join('')+'</div>';
   return h;
@@ -2000,8 +1932,8 @@ function renderReport(){
   var topupIn=TOPUPS.filter(function(t){return !isCouponTopup(t) && inRange(new Date(t.created_at||0));}).reduce(function(a,t){return a+Number(t.amount||0);},0);
   var discSum=valid.reduce(function(a,t){return a+Number(t.discount||0);},0);
   $('#rp-summary').innerHTML=
-    '<div class="stats">'+stat('有效營收',money(total))+stat('交易筆數',valid.length+' 筆')+stat('退費',refunds.length+' 筆／'+money(refundAmt))+stat('儲值收入',money(topupIn))+(discSum?stat('優惠折抵（彩之語吸收）',money(discSum)):'')+'</div>'+
-    rpMonthsHtml()+rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金],['儲值折抵',byM.儲值]]);
+    '<div class="stats">'+stat('有效營收',money(total))+stat('交易筆數',valid.length+' 筆')+stat('退費',refunds.length+' 筆／'+money(refundAmt))+(discSum?stat('優惠折抵（彩之語吸收）',money(discSum)):'')+'</div>'+
+    rpMonthsHtml()+rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金]]);
   rpBindCols($('#rp-summary'));
   var g={};
   rows.forEach(function(t){
@@ -2155,74 +2087,14 @@ function soExportCSV(){
     var v=b.getAttribute('data-shopv'); document.querySelectorAll('[data-shopv]').forEach(function(x){ x.classList.toggle('on',x===b); });
     ['items','orders','topups','coupons'].forEach(function(x){ var e=document.getElementById('shop-'+x); if(e) e.style.display=(x===v?'block':'none'); });
     mCloseDetail(document.getElementById('tab-shop'));
-    if(v==='orders') renderShopOrders(); if(v==='topups') renderTopups(); if(v==='coupons') loadCoupons();
+    if(v==='orders') renderShopOrders(); if(v==='coupons') loadCoupons();
   }; });
   ['so-fstatus','so-search'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('input',renderShopOrders); e.addEventListener('change',renderShopOrders); } });
   var ex=document.getElementById('so-export'); if(ex) ex.onclick=soExportCSV;
 })();
 
 
-/* ===== 商品・儲值 → 儲值紀錄 ===== */
-function tpFiltered(){
-  var q=(($('#tpl-search')||{}).value||'').trim().toLowerCase(), fm=($('#tpl-fmethod')||{}).value||'', from=($('#tpl-ffrom')||{}).value||'', to=($('#tpl-fto')||{}).value||'';
-  return TOPUPS.filter(function(t){
-    if(fm==='__coupon'){ if(!isCouponTopup(t)) return false; } else if(fm && (t.method!==fm || isCouponTopup(t))) return false;
-    var d=new Date(t.created_at||0);
-    if(from && d<new Date(from+'T00:00:00')) return false;
-    if(to && d>new Date(to+'T23:59:59')) return false;
-    if(q){ var c=custById(t.customer_id); var hay=[c?(c.admin_alias||'')+' '+custLabel(c):'',t.notes,t.method].join(' ').toLowerCase(); if(hay.indexOf(q)<0) return false; }
-    return true;
-  }).sort(function(a,b){ return new Date(b.created_at||0)-new Date(a.created_at||0); });
-}
-function tpMethodLabel(t){ return isCouponTopup(t)?'<span class="status-badge st-topup">優惠折抵</span>':esc(t.method||'—'); }
-function renderTopups(){
-  var box=$('#tpl-list'); if(!box) return;
-  var rows=tpFiltered(), real=rows.filter(function(t){ return !isCouponTopup(t); });
-  var sum=real.reduce(function(a,t){ return a+Number(t.amount||0); },0);
-  $('#tpl-count').textContent='顯示 '+rows.length+' 筆（全部 '+TOPUPS.length+' 筆）　·　儲值合計 '+money(sum)+(rows.length>real.length?'（不含優惠折抵）':'');
-  if(!rows.length){ box.innerHTML='<div class="muted" style="padding:24px;text-align:center">'+(TOPUPS.length?'沒有符合的儲值紀錄':'還沒有儲值紀錄')+'</div>'; return; }
-  if(isM()){
-    box.innerHTML='<div class="m-list">'+rows.map(function(t){ var c=custById(t.customer_id);
-      return '<button type="button" class="m-row" data-id="'+t.id+'"><span class="mn"><b>'+(c?adName(c):esc(goneCust(t)))+'</b>　'+(isCouponTopup(t)?'優惠折抵':'儲值')+'<small>'+fmtDate(t.created_at)+'・'+esc(isCouponTopup(t)?'系統':t.method||'')+'・餘額 '+money(custAgg(t.customer_id).balance)+'</small></span><span class="rt"><span class="am" style="color:#3F7A5E">+'+money(t.amount)+'</span></span><span class="go">›</span></button>'; }).join('')+'</div>';
-    box.querySelectorAll('.m-row').forEach(function(r){ r.onclick=function(){ openTopupDetail(r.getAttribute('data-id')); }; });
-    return;
-  }
-  var mOpt=function(t){ return ['現金','刷卡','匯款'].map(function(m){ return '<option'+(t.method===m?' selected':'')+'>'+m+'</option>'; }).join(''); };
-  box.innerHTML='<div class="txtable-wrap"><table class="txt"><thead><tr><th>儲值日期</th><th>客戶</th><th style="text-align:right">金額</th><th>方式</th><th style="text-align:right">目前餘額</th><th>備註</th><th></th></tr></thead><tbody>'+
-    rows.map(function(t){ var c=custById(t.customer_id), cp=isCouponTopup(t);
-      return '<tr data-id="'+t.id+'" data-kind="topup"><td class="muted">'+fmtDate(t.created_at)+'</td><td>'+(c?adName(c):esc(goneCust(t)))+'</td>'+
-        '<td class="num">'+(cp?'<span style="color:#3F7A5E">+'+money(t.amount)+'</span>':'<input class="tin amt" data-f="amount" type="number" value="'+esc(t.amount)+'">')+'</td>'+
-        '<td>'+(cp?tpMethodLabel(t):'<select class="tin" data-f="method">'+mOpt(t)+'</select>')+'</td>'+
-        '<td class="num">'+money(custAgg(t.customer_id).balance)+'</td>'+
-        '<td><input class="tin" data-f="notes" value="'+esc(t.notes)+'" placeholder="—" style="max-width:260px"></td>'+
-        '<td><button class="txdel" data-del title="刪除">✕</button></td></tr>'; }).join('')+
-    '</tbody></table></div><div class="txfoot"><span>儲值 <b>'+real.length+'</b> 筆／<b>'+money(sum)+'</b></span>'+(rows.length>real.length?'<span>優惠折抵 <b>'+(rows.length-real.length)+'</b> 筆</span>':'')+'</div><div class="txsaved" id="tpl-saved"></div>';
-  var sv=$('#tpl-saved');
-  box.querySelectorAll('tr[data-id]').forEach(function(tr){ bindTxRow(tr,sv); });
-}
-function openTopupDetail(id){
-  var t=TOPUPS.find(function(x){ return x.id===id; }); if(!t) return;
-  goTab('shop'); var b=document.querySelector('[data-shopv="topups"]'); if(b && !b.classList.contains('on')) b.click();
-  if(!isM()){ renderTopups(); var tr=document.querySelector('#tpl-list tr[data-id="'+id+'"]'); if(tr){ tr.scrollIntoView({block:'center',behavior:'smooth'}); tr.classList.add('flash'); setTimeout(function(){ tr.classList.remove('flash'); },2300); } return; }
-  var o=Object.assign({_kind:'topup'},t);
-  mDetail('tab-shop',isCouponTopup(t)?'優惠折抵明細':'儲值明細',txDetailHtml(o),function(d){
-    bindTxRow(d.querySelector('.m-card'),d.querySelector('.m-saved'));
-    var cb=d.querySelector('[data-mcust]'); if(cb) cb.onclick=function(){ openCustDetail(t.customer_id); };
-  });
-}
-function tpExportCSV(){
-  function cell(v){ v=(v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; }
-  var L=[['儲值日期','客戶','金額','方式','目前餘額','備註'].map(cell).join(',')];
-  tpFiltered().forEach(function(t){ var c=custById(t.customer_id); L.push([fmtDate(t.created_at),c?custLabel(c):'',Number(t.amount||0),isCouponTopup(t)?'優惠折抵':(t.method||''),custAgg(t.customer_id).balance,t.notes||''].map(cell).join(',')); });
-  var blob=new Blob(['﻿'+L.join('\r\n')],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='彩之語儲值紀錄.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); },800);
-}
-(function(){
-  ['tpl-search','tpl-fmethod','tpl-ffrom','tpl-fto'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.addEventListener('input',renderTopups); e.addEventListener('change',renderTopups); } });
-  var ex=document.getElementById('tpl-export'); if(ex) ex.onclick=tpExportCSV;
-})();
-
-/* ===== 商品・儲值 → 優惠編號（只折引路人服務費；需 SQL：coupons／coupon_uses／check_coupon／apply_coupon）===== */
+/* ===== 商品 → 優惠編號（只折引路人服務費；需 SQL：coupons／coupon_uses／check_coupon／apply_coupon）===== */
 var COUPONS=[], CP_USES={};
 function cpLabel(c){ return c.kind==='percent'?'打 '+(c.value%10===0?c.value/10:c.value)+' 折':'折 '+money(c.value); }
 function cpDay(d){ if(!d) return ''; var p=String(d).split('-'); return (+p[0])+'/'+(+p[1])+'/'+(+p[2]); }
@@ -2305,7 +2177,7 @@ function renderTrash(){
   DEL.customers.forEach(function(c){ items.push({t:'客戶',lbl:custLabel(c),sub:fmtDate(c.created_at),tbl:'customers',id:c.id,reason:c.delete_reason||''}); });
   DEL.guides.forEach(function(g){ items.push({t:'引路人',lbl:guideLabel(g),sub:(g.email||g.phone||''),tbl:'guides',id:g.id,reason:g.delete_reason||''}); });
   DEL.transactions.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'交易',lbl:(c?custLabel(c):'客戶')+'　'+(t.service||'—')+'　'+money(t.amount),sub:(t.appointment_at?fmtAppt(t.appointment_at):'')+(t.method?' · '+t.method:''),tbl:'transactions',id:t.id,reason:t.delete_reason||''}); });
-  DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id,reason:t.delete_reason||''}); });
+  if(false) DEL.topups.forEach(function(t){ var c=cAny(t.customer_id); items.push({t:'儲值',lbl:(c?custLabel(c):'客戶')+'　'+money(t.amount),sub:fmtDay(t.created_at)+(t.method?' · '+t.method:''),tbl:'topups',id:t.id,reason:t.delete_reason||''}); });
   document.getElementById('trash-count').textContent='共 '+items.length+' 筆已刪除（可還原）';
   if(!items.length){ list.innerHTML='<div class="muted" style="padding:30px;text-align:center">目前沒有被刪除的資料</div>'; return; }
   list.innerHTML='<div class="trbulk" id="tr-bulk"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px"><input type="checkbox" id="tr-ckall">全選</label><span style="font-size:13px">已選 <b id="tr-cksel">0</b> 筆</span><span style="flex:1"></span><button class="abtn" id="tr-bulkrestore" disabled>還原選取</button><button class="bulkdel" id="tr-bulkpurge" disabled>永久刪除選取</button></div>'+
@@ -2326,7 +2198,7 @@ function renderTrash(){
       render(); renderGuides(); renderTx(); renderReport(); renderTrash(); fillSelects();
     };
     row.querySelector('[data-purge]').onclick=async function(){
-      if(!confirm(tbl==='customers'?'永久刪除這位客戶？\n他的交易、儲值紀錄會留著（客戶欄顯示「帳號已刪除」）。這次真的無法還原。':'永久刪除這筆？這次真的無法還原。'))return;
+      if(!confirm(tbl==='customers'?'永久刪除這位客戶？\n他的交易紀錄會留著（客戶欄顯示「帳號已刪除」）。這次真的無法還原。':'永久刪除這筆？這次真的無法還原。'))return;
       var r=await db.from(tbl).delete().eq('id',id);
       if(r.error){ alert('刪除失敗：'+r.error.message); return; }
       var i=DEL[tbl].findIndex(function(x){return x.id===id;}); if(i>=0)DEL[tbl].splice(i,1);
@@ -2575,7 +2447,7 @@ var MMENU=[
   {t:'guides',n:'引路人管理',ic:'🌈',bg:'#EAD9F2'},
   {t:'tx',n:'交易紀錄',ic:'🧾',bg:'#F4EAD4'},
   {t:'report',n:'報表',ic:'📊',bg:'#F6DDE3'},
-  {t:'shop',n:'商品・儲值',ic:'🛍️',bg:'#DCEAF2'},
+  {t:'shop',n:'商品',ic:'🛍️',bg:'#DCEAF2'},
   {t:'trash',n:'刪除紀錄',ic:'🗑️',bg:'#EDE6DC'}
 ];
 var MCARD={};
@@ -2591,7 +2463,7 @@ function renderMHome(){
   var wk=Date.now()-7*864e5, nNew=ALL.filter(function(c){ return c.created_at && new Date(c.created_at).getTime()>=wk; }).length;
   var nDel=DEL.customers.length+DEL.guides.length+DEL.transactions.length+DEL.topups.length;
   $('#m-today').innerHTML='<button type="button" data-mgo="cal"><b>'+nToday+'</b>今天預約</button><button type="button" data-mgo="guides"'+(nReview?' class="warn"':'')+'><b>'+nReview+'</b>待審核</button><button type="button" data-mgo="shop-orders"'+(nShip?' class="warn"':'')+'><b>'+nShip+'</b>待出貨</button><button type="button" data-mgo="customers"><b>'+nNew+'</b>本週新客</button>';
-  var sub={cal:'今天 '+nToday+' 筆預約・所有引路人一眼看完', customers:'全部 '+ALL.length+' 位客戶・測驗結果・餘額', guides:'共 '+GUIDES.length+' 位・資料、開放時段、方案審核', tx:'全部引路人預約，可改狀態', report:'每位引路人業績・匯出', shop:'商品・儲值紀錄・優惠編號', trash:nDel?nDel+' 筆，可以還原':'刪掉的資料可以還原'};
+  var sub={cal:'今天 '+nToday+' 筆預約・所有引路人一眼看完', customers:'全部 '+ALL.length+' 位客戶・測驗結果・消費紀錄', guides:'共 '+GUIDES.length+' 位・資料、開放時段、方案審核', tx:'全部引路人預約，可改狀態', report:'每位引路人業績・匯出', shop:'商品・商品訂單・優惠編號', trash:nDel?nDel+' 筆，可以還原':'刪掉的資料可以還原'};
   var badge={guides:nReview, shop:nShip};
   box.innerHTML=MMENU.map(function(m){ return '<button type="button" data-mgo="'+m.t+'"><span class="gm-ic" style="background:'+m.bg+'">'+m.ic+'</span><span class="gm-t">'+m.n+'<small>'+sub[m.t]+'</small></span>'+(badge[m.t]?'<span class="gm-n">'+badge[m.t]+'</span>':'')+'<span class="gm-go">›</span></button>'; }).join('');
 }
@@ -2631,7 +2503,7 @@ function mRestoreCard(hostId){
 // 交易明細：手機開明細頁；電腦跳到交易紀錄並標亮那一列
 function openTxDetail(id,kind){
   var tp=(kind==='topup'), t=(tp?TOPUPS:TX).find(function(x){ return x.id===id; }); if(!t) return;
-  if(tp){ openTopupDetail(id); return; }
+  if(tp) return;
   var from=activeTab;
   if(!tp && isShopTx(t)){ goTab('shop'); var ob=document.querySelector('[data-shopv="orders"]'); if(ob) ob.click(); if(isM()) openSoDetail(id,from!=='shop'?from:''); return; }
   goTab('tx');
@@ -2662,7 +2534,7 @@ function txDetailHtml(t){
     h+=mF('引路人',esc(guideName(t.guide_id)))+(isBuyTx?mF('購買日期',fmtFull(t.created_at)):mF('預約時間',t.appointment_at?fmtApptFull(t.appointment_at):'未定時間'))
       +mF('項目','<input class="in" data-f="service" value="'+esc(t.service)+'" placeholder="—">')
       +mF('金額','<input class="in" data-f="amount" type="number" value="'+esc(t.amount)+'">')
-      +mF('付款方式',sel('method',['現金','刷卡','匯款','儲值'],t.method))
+      +mF('付款方式',sel('method',['現金','刷卡','匯款'],t.method))
       +mF('狀態',sel('status',['已預約','已完成','未出席','已取消','已退費'],t.status))
       +(t.location?mF('服務地點',esc(t.location==='線上'?'線上視訊':t.location==='實體'?'實體':t.location+'（實體）')):'')
       +mF('訂單編號',esc(t.order_ref||'—'))
@@ -2749,10 +2621,10 @@ function openCustDetail(cid){
   // 重畫列表後：手機明細頁維持開著＋首頁數字更新
   var _r=render; render=function(){ _r.apply(this,arguments); mRestoreCard('list'); renderMHome(); };
   var _g=renderGuides; renderGuides=function(){ _g.apply(this,arguments); mRestoreCard('glist'); renderMHome(); };
-  var _t=renderTx; renderTx=function(){ _t.apply(this,arguments); renderTopups(); renderMHome(); if(activeTab==='cal') renderCal(); };
+  var _t=renderTx; renderTx=function(){ _t.apply(this,arguments); renderMHome(); if(activeTab==='cal') renderCal(); };
   var _s=renderShopOrders; renderShopOrders=function(){ _s.apply(this,arguments); renderMHome(); };
   // 手機／電腦切換（轉橫向、拉視窗）時重畫有分兩種版型的列表
-  if(MQ){ var onMQ=function(){ renderTx(); renderReport(); renderShopOrders(); renderTopups(); if(activeTab==='shop') loadShop(); }; if(MQ.addEventListener) MQ.addEventListener('change',onMQ); else if(MQ.addListener) MQ.addListener(onMQ); }
+  if(MQ){ var onMQ=function(){ renderTx(); renderReport(); renderShopOrders(); if(activeTab==='shop') loadShop(); }; if(MQ.addEventListener) MQ.addEventListener('change',onMQ); else if(MQ.addListener) MQ.addListener(onMQ); }
   renderMHome();
 })();
 

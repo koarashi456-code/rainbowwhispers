@@ -169,7 +169,7 @@ function refundSheet(q,submit){
      kv('沒上過的 '+q.remaining+' 堂',money(q.unused))+kv('違約金',q.fee?'<span style="color:#B4566E">10%　−'+money(q.fee)+'</span>':'$0（7 天內免收）')+kv('可退金額',money(q.refund),'tot');
   if(!q.can){ h+='<div class="pkr-err" style="margin-top:10px">'+esc(q.reason||'目前不能申請退費')+'</div><div class="pkr-btns"><button type="button" data-pkr-no>知道了</button></div></div>'; }
   else {
-    h+=(q.need_account?'<div class="pkr-note" style="margin-top:10px;color:var(--ink)">退款帳戶（銀行代碼＋帳號）</div><input class="pkr-in" data-pkr-acct maxlength="80" placeholder="例：822 1234567890">':'<div class="pkr-note">退款會退回'+(q.method==='儲值'?'你的儲值餘額':'原本付款的信用卡')+'。</div>')+
+    h+=(q.need_account?'<div class="pkr-note" style="margin-top:10px;color:var(--ink)">退款帳戶（銀行代碼＋帳號）</div><input class="pkr-in" data-pkr-acct maxlength="80" placeholder="例：822 1234567890">':'<div class="pkr-note">退款會退回原本付款的信用卡。</div>')+
       '<div class="pkr-note">送出後由彩之語官方處理，約 3～5 個工作天退款。退費後這個課程就結束，剩下的堂數不能再用。</div><div class="pkr-err" data-pkr-err></div>'+
       '<div class="pkr-btns"><button type="button" data-pkr-no>先不要</button><button type="button" class="go" data-pkr-go>確定申請退費</button></div></div>';
   }
