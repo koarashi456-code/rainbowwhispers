@@ -114,8 +114,8 @@
   .grp-tk span{position:absolute;right:100%;margin-right:8px;top:-8px;font-size:11px;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
   .grp-cols{position:absolute;inset:0;display:flex}
   .grp-col{flex:1;position:relative;font:inherit;background:none;border:0;padding:0;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;min-width:0}
-  .grp-col:hover,.grp-col.on{background:rgba(181,113,63,.06)}
-  .grp-col .bar{position:relative;display:block;width:22px;max-width:60%;background:#B5713F;border-radius:4px 4px 0 0}
+  .grp-col:hover,.grp-col.on{background:rgba(176,162,228,.08)}
+  .grp-col .bar{position:relative;display:block;width:22px;max-width:60%;background:linear-gradient(0deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4);border-radius:4px 4px 0 0}   /* 彩虹色（由下往上） */
   .grp-col .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;font-size:11.5px;font-weight:600;color:var(--brush);white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
   .grp-col.lab .v,.grp-col.on .v,.grp-col:hover .v,.grp-col:focus-visible .v{display:block}
   .grp-cols:has(.grp-col.on) .grp-col.lab:not(.on) .v{display:none}
@@ -128,7 +128,7 @@
   .grp-mt{padding:6px 14px}
   .grp-m{display:flex;align-items:center;gap:10px;min-height:44px;border-bottom:1px solid #F3EBDD}.grp-m:last-child{border-bottom:0}
   .grp-m .n{flex:none;width:58px;font-size:13.5px;color:var(--ink)}
-  .grp-m .tr{flex:1;height:8px;border-radius:999px;background:#F1E3D3;overflow:hidden}.grp-m .tr i{display:block;height:100%;background:#B5713F;border-radius:999px}
+  .grp-m .tr{flex:1;height:8px;border-radius:999px;background:#F1E3D3;overflow:hidden}.grp-m .tr i{display:block;height:100%;background:var(--rainbow,linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4));border-radius:999px}
   .grp-m .a{flex:none;width:86px;text-align:right;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}.grp-m .a small{display:inline-block;width:34px;font-size:11.5px;font-weight:400;color:var(--soft)}
   .gstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px;text-align:left;min-width:0}
   .gstat .k{font-size:12px;color:var(--soft)}

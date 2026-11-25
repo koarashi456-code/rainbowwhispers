@@ -208,6 +208,18 @@
   .grp-m .n{flex:none;width:72px;font-size:13.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .grp-m .tr{flex:1;height:8px;border-radius:999px;background:#F1E3D3;overflow:hidden}.grp-m .tr i{display:block;height:100%;background:var(--rainbow,linear-gradient(90deg,#EE9E86,#F2C56E,#9FD49A,#86C9DA,#B0A2E4));border-radius:999px}
   .grp-m .a{flex:none;width:92px;text-align:right;font-size:13.5px;font-weight:600;color:var(--brush);font-variant-numeric:tabular-nums}.grp-m .a small{display:inline-block;width:36px;font-size:11.5px;font-weight:400;color:var(--soft)}
+  /* 每位引路人業績：一人一行，點了在原地打開他的報表 */
+  .rpg{border-bottom:1px solid #F3EBDD}.rpg:last-child{border-bottom:0}
+  .rpg .grp-m{border-bottom:0}
+  .rpg-row{font:inherit;width:100%;background:none;border:0;padding:4px 0;text-align:left;cursor:pointer;color:inherit;min-height:52px}
+  .rpg-row:active{opacity:.7}
+  .rpg-row .n{width:84px;line-height:1.3}.rpg-row .n b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis}.rpg-row .n small{display:block;font-size:11px;color:var(--soft)}
+  .rpg-go{flex:none;color:#C2A878;font-size:12px;transition:transform .15s}.rpg.open .rpg-go{transform:rotate(180deg)}
+  .rpg-more{padding:2px 0 14px}
+  .rpg-sum{font-size:12.5px;color:var(--soft);line-height:1.7;padding:6px 2px 0}.rpg-sum b{color:var(--brush);font-weight:600}
+  .rpg-more .grp-card{border:0;background:none;padding:0 0 4px;margin-bottom:4px}
+  .rpg-more .grp-card.grp-mt{padding:0}
+  .rpg-more .cr-list{border-radius:10px}
   .in-sm{font:inherit;font-size:14px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 10px;outline:none}
   .rptable{width:100%;border-collapse:collapse;font-size:14px}
   .rptable th,.rptable td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
@@ -1867,10 +1879,10 @@ function rpMeters(title,sub,L){
     '<div class="grp-card grp-mt">'+P.map(function(x){ var pc=tot?x.pc:0; return '<div class="grp-m" role="img" aria-label="'+esc(x.t)+' '+money(x.v)+'，'+pc+'%"><span class="n">'+esc(x.t)+'</span><span class="tr"><i style="width:'+(tot?x.v*100/tot:0)+'%"></i></span><span class="a">'+money(x.v)+'<small>'+pc+'%</small></span></div>'; }).join('')+'</div>';
 }
 function rpNice(v){ if(v<=0) return 1000; var e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e, S=[1,1.2,1.5,2,2.5,3,4,5,6,8,10]; for(var i=0;i<S.length;i++){ if(f<=S[i]) return S[i]*e; } return 10*e; }
-function rpMonthsHtml(){
+function rpMonthsHtml(only){
   var t=new Date(), M=[];
   for(var i=5;i>=0;i--){ var d=new Date(t.getFullYear(),t.getMonth()-i,1); M.push({k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), y:d.getFullYear(), m:d.getMonth()+1, v:0, n:0}); }
-  TX.forEach(function(x){ if(x.status==='已取消'||x.status==='已退費') return; var a=Number(x.amount||0); if(a<=0) return; var d=cmpKeyTx(x); if(!d||isNaN(d)) return;
+  TX.forEach(function(x){ if(only && !only(x)) return; if(x.status==='已取消'||x.status==='已退費') return; var a=Number(x.amount||0); if(a<=0) return; var d=cmpKeyTx(x); if(!d||isNaN(d)) return;
     var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); M.forEach(function(o){ if(o.k===k){ o.v+=a; o.n++; } }); });
   var mx=Math.max.apply(null,M.map(function(x){ return x.v; })), top=rpNice(mx), cur=M[M.length-1], hi=M.reduce(function(a,x){ return x.v>a.v?x:a; },M[0]);
   return '<div class="grp-h">每月營收<small>近 6 個月・點長條看金額</small></div><div class="grp-card"><div class="grp-plot">'+
@@ -1891,6 +1903,30 @@ function inRange(d){
   return true;
 }
 var RP_OPEN={};  // 報表裡展開中的引路人（重畫時保留）
+// 一位引路人的報表（跟引路人後台的報表一樣：摘要、每月營收、付款方式），下面是這段期間的交易，一筆一行、點一下在原地打開
+function rpGuideReport(k,gg){
+  var keyOf=function(t){ return isShopTx(t)?'__shop__':(t.guide_id||'__none__'); };
+  var valid=gg.items.filter(function(t){ return t.status!=='已取消'&&t.status!=='已退費'; }), nRef=gg.items.filter(function(t){ return t.status==='已退費'; }).length;
+  var byM={現金:0,刷卡:0,匯款:0,儲值:0}; valid.forEach(function(t){ if(byM[t.method]!==undefined) byM[t.method]+=Number(t.amount||0); });
+  var h='<div class="rpg-sum">有效營收 <b>'+money(gg.amount)+'</b>・<b>'+gg.count+'</b> 筆・平均客單 <b>'+money(gg.count?Math.round(gg.amount/gg.count):0)+'</b>・退費 <b>'+nRef+'</b> 筆'+(gg.refund?'／'+money(gg.refund):'')+'</div>';
+  h+=rpMonthsHtml(function(t){ return keyOf(t)===k; });
+  h+=rpMeters('付款方式','佔營收的比例',[['刷卡',byM.刷卡],['匯款',byM.匯款],['現金',byM.現金],['儲值折抵',byM.儲值]]);
+  gg.items.sort(function(a,b){ return cmpKeyTx(b)-cmpKeyTx(a); });
+  h+='<div class="grp-h">交易明細<small>'+gg.items.length+' 筆・點一筆看明細</small></div><div class="cr-list">'+gg.items.map(rpTxRow).join('')+'</div>';
+  return h;
+}
+function rpTxRow(t){
+  var WD='日一二三四五六', p=t.appointment_at&&!isShopTx(t)?wpart(t.appointment_at):null, d=p?new Date(p.y,p.mo-1,p.d):new Date(t.created_at||0);
+  var c=custById(t.customer_id), cname=c?adName(c):esc(goneCust(t)), shop=isShopTx(t), stx=shop?shopStLabel(t.status):(t.status||'—');
+  var sc=stx==='已完成'?' done':(stx==='已取消'||stx==='已退費')?' gone':stx==='未出席'?' no':'';
+  var place=t.location?(t.location==='線上'?'線上視訊':t.location==='實體'?'實體':t.location+'（實體）'):'';
+  function kv(a,b){ return b?'<div class="cr-kv"><span>'+a+'</span><b>'+b+'</b></div>':''; }
+  return '<div class="cr-item"><button type="button" class="cr-row" aria-expanded="false"><span class="cr-d"><b>'+(d.getMonth()+1)+'/'+gsP2(d.getDate())+'</b><small>'+WD.charAt(d.getDay())+(p?' '+gsP2(p.h)+':'+gsP2(p.mi):'')+'</small></span>'+
+    '<span class="cr-m"><div class="t">'+cname+'</div><div class="s">'+esc(String(t.service||'—').replace(/^商品：/,''))+'・'+esc(t.method||'—')+'</div></span>'+
+    '<span class="cr-r"><div class="a">'+(t.method==='課程'?'1 堂':money(t.amount))+'</div><div class="st'+sc+'">'+esc(stx)+'</div></span><span class="cr-go">▾</span></button>'+
+    '<div class="cr-more" hidden>'+kv('時間',t.appointment_at?fmtApptFull(t.appointment_at):'未定時間')+kv('項目',esc(t.service||'—'))+kv('地點',esc(place))+
+      ((t.method==='匯款'&&t.pay_last5)?kv('匯款末五碼',esc(t.pay_last5)):'')+kv('訂單',esc(t.order_ref||''))+kv('下單日',fmtFull(t.created_at))+kv('備註',esc(t.notes||''))+'</div></div>';
+}
 function renderReport(){
   var rows=TX.filter(function(t){ return inRange(cmpKeyTx(t)); });
   var valid=rows.filter(function(t){ return t.status!=='已取消'&&t.status!=='已退費'; });
@@ -1914,48 +1950,27 @@ function renderReport(){
   });
   var keys=Object.keys(g).sort(function(a,b){return g[b].amount-g[a].amount;});
   if(!keys.length){ $('#rp-guides').innerHTML='<div class="muted" style="padding:20px;text-align:center">此範圍沒有交易</div>'; return; }
-  var h=rpMeters('','誰的營收比較多（有效營收）',keys.map(function(k){ return [k==='__shop__'?'商品訂單':k==='__none__'?'未指定':guideName(k), g[k].amount]; }));
+  // 每位引路人：一人一行（名字｜比例條｜營收 ▾），點一下在原地打開他的報表（摘要、每月營收、付款方式、交易明細）
+  var tot=keys.reduce(function(a,k){ return a+g[k].amount; },0), PC={};
+  if(tot){ var P=keys.map(function(k){ var r=g[k].amount*100/tot; return {k:k, pc:Math.floor(r), fr:r-Math.floor(r), v:g[k].amount}; }), left=100-P.reduce(function(a,x){ return a+x.pc; },0);
+    P.slice().sort(function(a,b){ return b.fr-a.fr; }).forEach(function(x){ if(left>0 && x.v>0){ x.pc++; left--; } }); P.forEach(function(x){ PC[x.k]=x.pc; }); }
+  var h='<div class="grp-h" style="margin-top:4px"><small style="margin-left:0">誰的營收比較多（有效營收）・點一位看他的報表</small></div><div class="grp-card grp-mt rpg-list">';
   keys.forEach(function(k){
-    var gg=g[k], name=k==='__shop__'?'🛍️ 商品訂單':k==='__none__'?'（未指定引路人）':guideName(k);
-    h+='<div class="gblock'+(RP_OPEN[k]?'':' collapsed')+'" data-k="'+esc(k)+'"><div class="gblock-head"><b><span class="caret">▾</span> '+esc(name)+'</b><span class="gh-meta">'+gg.count+' 筆 · 有效 '+money(gg.amount)+(gg.refund?' · 退費 '+money(gg.refund):'')+'</span></div><div class="gitems">';
-    gg.items.sort(function(a,b){ return cmpKeyTx(b) - cmpKeyTx(a); });
-    // 與「交易紀錄」同一份資料、同樣欄位（唯讀、不打勾）；交易刪除/修改後報表跟著變
-    if(isM()){  // 手機：條列，點一筆看交易明細
-      h+=gg.items.map(function(t){
-        var c=custById(t.customer_id), cname=c?adName(c):esc(goneCust(t));
-        return '<button type="button" class="m-row" data-txid="'+t.id+'"><span class="mn"><b>'+cname+'</b>　'+esc(String(t.service||'—').replace(/^商品：/,''))+'<small>'+(t.appointment_at?fmtAppt(t.appointment_at):fmtDate(t.created_at))+'・'+esc(t.method||'—')+'</small></span><span class="rt"><span class="am">'+money(t.amount)+'</span>'+statusBadge(isShopTx(t)?shopStLabel(t.status):t.status)+'</span><span class="go">›</span></button>';
-      }).join('');
-    } else {
-      h+='<div class="txtable-wrap"><table class="txt rp-txt"><thead><tr>'+
-        '<th>預約日期時間</th><th>客戶</th><th>服務</th><th style="text-align:right">金額</th>'+
-        '<th>付款</th><th>狀態</th><th>訂單編號</th><th>末5碼</th><th>下單日</th><th>備註</th></tr></thead><tbody>'+
-        gg.items.map(function(t){
-          var c=custById(t.customer_id);
-          var cname=c?custLabel(c):goneCust(t);
-          return '<tr>'+
-            '<td class="muted">'+(t.appointment_at?fmtAppt(t.appointment_at):'未定')+'</td>'+
-            '<td>'+esc(cname)+'</td>'+
-            '<td>'+esc(t.service||'—')+'</td>'+
-            '<td class="num">'+money(t.amount)+'</td>'+
-            '<td>'+esc(t.method||'—')+'</td>'+
-            '<td>'+statusBadge(t.status)+'</td>'+
-            '<td class="ref">'+esc(t.order_ref||'—')+'</td>'+
-            '<td class="ref">'+((t.method==='匯款'&&t.pay_last5)?esc(t.pay_last5):'—')+'</td>'+
-            '<td class="muted">'+fmtDay(t.created_at)+'</td>'+
-            '<td class="muted">'+esc(t.notes||'—')+'</td>'+
-          '</tr>';
-        }).join('')+
-        '</tbody></table></div>';
-    }
-    h+='</div></div>';
+    var gg=g[k], name=k==='__shop__'?'商品訂單':k==='__none__'?'未指定':guideName(k), op=!!RP_OPEN[k];
+    h+='<div class="rpg'+(op?' open':'')+'" data-k="'+esc(k)+'"><button type="button" class="grp-m rpg-row" data-rpg aria-expanded="'+op+'">'+
+      '<span class="n"><b>'+esc(name)+'</b><small>'+gg.count+' 筆'+(gg.refund?'・退費 '+money(gg.refund):'')+'</small></span>'+
+      '<span class="tr"><i style="width:'+(tot?gg.amount*100/tot:0)+'%"></i></span><span class="a">'+money(gg.amount)+'<small>'+(tot?PC[k]||0:0)+'%</small></span><span class="rpg-go">▾</span></button>'+
+      '<div class="rpg-more"'+(op?'':' hidden')+'>'+rpGuideReport(k,gg)+'</div></div>';
   });
+  h+='</div>';
   $('#rp-guides').innerHTML=h;
+  rpBindCols($('#rp-guides'));
 }
 ['rp-from','rp-to'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('change',renderReport); });
 var rpc=document.getElementById('rp-clear'); if(rpc) rpc.onclick=function(){ $('#rp-from').value=''; $('#rp-to').value=''; renderReport(); };
-$('#rp-guides').addEventListener('click',function(e){ var mr=e.target.closest('[data-txid]'); if(mr){ openTxDetail(mr.getAttribute('data-txid')); return; } var head=e.target.closest('.gblock-head'); if(head&&head.parentNode){ var gb=head.parentNode; gb.classList.toggle('collapsed'); RP_OPEN[gb.getAttribute('data-k')]=!gb.classList.contains('collapsed'); } });
+$('#rp-guides').addEventListener('click',function(e){ var r=e.target.closest('[data-rpg]'); if(r){ var w=r.parentNode, op=!w.classList.contains('open'); w.classList.toggle('open',op); r.setAttribute('aria-expanded',op); w.querySelector('.rpg-more').hidden=!op; RP_OPEN[w.getAttribute('data-k')]=op; return; } var c=e.target.closest('.cr-item>.cr-row'); if(c){ var it=c.parentNode, o=!it.classList.contains('open'); it.classList.toggle('open',o); c.setAttribute('aria-expanded',o); it.querySelector('.cr-more').hidden=!o; } });   // 點引路人、點交易：都在原地打開，不跳頁
 var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
-if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); RP_OPEN[b.getAttribute('data-k')]=!rpAllCollapsed; }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
+if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .rpg').forEach(function(b){ b.classList.toggle('open',!rpAllCollapsed); b.querySelector('[data-rpg]').setAttribute('aria-expanded',!rpAllCollapsed); b.querySelector('.rpg-more').hidden=rpAllCollapsed; RP_OPEN[b.getAttribute('data-k')]=!rpAllCollapsed; }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
 ['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ if(e.target.closest('.a-edit,.a-alias,.gav-edit,.g-editbtn,.gm-mask')) return; var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(!card) return; if(isM() && (sel==='#list'||sel==='#glist')){ mOpenCard(card); return; } card.classList.toggle('collapsed'); } }); });
