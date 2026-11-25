@@ -351,6 +351,19 @@
   .gm-f{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px 14px;border-top:1px solid #F1E7D6}
   .gm-f .saved{font-size:12px;color:var(--soft)}
   .gm-ok{font:inherit;font-size:15px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;min-height:44px;padding:0 26px;cursor:pointer}
+  /* 服務地點：一個地點一行，點了跳出框框編輯 */
+  .gloc-list{background:#fff;border:1px solid #EFE3CE;border-radius:12px;overflow:hidden}
+  .gloc-row{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;box-sizing:border-box;font:inherit;text-align:left;background:none;border:0;border-bottom:1px solid #F1E7D6;padding:6px 10px;cursor:pointer;color:inherit}
+  .gloc-row:last-child{border-bottom:0}.gloc-row:hover{background:#FBF6EC}.gloc-row:active{opacity:.7}
+  .gl-n{flex:none;width:46px;font-size:12px;color:var(--soft)}
+  .gl-m{flex:1;min-width:0;line-height:1.35}
+  .gl-m b{display:block;font-size:13.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gl-m b.no{color:#B98575}
+  .gl-m small{display:block;font-size:11.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gl-go{flex:none;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--brush)}
+  .gl-go svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .gloc.gloc-m{border:0;background:none;margin:0;border-radius:0;padding:8px 18px 10px}
+  .gl-rm{font:inherit;font-size:12.5px;color:#B4566E;background:none;border:0;padding:0;min-height:44px;cursor:pointer;flex:none}
+  .gm-f .gl-rm+.saved{flex:1;text-align:right}
   /* 交易結算 */
   .gs-tot{font-size:12.5px;color:var(--soft);margin:2px 2px 8px}.gs-tot b{color:var(--brush);font-weight:600}
   .gs-empty{font-size:12.5px;color:var(--soft);padding:4px 2px}
@@ -1449,7 +1462,7 @@ function guideLocs(g){
 function bindGuideLocs(el,id){
   var box=el.querySelector('[data-glocs]'), add=el.querySelector('[data-gloc-add]'); if(!box || !window.RWArea) return;
   var L=guideLocs(guideById(id));
-  function msg(t,c){ var s=el.querySelector('[data-saved]'); if(!s) return; s.textContent=t; s.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(s.textContent===t) s.textContent=''; },1400); }
+  function msg(t,c){ var s=(gm && !gm.hidden && gm.querySelector('[data-gloc-saved]'))||el.querySelector('[data-saved]'); if(!s) return; s.textContent=t; s.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(s.textContent===t) s.textContent=''; },1400); }
   async function save(){
     var keep=L.filter(function(x){ return x.area || x.address.trim() || x.note.trim() || x.t_station.trim() || x.t_tip.trim(); }).map(function(x){ var w=parseInt(x.t_walk,10); return {area:x.area, address:x.address.trim(), note:x.note.trim(), t_type:x.t_type||'捷運', t_station:x.t_station.trim(), t_walk:(w>0?Math.min(w,120):null), t_tip:x.t_tip.trim()}; });
     var areas=[]; keep.forEach(function(x){ if(x.area && areas.indexOf(x.area)<0) areas.push(x.area); });
@@ -1465,32 +1478,50 @@ function bindGuideLocs(el,id){
   var tog=el.querySelector('[data-gloc-tog]'), body=el.querySelector('[data-gloc-body]'), hint=el.querySelector('[data-gloc-hint]');
   function hintTxt(){ if(!hint||!body) return; if(!body.hidden){ hint.textContent='收起 ▴'; return; } var A=L.map(function(x){ return x.area; }).filter(Boolean); hint.textContent=(L.length?L.length+' 個'+(A.length?'：'+A.join('、'):''):'還沒有地點')+'・點開 ▾'; }
   if(tog && body) tog.onclick=function(){ body.hidden=!body.hidden; tog.setAttribute('aria-expanded',body.hidden?'false':'true'); hintTxt(); };
+  // 點開後一個地點一行；點那一行跳出框框編輯（改完自動存），不全部展開
+  function line(x){ var tr=x.t_station?(x.t_type||'捷運')+' '+x.t_station+(x.t_walk?'・走路 '+x.t_walk+' 分':''):''; return tr||x.address||'還沒填交通、地址'; }
   function draw(){
     hintTxt();
-    box.innerHTML=L.length?L.map(function(x,i){
-      return '<div class="gloc" data-i="'+i+'">'+
-        '<div class="gloc-top"><b>地點 '+(i+1)+(x.area?'<span class="gloc-tag">'+esc(x.area)+'</span>':'<span class="gloc-tag no">還沒選地區</span>')+'</b><button type="button" class="del" data-gloc-rm>刪除</button></div>'+
+    box.innerHTML=L.length?'<div class="gloc-list">'+L.map(function(x,i){
+      return '<button type="button" class="gloc-row" data-gloc-open="'+i+'"><span class="gl-n">地點 '+(i+1)+'</span>'+
+        '<span class="gl-m"><b'+(x.area?'':' class="no"')+'>'+esc(x.area||'還沒選地區')+'</b><small>'+esc(line(x))+'</small></span>'+
+        '<span class="gl-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 19.5 5.3 15.6 15.8 5.1a1.8 1.8 0 0 1 2.6 0l.5.5a1.8 1.8 0 0 1 0 2.6L8.4 18.7z"/><path d="M13.8 7.1l3.1 3.1"/></svg></span></button>';
+    }).join('')+'</div>':'<div class="gloc-empty">還沒有實體地點（只做線上的話可以不用加）</div>';
+    box.querySelectorAll('[data-gloc-open]').forEach(function(b){ b.onclick=function(){ edit(+b.getAttribute('data-gloc-open')); }; });
+  }
+  var gm=null, cur=-1;
+  function keyEsc(e){ if(e.key==='Escape') close(); }
+  function shut(){ gm.hidden=true; document.body.style.overflow=''; document.removeEventListener('keydown',keyEsc); }
+  function close(){ if(!gm || gm.hidden) return; var a=document.activeElement; if(a && gm.contains(a)) a.blur(); shut();
+    var x=L[cur]; if(x && !x.area && !x.address.trim() && !x.note.trim() && !x.t_station.trim() && !x.t_tip.trim()) L.splice(cur,1);   // 空的新地點不留
+    cur=-1; draw(); }
+  function edit(i){
+    var x=L[i]; if(!x) return; cur=i;
+    if(!gm){ gm=document.createElement('div'); gm.className='gm-mask'; gm.hidden=true; el.querySelector('.gloc-box').appendChild(gm);
+      gm.addEventListener('click',function(e){ e.stopPropagation(); if(e.target===gm || e.target.closest('[data-gm-x]')) close(); }); }
+    gm.innerHTML='<div class="gm-box" role="dialog" aria-modal="true" aria-label="編輯地點">'+
+      '<div class="gm-h"><b>地點 '+(i+1)+'</b><button type="button" class="gm-x" data-gm-x aria-label="關閉">×</button></div>'+
+      '<div class="gm-body gloc gloc-m">'+
         '<div class="gloc-l">地區（公開顯示）</div><div class="gloc-area" data-gloc-area></div>'+
         '<label class="notes-l">完整地址（不公開，付款成功後才給客人）<input class="in" data-gloc-f="address" value="'+esc(x.address)+'" placeholder="例：新北市三重區重新路三段 88 號 3 樓"></label>'+
         '<label class="notes-l">報到提醒<input class="in" data-gloc-f="note" value="'+esc(x.note)+'" placeholder="例：到了按 3 樓電鈴，說「彩之語預約」"></label>'+
         '<div class="gloc-l" style="margin-top:10px">附近交通（公開）</div><div class="gloc-tr"><select class="in" data-gloc-f="t_type">'+['捷運','火車','公車'].map(function(t){ return '<option'+(x.t_type===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select>'+
           '<input class="in" data-gloc-f="t_station" list="rw-stations" value="'+esc(x.t_station)+'" placeholder="站名，例：三重站"><span>走路</span><input class="in gloc-walk" data-gloc-f="t_walk" type="number" min="1" max="120" value="'+esc(x.t_walk)+'" placeholder="5"><span>分</span></div>'+
         '<label class="notes-l">交通補充（選填）<input class="in" data-gloc-f="t_tip" value="'+esc(x.t_tip)+'" placeholder="例：附近有停車場、公車 306 重新路口站"></label>'+
-      '</div>';
-    }).join(''):'<div class="gloc-empty">還沒有實體地點（只做線上的話可以不用加）</div>';
-    box.querySelectorAll('.gloc').forEach(function(row){
-      var i=+row.getAttribute('data-i');
-      var pk=RWArea.picker(row.querySelector('[data-gloc-area]'),{cls:'in',value:L[i].area,onChange:function(v,ok){
-        if(!ok) return;
-        if(L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(L[i].area); return; }
-        L[i].area=v; var tg=row.querySelector('.gloc-tag'); if(tg){ tg.textContent=v; tg.classList.remove('no'); } hintTxt(); save();
-      }});
-      row.querySelectorAll('[data-gloc-f]').forEach(function(inp){ inp.addEventListener('change',function(){ L[i][inp.getAttribute('data-gloc-f')]=inp.value; save(); }); });
-      row.querySelector('[data-gloc-rm]').onclick=function(){ var x=L[i]; if((x.area||x.address.trim()) && !confirm('刪除「'+(x.area||'地點 '+(i+1))+'」這個地點？')) return; L.splice(i,1); draw(); save(); };
-    });
+      '</div>'+
+      '<div class="gm-f"><button type="button" class="gl-rm" data-gloc-rm>刪除這個地點</button><span class="saved" data-gloc-saved>改完會自動儲存</span><button type="button" class="gm-ok" data-gm-x>完成</button></div></div>';
+    var pk=RWArea.picker(gm.querySelector('[data-gloc-area]'),{cls:'in',value:x.area,onChange:function(v,ok){
+      if(!ok) return;
+      if(L.some(function(y,j){ return j!==i && y.area===v; })){ alert('「'+v+'」已經有一個地點了，同一個地區請只留一個'); pk.set(L[i].area); return; }
+      L[i].area=v; hintTxt(); save();
+    }});
+    gm.querySelectorAll('[data-gloc-f]').forEach(function(inp){ inp.addEventListener('change',function(){ L[i][inp.getAttribute('data-gloc-f')]=inp.value; save(); }); });
+    gm.querySelector('[data-gloc-rm]').onclick=function(){ var y=L[i]; if((y.area||y.address.trim()) && !confirm('刪除「'+(y.area||'地點 '+(i+1))+'」這個地點？')) return; L.splice(i,1); cur=-1; shut(); draw(); save(); };
+    gm.hidden=false; document.body.style.overflow='hidden'; document.addEventListener('keydown',keyEsc);
+    var f=gm.querySelector('select'); if(f) f.focus();
   }
   if(window.RWArea && RWArea.stationList) RWArea.stationList('rw-stations');
-  if(add) add.onclick=function(){ L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); draw(); var last=box.querySelector('.gloc:last-child select'); if(last) last.focus(); };
+  if(add) add.onclick=function(){ L.push({area:'',address:'',note:'',t_type:'捷運',t_station:'',t_walk:'',t_tip:''}); draw(); edit(L.length-1); };
   draw();
 }
 // 引路人角色（測驗配對）、接案上限（SQL：guides.roles、cap_month_hours、cap_day_hours）
