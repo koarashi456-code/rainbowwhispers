@@ -335,6 +335,22 @@
   .gav-edit:active{opacity:.7}
   .gp-rm{font:inherit;font-size:12px;color:#B4566E;background:none;border:0;padding:0 0 0 10px;cursor:pointer}
   .gp-msg{font-size:12px;margin-left:8px}
+  /* 引路人資料編輯框：標題列 ✎ 打開，蓋在畫面上，不換頁 */
+  .g-editbtn{flex:none;width:36px;height:36px;margin:-4px -6px -4px 0;border:0;background:none;border-radius:50%;display:none;align-items:center;justify-content:center;cursor:pointer;color:var(--brush)}
+  .g-editbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .g-editbtn:hover{background:#FBF6EC}.g-editbtn:active{opacity:.6}
+  #glist>.cust:not(.collapsed) .g-editbtn{display:inline-flex}
+  .gm-mask{position:fixed;inset:0;z-index:300;background:rgba(74,58,42,.38);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
+  .gm-mask[hidden]{display:none}
+  .gm-box{width:100%;max-width:520px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;background:#FFFDF8;border-radius:18px;box-shadow:0 12px 40px rgba(74,58,42,.25);overflow:hidden}
+  .gm-h{flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 10px 8px 18px;border-bottom:1px solid #F1E7D6}
+  .gm-h b{font-family:"Noto Serif TC",serif;font-size:17px;color:var(--brush)}
+  .gm-x{width:44px;height:44px;border:0;background:none;font-size:24px;line-height:1;color:var(--soft);cursor:pointer;border-radius:50%}
+  .gm-body{flex:1;min-height:0;overflow:auto;padding:4px 18px 8px;-webkit-overflow-scrolling:touch}
+  .gm-body .cd-fields{margin-top:0}
+  .gm-f{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 18px 14px;border-top:1px solid #F1E7D6}
+  .gm-f .saved{font-size:12px;color:var(--soft)}
+  .gm-ok{font:inherit;font-size:15px;font-weight:500;color:#4A3A2A;background:var(--rainbow);border:0;border-radius:999px;min-height:44px;padding:0 26px;cursor:pointer}
   /* 交易結算 */
   .gs-tot{font-size:12.5px;color:var(--soft);margin:2px 2px 8px}.gs-tot b{color:var(--brush);font-weight:600}
   .gs-empty{font-size:12.5px;color:var(--soft);padding:4px 2px}
@@ -1203,7 +1219,7 @@ function guideCard(g){
         '<i class="gav-cam" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8.5h3l1.6-2.2h6.8L17 8.5h3v10H4z"/><circle cx="12" cy="13" r="3.2"/></svg></i><input type="file" accept="image/*" data-gp-file aria-label="換大頭照" hidden></label>'+
       '<span class="gmn"><b class="gnm">'+esc(g.name||'(未命名引路人)')+'</b><span class="gmail">'+esc(g.email||'沒有留信箱')+'</span>'+
         '<span class="gsub">'+(esc([g.region,g.service_mode].filter(Boolean).join('・'))||'還沒填地區')+'</span></span>'+
-      '<span class="grs'+(pend?' warn':'')+'">'+(pend?pend+' 個方案待審':st.n?'預約 '+st.n:'')+'</span>'+guideBadge(g)+'<span class="ggo">›</span></div>'+
+      '<span class="grs'+(pend?' warn':'')+'">'+(pend?pend+' 個方案待審':st.n?'預約 '+st.n:'')+'</span>'+guideBadge(g)+'<button type="button" class="g-editbtn" data-gedit aria-label="編輯引路人資料" title="編輯資料"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5 5.3 15.6 15.8 5.1a1.8 1.8 0 0 1 2.6 0l.5.5a1.8 1.8 0 0 1 0 2.6L8.4 18.7z"/><path d="M13.8 7.1l3.1 3.1"/></svg></button><span class="ggo">›</span></div>'+
     '<div class="cbody">'+
     '<div class="cd-meta">'+(jd?jd+' 加入・':'')+(g.portal_enabled?'已開通引路人後台':'還沒開通引路人後台')+'<button type="button" class="gp-rm" data-gp-del hidden>移除大頭照</button><span class="gp-msg" data-gp-msg></span></div>'+
     fold('pay','交易結算',st.n?'有效 '+st.n+' 筆・'+money(st.amt):'還沒有交易',guideSettleHtml(g))+
@@ -1230,7 +1246,18 @@ function guideCard(g){
       (g.availability ? '<div data-gs-legacy style="font-size:12px;color:var(--soft);background:#fff;border:1px dashed var(--line);border-radius:10px;padding:6px 10px;margin-bottom:8px">舊的文字說明：「'+esc(g.availability)+'」（客戶頁只在沒有開放時段時顯示）<button type="button" class="del" data-gs-clear style="margin-left:6px">清除</button></div>' : '')+
       '<div data-gslots-body style="color:var(--soft);font-size:12.5px">展開後載入…</div>'+
     '</div>')+
-    '<div class="cd-fields">'+
+    '<div class="cd-foot"><label><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台</label></div>'+
+    '<div class="cd-foot">'+
+      (g.pending
+        ? '<label style="color:#4F8E6E;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
+        : '<label><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>')+
+      '<span class="saved" data-saved></span><button class="del" data-del>刪除</button>'+
+    '</div>'+
+    // 引路人資料：點標題列「上架中」旁邊的 ✎ 跳出這個框修改（改完自動存），不換頁
+    '<div class="gm-mask" data-gm hidden><div class="gm-box" role="dialog" aria-modal="true" aria-label="編輯引路人資料">'+
+      '<div class="gm-h"><b>編輯引路人資料</b><button type="button" class="gm-x" data-gm-x aria-label="關閉">×</button></div>'+
+      '<div class="gm-body">'+
+      '<div class="cd-fields">'+
       fr('姓名','<input class="in" data-f="name" value="'+esc(g.name)+'" placeholder="引路人姓名">')+
       fr('電話','<input class="in" data-f="phone" value="'+esc(g.phone)+'" placeholder="09__ ___ ___">')+
       fr('信箱','<input class="in" data-f="email" value="'+esc(g.email)+'" placeholder="you@mail.com">')+
@@ -1241,13 +1268,9 @@ function guideCard(g){
       fr('視訊連結','<input class="in" data-f="video_link" value="'+esc(g.video_link)+'" placeholder="https://meet.google.com/…（不公開）">')+
       fr('自我介紹','<textarea class="in" data-f="notes" rows="4" placeholder="公開顯示在引路人頁">'+esc(g.notes)+'</textarea>',true)+
     '</div>'+
-    '<div class="cd-foot"><label><input type="checkbox" data-f="portal_enabled" '+(g.portal_enabled?'checked':'')+'> 開通引路人後台</label></div>'+
-    '<div class="cd-foot">'+
-      (g.pending
-        ? '<label style="color:#4F8E6E;font-weight:500"><input type="checkbox" data-approve> 核准上架（勾選後上架）</label>'
-        : '<label><input type="checkbox" data-f="active" '+(g.active?'checked':'')+'> 啟用中</label>')+
-      '<span class="saved" data-saved></span><button class="del" data-del>刪除</button>'+
-    '</div>'+
+      '</div>'+
+      '<div class="gm-f"><span class="saved" data-saved>改完會自動儲存</span><button type="button" class="gm-ok" data-gm-x>完成</button></div>'+
+    '</div></div>'+
     '</div></div>';
 }
 // 引路人的三格數字：預約筆數、有效營收、客戶數（跟交易紀錄同一份資料）
@@ -1499,6 +1522,12 @@ function bindGuides(){
     ensureGuideSlots(el);
     bindGuideLocs(el,id);
     bindGuideRolesCaps(el,id);
+    (function(){ var eb=el.querySelector('[data-gedit]'), gm=el.querySelector('[data-gm]'); if(!eb || !gm) return;
+      function esc_(e){ if(e.key==='Escape') close(); }
+      function close(){ var a=document.activeElement; if(a && gm.contains(a)) a.blur(); gm.hidden=true; document.body.style.overflow=''; document.removeEventListener('keydown',esc_); eb.focus(); }
+      eb.onclick=function(e){ e.stopPropagation(); gm.hidden=false; document.body.style.overflow='hidden'; document.addEventListener('keydown',esc_); var f=gm.querySelector('.in'); if(f) f.focus(); };
+      gm.addEventListener('click',function(e){ e.stopPropagation(); if(e.target===gm || e.target.closest('[data-gm-x]')) close(); });
+    })();
     el.querySelectorAll('[data-f]').forEach(function(inp){
       inp.addEventListener('change',async function(){
         var f=inp.getAttribute('data-f'), val;
@@ -1506,8 +1535,9 @@ function bindGuides(){
         else if(f==='services'){ val=inp.value.split(/[,，、]/).map(function(s){return s.trim();}).filter(Boolean); }
         else { val=inp.value; }
         var patch={}; patch[f]=val;
-        var s=el.querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
+        var s=(inp.closest('.gm-box')||el).querySelector('[data-saved]'); s.textContent='儲存中…'; s.style.color='var(--soft)';
         var r=await db.from('guides').update(patch).eq('id',id);
+        if(!r.error){ var hn=el.querySelector('.chead .gnm'), hm=el.querySelector('.chead .gmail'); if(f==='name' && hn) hn.textContent=val||'(未命名引路人)'; if(f==='email' && hm) hm.textContent=val||'沒有留信箱'; }
         if(r.error){ s.textContent='存檔失敗'; s.style.color='#C0506A'; }
         else{ s.textContent='已儲存'; s.style.color='#4F8E6E'; var g=guideById(id); if(g)g[f]=val; if((f==='name'||f==='email') && g && g.email){ try{ db.from('customers').update({name:g.name||''}).eq('contact', g.email); }catch(e){} } if(f==='name'){fillSelects();renderTx();} setTimeout(function(){s.textContent='';},1400); }
       });
@@ -1897,7 +1927,7 @@ var rpAllCollapsed=true, rpc2=document.getElementById('rp-collapse');
 if(rpc2) rpc2.onclick=function(){ rpAllCollapsed=!rpAllCollapsed; document.querySelectorAll('#rp-guides .gblock').forEach(function(b){ b.classList.toggle('collapsed',rpAllCollapsed); RP_OPEN[b.getAttribute('data-k')]=!rpAllCollapsed; }); rpc2.textContent=rpAllCollapsed?'全部展開':'全部收合'; };
 
 /* ===== 卡片收合（客戶/引路人/交易） ===== */
-['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ if(e.target.closest('.a-edit,.a-alias,.gav-edit')) return; var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(!card) return; if(isM() && (sel==='#list'||sel==='#glist')){ mOpenCard(card); return; } card.classList.toggle('collapsed'); } }); });
+['#list','#glist','#txlist'].forEach(function(sel){ var c=document.querySelector(sel); if(c) c.addEventListener('click',function(e){ if(e.target.closest('.a-edit,.a-alias,.gav-edit,.g-editbtn,.gm-mask')) return; var head=e.target.closest('.chead'); if(head){ var card=head.closest('.cust'); if(!card) return; if(isM() && (sel==='#list'||sel==='#glist')){ mOpenCard(card); return; } card.classList.toggle('collapsed'); } }); });
 function bindCollapseAll(btnId,listSel){ var btn=document.getElementById(btnId); if(!btn) return; btn.onclick=function(){ var cards=document.querySelectorAll(listSel+' .cust'); var anyOpen=Array.prototype.some.call(cards,function(b){return !b.classList.contains('collapsed');}); cards.forEach(function(b){ b.classList.toggle('collapsed',anyOpen); }); btn.textContent=anyOpen?'全部展開':'全部收合'; }; }
 (function(){ var gl=document.getElementById('glist'); if(!gl) return;
   gl.addEventListener('click',function(e){ var m=e.target.closest('[data-gsm]'); if(!m) return; var it=m.parentNode, op=!it.classList.contains('open'); it.classList.toggle('open',op); m.setAttribute('aria-expanded',op); it.querySelector('.cr-more').hidden=!op; });   // 交易結算：點月份在原地打開那個月的交易
