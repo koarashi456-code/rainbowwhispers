@@ -49,6 +49,25 @@ window.rwMemberToken=function(){
   }catch(e){}
 })();
 
+// 每日一抽（會員專屬）：點分頁列「每日一抽」、選單的「每日一抽」或網址 #draw，就打開抽卡（用到才載 daily-card.js）
+window.rwDraw=function(){
+  if(window.RWDaily) return window.RWDaily.open();
+  if(window._rwDrawLoading) return; window._rwDrawLoading=true;
+  var s=document.createElement('script'); s.src='daily-card.js?v=20261125';
+  s.onload=function(){ window._rwDrawLoading=false; if(window.RWDaily) window.RWDaily.open(); };
+  s.onerror=function(){ window._rwDrawLoading=false; };
+  document.head.appendChild(s);
+};
+document.addEventListener('click',function(e){
+  var a=e.target.closest && e.target.closest('[data-draw]'); if(!a) return;
+  e.preventDefault();
+  var cb=document.querySelector('.rw-burger-cb'); if(cb && cb.checked){ cb.checked=false; try{ cb.dispatchEvent(new Event('change')); }catch(_){} }
+  window.rwDraw();
+});
+(function(){ function go(){ if(location.hash==='#draw') window.rwDraw(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+  window.addEventListener('hashchange',go); })();
+
 // 新版標題列（每一頁一樣）：彩虹圈＋彩之語｜全部地區▾｜🔍｜🔔｜會員；手機用底部分頁列，不用漢堡選單
 var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 (function(){
@@ -66,6 +85,7 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
     sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
     var mb=document.createElement('a'); mb.className='rw-mbtn'; mb.href='account.html'; mb.textContent=(window.rwMemberToken&&window.rwMemberToken())?'會員':'登入／註冊';
     var cb=navIn.querySelector('.rw-burger-cb');
+    var lk=navIn.querySelector('.rw-links'); if(lk && !lk.querySelector('[data-draw]')){ var dr=document.createElement('a'); dr.href='#draw'; dr.setAttribute('data-draw',''); dr.textContent='每日一抽'; var t=lk.querySelector('a[href="tests.html"]'); lk.insertBefore(dr, t?t.nextSibling:lk.firstChild); }
     // 「全部地區」和 🔍 只放在首頁；其他頁只有 彩之語｜🔔｜會員
     if(home) navIn.insertBefore(ar, br?br.nextSibling:navIn.firstChild);
     navIn.insertBefore(sp, cb); if(home) navIn.insertBefore(sb, cb); navIn.appendChild(mb);   // 小鈴鐺之後會插在 cb 前面＝搜尋和會員中間
@@ -83,13 +103,14 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   }catch(e){}
 })();
 
-// 手機版底部分頁列（首頁／測驗／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台不放
+// 手機版底部分頁列（首頁／測驗／每日一抽／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台不放
 (function(){
   var path=(location.pathname.split('/').pop()||'index.html');
   if(/^(admin|phone)\.html$/.test(path) || document.querySelector('.rw-tab')) return;
   var T=[
     {h:'index.html', t:'首頁', on:/^(index\.html|)$/, i:'<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>'},
     {h:'tests.html', t:'測驗', on:/^(tests|quiz|chakra|numerology)\.html$/, i:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>'},
+    {h:'#draw', t:'每日一抽', draw:true, on:/^$^/, i:'<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><path d="M12 8.6c.3 1.7 1.1 2.5 2.8 2.8-1.7.3-2.5 1.1-2.8 2.8-.3-1.7-1.1-2.5-2.8-2.8 1.7-.3 2.5-1.1 2.8-2.8Z"/>'},
     {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'}
   ];
   var css=document.createElement('style');
@@ -105,7 +126,7 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   document.head.appendChild(css);
   function mount(){ if(document.querySelector('.rw-tab')) return;
     var nav=document.createElement('nav'); nav.className='rw-tab'; nav.setAttribute('aria-label','主要分頁');
-    nav.innerHTML=T.map(function(x){ var on=x.on.test(path); return '<a href="'+x.h+'"'+(on?' class="on" aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+x.i+'</svg>'+x.t+'<span class="dot"></span></a>'; }).join('');
+    nav.innerHTML=T.map(function(x){ var on=!x.draw && x.on.test(path); return '<a href="'+x.h+'"'+(x.draw?' data-draw':'')+(on?' class="on" aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+x.i+'</svg>'+x.t+'<span class="dot"></span></a>'; }).join('');
     document.body.appendChild(nav); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
 })();
