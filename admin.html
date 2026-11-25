@@ -32,28 +32,37 @@
   .filters input,.filters select{background:#F1E9DC!important;border:0!important;border-radius:12px!important;min-height:42px}
   .filters input::placeholder{color:#8F7A5E}
   .filters input:focus,.filters select:focus{box-shadow:0 0 0 2px #E2CFEE}
-  /* 客戶管理：像筆記本，一人一行（姓名｜信箱），不要外框 */
-  #list{background:none!important;border:0!important;border-radius:0!important;position:relative}
+  /* 客戶管理、引路人管理：跟「刪除紀錄」同一個樣子——白底圓角框，一人一行：左邊小標籤、名字＋下一行小字、右邊小字 › */
+  #list,#glist{background:#fff!important;border:1px solid #EFE3CE!important;border-radius:12px!important;overflow:hidden;position:relative}
+  #list:empty,#glist:empty{display:none}
   #list .cust.collapsed .cav,#list .cust.collapsed .cright{display:none}
-  #list .cust.collapsed .crow-h{min-height:46px;padding:0 6px;gap:8px}
-  #list .cust.collapsed .cmain{display:flex;align-items:center;gap:12px}
-  #list .cust.collapsed .cmain .t{flex:none;width:72px;font-size:13.5px}
-  #list .cust.collapsed .cmain .s{flex:1;min-width:0;margin:0;font-size:12.5px}
-  #list .cust.crow{border-bottom-color:#EEE4D3}
-  @media(max-width:640px){ #list::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none;z-index:1} }
+  #list .cust.collapsed .crow-h{min-height:46px;padding:6px 10px;gap:8px}
+  #list .cust.collapsed .cmain{line-height:1.35}
+  #list .cust.collapsed .cmain .t{font-size:13.5px;color:var(--ink)}
+  #list .cust.collapsed .cmain .t b{font-weight:500}
+  #list .cust.collapsed .cmain .s{margin:0;font-size:11.5px}
+  #list .cust.crow{border-bottom-color:#F1E7D6}
+  #list .cust.collapsed .cgo{font-size:16px}
+  .crs,.grs{flex:none;font-size:11px;color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .grs.warn{color:#B98575}
+  #list .tbd,#glist .tbd{min-width:46px;text-align:center;box-sizing:border-box}   /* 標籤一樣寬，名字才會對齊 */
+  #list .cust:not(.collapsed) .tbd,#list .cust:not(.collapsed) .crs{display:none}
   /* 引路人管理：一個列表，一人一行（姓名｜地區・方式｜上架中） */
-  #glist{background:none;position:relative}
-  #glist>.cust{background:none;border:0;border-bottom:1px solid #EEE4D3;border-radius:0;margin:0;box-shadow:none;padding:0}
+  #glist>.cust{background:none;border:0;border-bottom:1px solid #F1E7D6;border-radius:0;margin:0;box-shadow:none;padding:0}
   #glist>.cust:not(.collapsed){padding:0 6px 12px}
   #glist>.cust:last-child{border-bottom:0}
-  #glist>.cust.collapsed>.chead{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 6px;margin:0}
+  #glist>.cust.collapsed>.chead{display:flex;align-items:center;gap:8px;min-height:46px;padding:6px 10px;margin:0}
+  #glist .chead::after{content:none!important}
+  #glist>.cust.collapsed .gmn{flex:1;line-height:1.35}
+  #glist>.cust.collapsed .gnm{width:auto;font-size:13.5px;font-weight:500;color:var(--ink)}
+  #glist>.cust.collapsed .gsub{flex:none;font-size:11.5px}
+  #glist>.cust.collapsed .src-badge{display:none}
+  .ggo{flex:none;color:#C2A878;font-size:16px}
+  #glist>.cust:not(.collapsed) .tbd,#glist>.cust:not(.collapsed) .grs,#glist>.cust:not(.collapsed) .ggo{display:none}
   #glist>.cust.collapsed>.chead .caret{display:none}
   #glist .chead .gnm{flex:none;width:72px;font-size:14px;color:var(--brush);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #glist .chead .gsub{flex:1;min-width:0;font-size:12.5px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #glist>.cust:not(.collapsed) .gsub{display:none}
-  @media(max-width:640px){ #glist::before{content:"";position:absolute;top:0;bottom:0;left:86px;width:1px;background:#F0CFCA;pointer-events:none;z-index:1} }
-  /* 點進去看明細時，不要筆記本的紅線 */
-  section.m-card-det #list::before,section.m-card-det #glist::before,#list:has(.cust:not(.collapsed))::before,#glist:has(.cust:not(.collapsed))::before{display:none}
   /* 引路人明細：跟客戶明細一樣（頭像＋名字＋信箱、三格數字、點開的區塊、左標籤右欄位） */
   #glist .gav,#glist .gmail{display:none}
   #glist .gmn{flex:none;display:flex;flex-direction:column;min-width:0}
@@ -980,8 +989,10 @@ function card(c){
   function fr(k,v,top){ return '<div class="cd-fr'+(top?' top':'')+'"><span>'+k+'</span>'+v+'</div>'; }
   return '<div class="cust crow collapsed" data-id="'+c.id+'">'+
     '<div class="chead crow-h">'+
+      '<span class="tbd'+(mem?' tp':'')+'">'+(mem?'會員':'過路客')+'</span>'+
       '<span class="cav '+(mem?'m':'q')+'">'+esc(ini)+'</span>'+
       '<span class="cmain"><div class="t"><b class="a-dname">'+adName(c)+'</b><button type="button" class="a-edit" data-aedit title="修改稱呼（只有後台看得到）" aria-label="修改稱呼">✎</button></div><div class="s">'+(c.contact?esc(c.contact):'<span style="color:#B5A88E">沒有留聯絡方式</span>')+'</div></span>'+
+      '<span class="crs">'+(a.balance>0?'餘額 '+money(a.balance):a.spent>0?'消費 '+money(a.spent):'')+'</span>'+
       '<span class="cright"><div class="a">'+amt[0]+'</div><div class="k">'+amt[1]+'</div></span><span class="cgo">›</span>'+
     '</div>'+
     '<div class="cbody">'+
@@ -1128,9 +1139,11 @@ function guideCard(g){
   function fold(k,title,hint,body){ return '<button type="button" class="cd-tog" data-gtog="'+k+'" aria-expanded="false">'+title+' <span>'+hint+'・點開 ▾</span></button><div class="cd-gbox" data-gtog-box="'+k+'" hidden>'+body+'</div>'; }
   return '<div class="cust collapsed" data-id="'+g.id+'">'+
     '<div class="chead"><span class="caret">▾</span>'+
+      '<span class="tbd'+(g.pending?' tx':g.active?' tp':'')+'">'+(g.pending?'待申請':g.active?'上架中':'已停用')+'</span>'+
       '<span class="gav">'+esc(ini)+'<img alt="" src="'+esc(guidePhotoUrl(g.id))+'" onerror="this.remove()"></span>'+
-      '<span class="gmn"><b class="gnm">'+esc(g.name||'(未命名引路人)')+'</b><span class="gmail">'+esc(g.email||'沒有留信箱')+'</span></span>'+
-      '<span class="gsub">'+esc([g.region,g.service_mode].filter(Boolean).join('・'))+'</span>'+guideBadge(g)+'</div>'+
+      '<span class="gmn"><b class="gnm">'+esc(g.name||'(未命名引路人)')+'</b><span class="gmail">'+esc(g.email||'沒有留信箱')+'</span>'+
+        '<span class="gsub">'+(esc([g.region,g.service_mode].filter(Boolean).join('・'))||'還沒填地區')+'</span></span>'+
+      '<span class="grs'+(pend?' warn':'')+'">'+(pend?pend+' 個方案待審':st.n?'預約 '+st.n:'')+'</span>'+guideBadge(g)+'<span class="ggo">›</span></div>'+
     '<div class="cbody">'+
     '<div class="cd-meta">'+(jd?jd+' 加入・':'')+(g.portal_enabled?'已開通引路人後台':'還沒開通引路人後台')+'</div>'+
     '<div class="cd-stats"><div><small>預約</small><b>'+st.n+' 筆</b></div><div><small>有效營收</small><b>'+money(st.amt)+'</b></div><div><small>客戶</small><b>'+st.c+' 位</b></div></div>'+
