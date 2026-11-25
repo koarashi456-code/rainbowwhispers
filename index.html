@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261123">
+<link rel="stylesheet" href="style.css?v=20261125">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta property="og:type" content="website">
@@ -99,13 +99,15 @@
   .hn-g .pr{font-size:15px;font-weight:700;color:var(--brush);margin-top:6px}.hn-g .pr small{font-size:12px;font-weight:500;color:var(--soft);margin-left:2px}
   .hn-empty{padding:0 var(--hn-pad);font-size:13.5px;color:var(--soft)}
   .hn-empty a{color:#3F7A5E}
-  /* 電腦：滿版（手機不變）——大圖卡一次 2～3 張、分類／測驗／引路人改成換行排，不用左右滑 */
+  /* 電腦（手機不變）：內容最寬 1440px 置中、左右留白跟標題列對齊；大圖卡一次 2～3 張剛好排滿、分類／測驗／引路人改成換行排，不用左右滑 */
   @media (min-width:769px){
-    :root{--hn-pad:28px}
+    :root{--hn-pad:max(28px, calc(50vw - 692px))}
     .hn{max-width:none}
     .hn-search{max-width:640px}
     .hn-cats{flex-wrap:wrap;overflow:visible}
-    .hn-bn{width:calc((100% - 2*var(--hn-pad) - 10px)/2);max-width:none;height:220px}
+    .hn-hero .hn-row{padding:0;margin:0 var(--hn-pad);scroll-padding:0}
+    .hn-hero .hn-row::after{display:none}
+    .hn-bn{width:calc((100% - 10px)/2);max-width:none;height:220px}
     .hn-ctl{right:calc(var(--hn-pad) + 10px)}
     .hn-list{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px}
     .hn-it,.hn-it:first-child{border-top:0;padding-top:0}
@@ -114,7 +116,7 @@
     #hn-gl::after,#hn-ol::after{display:none}
     .hn-g{width:auto}.hn-ph{width:100%;height:auto;aspect-ratio:1/1}
   }
-  @media (min-width:1100px){ .hn-bn{width:calc((100% - 2*var(--hn-pad) - 20px)/3)} }
+  @media (min-width:1100px){ .hn-bn{width:calc((100% - 20px)/3)} }
 </style>
 <script src="supabase-config.js"></script>
 </head>
