@@ -121,7 +121,7 @@ document.addEventListener('click',function(e){
   window.addEventListener('hashchange',check);
 })();
 
-// 新版標題列（每一頁一樣）：彩虹圈＋彩之語｜全部地區▾｜🔍｜🔔｜會員；手機用底部分頁列，不用漢堡選單
+// 新版標題列（每一頁一樣）：彩虹圈＋彩之語｜全部地區▾（首頁）｜🔔｜💬｜會員（電腦）；手機的「會員」在底部分頁列最右邊，不用漢堡選單
 var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 (function(){
   try{
@@ -134,18 +134,15 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
     var ar=document.createElement('label'); ar.className='rw-area';
     ar.innerHTML='<select id="rw-area" aria-label="選擇地區"><option value="">全部地區</option>'+RW_COUNTIES.map(function(c){ return '<option'+(c===cur?' selected':'')+'>'+c+'</option>'; }).join('')+'</select>';
     var sp=document.createElement('span'); sp.className='rw-nsp';
-    var sb=document.createElement('button'); sb.type='button'; sb.className='rw-sbtn'; sb.setAttribute('aria-label','搜尋引路人');
-    sb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
     var mb=document.createElement('a'); mb.className='rw-mbtn'; mb.href='account.html'; mb.textContent=(window.rwMemberToken&&window.rwMemberToken())?'會員':'登入／註冊';
     var cb=navIn.querySelector('.rw-burger-cb');
     var lk=navIn.querySelector('.rw-links'); if(lk && !lk.querySelector('[data-draw]')){ var dr=document.createElement('a'); dr.href='#draw'; dr.setAttribute('data-draw',''); dr.textContent='每日一抽'; var t=lk.querySelector('a[href="tests.html"]'); lk.insertBefore(dr, t?t.nextSibling:lk.firstChild); }
-    // 「全部地區」和 🔍 只放在首頁；其他頁只有 彩之語｜🔔｜會員
+    // 「全部地區」只放在首頁（搜尋用首頁內容裡的搜尋框）
     if(home) navIn.insertBefore(ar, br?br.nextSibling:navIn.firstChild);
-    navIn.insertBefore(sp, cb); if(home) navIn.insertBefore(sb, cb); navIn.appendChild(mb);   // 小鈴鐺之後會插在 cb 前面＝搜尋和會員中間
+    navIn.insertBefore(sp, cb); navIn.appendChild(mb);   // 小鈴鐺、💬 之後會插在 cb 前面
     // 選地區：首頁直接篩選；其他頁帶到首頁的引路人
     ar.querySelector('select').onchange=function(){ var v=this.value; try{ localStorage.setItem('rw_area',v); }catch(e){}
       if(window.rwOnArea) window.rwOnArea(v); else location.href='index.html'+(v?'?area='+encodeURIComponent(v):'')+'#hn-gsec'; };
-    sb.onclick=function(){ if(window.rwOnSearch) window.rwOnSearch(); else location.href='index.html#search'; };
     // 三條線的選單：點選單外面或按 Esc 就收起來；可以用鍵盤打開
     var bcb=navIn.querySelector('.rw-burger-cb'), blb=navIn.querySelector('.rw-burger');
     if(bcb && blb){ blb.removeAttribute('aria-hidden'); blb.setAttribute('role','button'); blb.setAttribute('tabindex','0'); blb.setAttribute('aria-label','選單');
@@ -156,7 +153,7 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
   }catch(e){}
 })();
 
-// 手機版底部分頁列（首頁／測驗／每日一抽／引路人）；訂單、會員從上面的「會員」進去：≤ 768px 才出現；我的後台也有
+// 手機版底部分頁列（首頁／測驗／每日一抽／引路人／會員）；訂單從「會員」進去：≤ 768px 才出現；我的後台也有
 (function(){
   var path=(location.pathname.split('/').pop()||'index.html');
   if(/^phone\.html$/.test(path) || document.querySelector('.rw-tab')) return;   // 我的後台也放（跟網站一樣）
@@ -164,7 +161,8 @@ var RW_COUNTIES=['臺北市','新北市','基隆市','桃園市','新竹市','�
     {h:'index.html', t:'首頁', on:/^(index\.html|)$/, i:'<path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/>'},
     {h:'tests.html', t:'測驗', on:/^(tests|quiz|chakra|numerology)\.html$/, i:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>'},
     {h:'#draw', t:'每日一抽', draw:true, on:/^$^/, i:'<rect x="6" y="3.5" width="12" height="17" rx="2.5"/><path d="M12 8.6c.3 1.7 1.1 2.5 2.8 2.8-1.7.3-2.5 1.1-2.8 2.8-.3-1.7-1.1-2.5-2.8-2.8 1.7-.3 2.5-1.1 2.8-2.8Z"/>'},
-    {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'}
+    {h:'booking.html', t:'引路人', on:/^(booking|guide|guides|shop)\.html$/, i:'<circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/>'},
+    {h:'account.html', t:(window.rwMemberToken&&window.rwMemberToken())?'會員':'登入', on:/^(account|orders)\.html$/, i:'<circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="10" r="2.9"/><path d="M6.7 18.4c1.1-2.3 3-3.5 5.3-3.5s4.2 1.2 5.3 3.5"/>'}
   ];
   var css=document.createElement('style');
   css.textContent='.rw-tab{display:none}@media (max-width:768px){'+
@@ -279,7 +277,7 @@ window.addEventListener('load',function(){
   }catch(e){}
 });
 
-// 私訊（會員 ↔ 預約過的引路人）：右上角 💬 在小鈴鐺旁邊，有新訊息顯示紅點；點了打開對話（用到才載 chat.js）
+// 私訊（會員 ↔ 預約過的引路人）：右上角 💬（小鈴鐺右邊；手機是最右上角），有新訊息顯示紅點；點了打開對話（用到才載 chat.js）
 // 網址 #chat、#chat=<引路人 id>（會員）、#gchat（引路人）也會打開
 window.rwChat=function(opt){
   if(window.RWChat) return window.RWChat.open(opt);
@@ -298,14 +296,14 @@ window.addEventListener('load',function(){
   try{
     var tk=window.rwMemberToken&&window.rwMemberToken(); if(!tk) return;
     var CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5a7.5 7.5 0 0 1-11 6.6L4 20l1-4.2A7.5 7.5 0 1 1 20 12.5Z"/><path d="M8.8 12.5h.01M12 12.5h.01M15.2 12.5h.01"/></svg>';
-    var css=document.createElement('style'); css.textContent='.rw-chat-wrap{margin-left:auto}.rw-chat-wrap+.rw-bell-wrap{margin-left:4px}.rw-chatb svg{width:19px;height:19px}';
+    var css=document.createElement('style'); css.textContent='.rw-chatb svg{width:19px;height:19px}';
     document.head.appendChild(css);
     var navIn=document.querySelector('.rw-nav-in');
     if(navIn && !document.getElementById('rw-chatb')){
       var w=document.createElement('div'); w.className='rw-chat-wrap';
       w.innerHTML='<button type="button" class="rw-bell rw-chatb" id="rw-chatb" aria-label="私訊">'+CHAT_SVG+'<b id="rw-chat-n"></b></button>';
       var bell=navIn.querySelector('.rw-bell-wrap'), cb=navIn.querySelector('.rw-burger-cb');
-      navIn.insertBefore(w, bell||cb||navIn.querySelector('.rw-links'));
+      navIn.insertBefore(w, bell?bell.nextSibling:(cb||navIn.querySelector('.rw-links')));   // 小鈴鐺右邊
       document.getElementById('rw-chatb').onclick=function(e){ e.stopPropagation(); window.rwChat({role:'member'}); };
     }
     // 沒有標題列的頁面（手機的會員中心）：放在頁面自己準備的位置
