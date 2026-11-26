@@ -1,5 +1,6 @@
 /* 彩之語：私訊（會員 ↔ 預約過的引路人）
-   會員：右上角 💬（nav.js）或網址 #chat、#chat=<引路人 id>；引路人：後台「私訊」或網址 #gchat
+   右上角 💬（nav.js）；引路人帳號上面多一排「會員｜引路人」可以切換：會員＝跟預約過的引路人聊，引路人＝客人傳來的訊息
+   網址 #chat、#chat=<引路人 id>（會員）、#gchat（引路人）；引路人後台「私訊」直接打開引路人那邊
    資料：SQL my_chat_threads／my_chat_messages／send_my_chat（會員）、guide_chat_threads／guide_chat_messages／guide_send_chat（引路人）
    打開對話就算已讀；開著的時候每幾秒看一次有沒有新訊息 */
 (function(){
@@ -54,8 +55,30 @@
     '.ch-send{flex:none;font:inherit;font-size:15px;font-weight:600;color:#FFFDF8;background:#6B4A33;border:0;border-radius:999px;min-height:42px;padding:0 18px;cursor:pointer}.ch-send:disabled{opacity:.45;cursor:default}'+
     '.ch-err{font-size:12.5px;color:#B4566E;padding:0 14px 6px;background:#FFFDF8}.ch-err:empty{display:none}'+
     '.ch-note{font-size:11.5px;color:#8C7963;text-align:center;padding:6px 16px 0}'+
-    '.ch-back:active,.ch-x:active,.ch-send:active{opacity:.7}';
-  var mask=null, box=null, S={role:'member', view:'list', id:'', name:'', n:-1, timer:null, last:null};
+    '.ch-back:active,.ch-x:active,.ch-send:active{opacity:.7}'+
+    /* 切換身分：會員｜引路人 */
+    '.ch-sw{flex:none;display:flex;gap:4px;margin:10px 12px 0;padding:4px;background:#F1E9DC;border-radius:999px}'+
+    '.ch-sw button{flex:1;font:inherit;font-size:14.5px;font-weight:600;color:#8C7963;background:none;border:0;border-radius:999px;min-height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent}'+
+    '.ch-sw button.on{background:#fff;color:#6B4A33;box-shadow:0 1px 3px rgba(107,74,51,.16)}.ch-sw button:active{opacity:.7}'+
+    '.ch-sw i{font-style:normal;min-width:18px;height:18px;border-radius:999px;background:#D4694E;color:#fff;font-size:11px;font-weight:600;line-height:18px;padding:0 5px;box-sizing:border-box}.ch-sw i:empty{display:none}';
+  var mask=null, box=null, S={role:'member', view:'list', id:'', name:'', n:-1, timer:null, last:null, isG:null, un:{m:0,g:0}};
+  // 這個帳號是不是引路人（是的話私訊上面可以切換會員／引路人）；同一次瀏覽只問一次
+  function guideCheck(){
+    if(S.isG!==null) return Promise.resolve(S.isG);
+    var k='rw_isg_'+(window.rwTokenSub?window.rwTokenSub(tok()||''):''), c=null; try{ c=sessionStorage.getItem(k); }catch(e){}
+    if(c==='1'||c==='0'){ S.isG=c==='1'; return Promise.resolve(S.isG); }
+    return rpc('my_guide').then(function(d){ return !!(d&&d.enabled); },function(){ return false; })
+      .then(function(g){ S.isG=g; try{ sessionStorage.setItem(k,g?'1':'0'); }catch(e){} return g; });
+  }
+  // 兩邊各有幾則還沒看
+  function unreads(){
+    return Promise.all([rpc('my_chat_unread').catch(function(){ return 0; }), S.isG?rpc('guide_chat_unread').catch(function(){ return 0; }):0])
+      .then(function(r){ S.un={m:Number(r[0])||0,g:Number(r[1])||0}; drawSw(); return S.un; });
+  }
+  function swHtml(){ if(!S.isG) return '';
+    return '<div class="ch-sw" role="tablist" aria-label="切換身分">'+[['member','會員'],['guide','引路人']].map(function(r){ var on=S.role===r[0];
+      return '<button type="button" role="tab" aria-selected="'+on+'"'+(on?' class="on"':'')+' data-ch-role="'+r[0]+'">'+r[1]+'<i data-ch-un="'+r[0]+'"></i></button>'; }).join('')+'</div>'; }
+  function drawSw(){ if(!box) return; box.querySelectorAll('[data-ch-un]').forEach(function(i){ var n=S.un[i.getAttribute('data-ch-un')==='guide'?'g':'m']||0; i.textContent=n?(n>99?'99+':n):''; }); }
   function css(){ if(document.getElementById('ch-css')) return; var s=document.createElement('style'); s.id='ch-css'; s.textContent=CSS; document.head.appendChild(s); }
   function api(){ return S.role==='guide'
     ? {threads:'guide_chat_threads', msgs:function(id){ return rpc('guide_chat_messages',{p_member:id}); }, send:function(id,b){ return rpc('guide_send_chat',{p_member:id,p_body:b}); }}
@@ -76,8 +99,9 @@
   // 對話清單
   function list(){
     stop(); S.view='list'; S.direct=false;
-    box.innerHTML=head('私訊',S.role==='guide'?'客人傳來的訊息':'跟你預約過的引路人聊聊',false)+'<div class="ch-body"><div class="ch-empty">載入中…</div></div>';
-    var load=function(){ rpc(api().threads).then(function(L){ if(S.view!=='list') return; L=Array.isArray(L)?L:[]; var b=box.querySelector('.ch-body');
+    box.innerHTML=head('私訊',S.role==='guide'?'客人傳來的訊息':'跟你預約過的引路人聊聊',false)+swHtml()+'<div class="ch-body"><div class="ch-empty">載入中…</div></div>';
+    drawSw();
+    var load=function(){ if(S.isG) unreads(); rpc(api().threads).then(function(L){ if(S.view!=='list') return; L=Array.isArray(L)?L:[]; var b=box.querySelector('.ch-body');
         if(!L.length){ b.innerHTML='<div class="ch-empty">'+(S.role==='guide'?'客人預約你以後，就可以在這裡私訊你。':'預約過引路人以後，<br>就可以在這裡私訊他。<br><br><a href="booking.html#pick">去預約引路人 ›</a>')+'</div>'; return; }
         b.innerHTML='<div class="ch-list">'+L.map(function(x){ var id=S.role==='guide'?x.member_uid:x.guide_id, nm=S.role==='guide'?(x.name||'會員'):(x.guide_name||'引路人'), un=Number(x.unread)||0;
           var pv=x.last_body?((x.last_sender===(S.role==='guide'?'guide':'member')?'你：':'')+x.last_body):'還沒有訊息，點進去打個招呼';
@@ -122,11 +146,21 @@
       box=document.createElement('div'); box.className='ch-box'; mask.appendChild(box); document.body.appendChild(mask);
       mask.addEventListener('click',function(e){ if(e.target===mask || e.target.closest('[data-ch-x]')){ close(); return; }
         if(e.target.closest('[data-ch-back]')){ list(); return; }
+        var rb=e.target.closest('[data-ch-role]'); if(rb){ var ro=rb.getAttribute('data-ch-role'); if(ro!==S.role){ S.role=ro; try{ sessionStorage.setItem('rw_chat_role',ro); }catch(_){} list(); } return; }   // 切換會員／引路人
         var pf=e.target.closest('[data-ch-prof]'); if(pf){ close(); var u=new URL(pf.href,location.href); if(u.pathname===location.pathname && u.search===location.search){ e.preventDefault(); window.scrollTo(0,0); } return; }   // 已經在這位的介紹頁：關掉私訊就好
         var r=e.target.closest('[data-ch-open]'); if(r) thread(r.getAttribute('data-ch-open'),r.getAttribute('data-ch-name')); }); }
     mask.hidden=false; document.body.style.overflow='hidden'; document.addEventListener('keydown',onKey);
+    var auto=opt.role!=='guide' && opt.role!=='member';   // 從右上角 💬 打開：引路人帳號自動選有新訊息的那邊
+    if(!opt.id){ stop(); S.view='list'; box.innerHTML=head('私訊','',false)+'<div class="ch-body"><div class="ch-empty">載入中…</div></div>';
+      guideCheck().then(function(g){ if(mask.hidden) return;
+        if(!g){ S.role='member'; return list(); }
+        return unreads().then(function(u){ if(mask.hidden) return;
+          if(auto){ var last=''; try{ last=sessionStorage.getItem('rw_chat_role')||''; }catch(e){}
+            S.role=(u.g>0&&!u.m)?'guide':(u.m>0&&!u.g)?'member':(last==='member'||last==='guide')?last:'guide'; }
+          list(); }); }).catch(function(){ if(!mask.hidden) list(); });
+      return; }
+    guideCheck();
     if(opt.id){ thread(opt.id,opt.name||'',false); if(!opt.name){ rpc(api().threads).then(function(L){ (L||[]).forEach(function(x){ var id=S.role==='guide'?x.member_uid:x.guide_id; if(id===S.id && S.view==='thread'){ S.name=S.role==='guide'?x.name:x.guide_name; var t=box.querySelector('.ch-t'); if(t) t.firstChild.nodeValue=S.name; } }); }).catch(function(){}); } }
-    else list();
   }
   window.RWChat={open:open, close:close};
 })();

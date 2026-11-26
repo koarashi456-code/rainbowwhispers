@@ -232,8 +232,8 @@ window.addEventListener('load',function(){
     function rpc(name){ return fetch(window.SUPA.url+'/rest/v1/rpc/'+name,{method:'POST',headers:H(),body:'{}'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }); }
     function rest(q){ return fetch(window.SUPA.url+'/rest/v1/'+q,{headers:H()}).then(function(r){ return r.ok?r.json():[]; }).catch(function(){ return []; }); }
     // 會員：自己的通知
-    // 私訊的回覆不放小鈴鐺（右上角 💬 的紅點就會提醒）
-    function loadMember(){ return rpc('my_notices').then(function(d){ return (Array.isArray(d)?d:[]).filter(function(x){ return !/#chat(=|$)/.test(String(x.link||'')); }).map(function(x){ return {title:x.title,body:x.body,link:x.link||'orders.html',ts:x.created_at}; }); }); }
+    // 私訊不放小鈴鐺（會員、引路人都一樣；右上角 💬 的紅點就會提醒）
+    function loadMember(){ return rpc('my_notices').then(function(d){ return (Array.isArray(d)?d:[]).filter(function(x){ return !/#g?chat(=|$)/.test(String(x.link||'')); }).map(function(x){ return {title:x.title,body:x.body,link:x.link||'orders.html',ts:x.created_at}; }); }); }
     // 管理員：跟後台鈴鐺一樣的通知（新會員、測驗、引路人申請、新預約、會員取消）
     function loadAdmin(){
       return Promise.all([
@@ -279,11 +279,12 @@ window.addEventListener('load',function(){
 });
 
 // 私訊（會員 ↔ 預約過的引路人）：右上角 💬（小鈴鐺右邊；手機是最右上角），有新訊息顯示紅點；點了打開對話（用到才載 chat.js）
+// 引路人帳號：紅點也算客人傳來的，打開後上面可以切換「會員｜引路人」
 // 網址 #chat、#chat=<引路人 id>（會員）、#gchat（引路人）也會打開
 window.rwChat=function(opt){
   if(window.RWChat) return window.RWChat.open(opt);
   if(window._rwChatLoading) return; window._rwChatLoading=true;
-  var s=document.createElement('script'); s.src='chat.js?v=20261126b';
+  var s=document.createElement('script'); s.src='chat.js?v=20261126c';
   s.onload=function(){ window._rwChatLoading=false; if(window.RWChat) window.RWChat.open(opt); };
   s.onerror=function(){ window._rwChatLoading=false; };
   document.head.appendChild(s);
@@ -305,17 +306,18 @@ window.addEventListener('load',function(){
       w.innerHTML='<button type="button" class="rw-bell rw-chatb" id="rw-chatb" aria-label="私訊">'+CHAT_SVG+'<b id="rw-chat-n"></b></button>';
       var bell=navIn.querySelector('.rw-bell-wrap'), cb=navIn.querySelector('.rw-burger-cb');
       navIn.insertBefore(w, bell?bell.nextSibling:(cb||navIn.querySelector('.rw-links')));   // 小鈴鐺右邊
-      document.getElementById('rw-chatb').onclick=function(e){ e.stopPropagation(); window.rwChat({role:'member'}); };
+      document.getElementById('rw-chatb').onclick=function(e){ e.stopPropagation(); window.rwChat({}); };   // 引路人帳號可以在裡面切換會員／引路人
     }
     // 沒有標題列的頁面（手機的會員中心）：放在頁面自己準備的位置
     document.querySelectorAll('[data-rw-chat-slot]').forEach(function(sl){ if(sl.querySelector('button')) return;
       sl.innerHTML='<button type="button" class="rw-bell rw-chatb" aria-label="私訊">'+CHAT_SVG+'<b class="rw-chat-n2"></b></button>';
-      sl.querySelector('button').onclick=function(){ window.rwChat({role:'member'}); }; });
-    // 還沒看的私訊數
+      sl.querySelector('button').onclick=function(){ window.rwChat({}); }; });
+    // 還沒看的私訊數（會員那邊＋引路人那邊加起來；不是引路人的話引路人那邊是 0）
     window.rwChatBadge=function(){ rwWithSupa(function(){
-      fetch(window.SUPA.url+'/rest/v1/rpc/my_chat_unread',{method:'POST',headers:{apikey:window.SUPA.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:'{}'})
-        .then(function(r){ return r.ok?r.json():0; }).then(function(n){ n=Number(n)||0;
-          document.querySelectorAll('#rw-chat-n,.rw-chat-n2').forEach(function(b){ b.textContent=n>99?'99+':n; b.classList.toggle('on',n>0); }); }).catch(function(){}); }); };
+      var one=function(f){ return fetch(window.SUPA.url+'/rest/v1/rpc/'+f,{method:'POST',headers:{apikey:window.SUPA.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:'{}'})
+        .then(function(r){ return r.ok?r.json():0; }).then(function(n){ return Number(n)||0; }).catch(function(){ return 0; }); };
+      Promise.all([one('my_chat_unread'),one('guide_chat_unread')]).then(function(r){ var n=r[0]+r[1];
+          document.querySelectorAll('#rw-chat-n,.rw-chat-n2').forEach(function(b){ b.textContent=n>99?'99+':n; b.classList.toggle('on',n>0); }); }); }); };
     window.rwChatBadge(); setInterval(window.rwChatBadge,60000);
   }catch(e){}
 });
