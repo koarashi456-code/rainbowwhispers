@@ -232,7 +232,8 @@ window.addEventListener('load',function(){
     function rpc(name){ return fetch(window.SUPA.url+'/rest/v1/rpc/'+name,{method:'POST',headers:H(),body:'{}'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }); }
     function rest(q){ return fetch(window.SUPA.url+'/rest/v1/'+q,{headers:H()}).then(function(r){ return r.ok?r.json():[]; }).catch(function(){ return []; }); }
     // 會員：自己的通知
-    function loadMember(){ return rpc('my_notices').then(function(d){ return (Array.isArray(d)?d:[]).map(function(x){ return {title:x.title,body:x.body,link:x.link||'orders.html',ts:x.created_at}; }); }); }
+    // 私訊的回覆不放小鈴鐺（右上角 💬 的紅點就會提醒）
+    function loadMember(){ return rpc('my_notices').then(function(d){ return (Array.isArray(d)?d:[]).filter(function(x){ return !/#chat(=|$)/.test(String(x.link||'')); }).map(function(x){ return {title:x.title,body:x.body,link:x.link||'orders.html',ts:x.created_at}; }); }); }
     // 管理員：跟後台鈴鐺一樣的通知（新會員、測驗、引路人申請、新預約、會員取消）
     function loadAdmin(){
       return Promise.all([
