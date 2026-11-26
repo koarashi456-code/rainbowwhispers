@@ -1,6 +1,6 @@
 /* 彩之語：私訊（會員 ↔ 預約過的引路人）
    右上角 💬（nav.js）；引路人帳號上面多一排「會員｜引路人」可以切換：會員＝跟預約過的引路人聊，引路人＝客人傳來的訊息
-   網址 #chat、#chat=<引路人 id>（會員）、#gchat（引路人）；引路人後台「私訊」直接打開引路人那邊
+   網址 #chat、#chat=<引路人 id>（會員）、#gchat（引路人）
    資料：SQL my_chat_threads／my_chat_messages／send_my_chat（會員）、guide_chat_threads／guide_chat_messages／guide_send_chat（引路人）
    打開對話就算已讀；開著的時候每幾秒看一次有沒有新訊息 */
 (function(){

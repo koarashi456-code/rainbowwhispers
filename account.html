@@ -46,8 +46,13 @@
   .mc-top-acts{display:flex;align-items:center;gap:8px}
   .mc-top-acts .rw-bell{width:34px;height:34px;border:0;background:rgba(255,255,255,.6)}
   .mc-top-acts .rw-bell svg{width:17px;height:17px}
+  /* 引路人後台（手機）：右上角也有 💬，客人的訊息從這裡回 */
+  .gp-top{position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:18px;min-height:44px;padding:0 46px}   /* 左右各留 💬 的位置，小手機上不會疊到 */
+  .gp-top .seg{max-width:100%}
+  .gp-acts{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+  .gp-acts .rw-bell{width:40px;height:40px;border:0;background:rgba(255,255,255,.7)}
+  .gp-acts .rw-bell svg{width:18px;height:18px}
   @media(min-width:769px){ [data-rw-chat-slot]{display:none} }   /* 電腦：標題列已經有私訊鍵 */
-  .gmenu .gm-n{flex:none;min-width:20px;height:20px;border-radius:999px;background:#D4694E;color:#fff;font-size:11.5px;line-height:20px;text-align:center;padding:0 6px;box-sizing:border-box}
   .mc-gear{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.6);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .seg{display:flex;background:rgba(255,255,255,.55);border-radius:999px;padding:4px;margin:14px auto 0;width:220px}
   .seg button{flex:1;font:inherit;font-size:14px;color:var(--soft);background:none;border:none;border-radius:999px;padding:8px 0;cursor:pointer}
@@ -529,7 +534,7 @@
 
 <!-- 引路人後台 -->
 <div id="guide-portal" class="member" style="display:none">
-  <div class="seg" style="margin:0 auto 18px"><button id="gseg-m" type="button">會員</button><button id="gseg-g" class="on" type="button">引路人</button></div>
+  <div class="gp-top"><div class="seg" style="margin:0 auto"><button id="gseg-m" type="button">會員</button><button id="gseg-g" class="on" type="button">引路人</button></div><span class="gp-acts" data-rw-chat-slot></span></div>
   <div class="hi" id="g-hi">引路人後台</div>
   <div class="who">跟總後台同步 · 只看得到預約你的客戶</div>
 
@@ -886,15 +891,8 @@ function setupGuideMenu(){
   }).join('');
   var first=gp.querySelector('.gpage'); gp.insertBefore(menu,first);
   menu.querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ openGuidePage(b.getAttribute('data-go')); }; });
-  // 私訊：客人傳來的訊息（不是一頁，點了跳出對話框）
-  var cm=document.createElement('button'); cm.type='button'; cm.id='gm-chat';
-  cm.innerHTML='<span class="gm-ic" style="background:#E3EEF6">💬</span><span class="gm-t">私訊<small>客人傳來的訊息，在這裡回覆</small></span><span class="gm-n" id="gm-chat-n"></span><span class="gm-go">›</span>';
-  cm.onclick=function(){ if(window.rwChat) rwChat({role:'guide'}); };
-  var cu=menu.querySelector('[data-go="客戶管理"]'); menu.insertBefore(cm, cu||null);
-  gChatBadge();
+  // 私訊不放這裡：右上角 💬 打開後切到「引路人」就是客人傳來的訊息
 }
-// 引路人：還沒看的私訊數（SQL：guide_chat_unread）
-async function gChatBadge(){ var n=0; try{ var r=await db.rpc('guide_chat_unread'); if(!r.error) n=Number(r.data)||0; }catch(e){} var b=document.getElementById('gm-chat-n'); if(b){ b.textContent=n>99?'99+':(n||''); b.style.display=n?'':'none'; } }
 function showGuideMenu(){
   var gp=document.getElementById('guide-portal'); if(!gp) return;
   gp.querySelectorAll('.gpage').forEach(function(p){ p.style.display='none'; });
