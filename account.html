@@ -71,6 +71,11 @@
   .chev{color:#C9B79A;font-size:16px}
   /* 我的帳戶：我的訂單／我的課程 一行一項，課程點開才看 */
   .mc-list .irow{min-height:48px;box-sizing:border-box}
+  /* 基本資料裡的測驗結果：點了去做（或重做）那個測驗 */
+  .mc-test{text-decoration:none;min-height:48px;box-sizing:border-box}
+  .mc-tv{display:inline-flex;align-items:center;gap:6px;min-width:0}
+  .mc-tv b{font-weight:600;color:var(--brush);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:12em}
+  .mc-tv small{font-size:12.5px;color:var(--soft)}
   .mc-list .irow .il{color:var(--ink)}
   .mc-list .mc-v{display:inline-flex;align-items:center;gap:6px;color:var(--brush);font-weight:600;font-variant-numeric:tabular-nums}
   .mc-list .mc-v .chev{font-weight:400}
@@ -293,8 +298,8 @@
   .orow.dim .od b,.orow.dim .om .t,.orow.dim .oright .a{color:#9C8B74}
   .gs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:200}   /* 要蓋過手機底部分頁列（90） */
   .gs-mask.on{display:flex}
-  .gs-box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 18px 26px;max-height:86vh;overflow:auto;text-align:left}
-  @media(min-width:600px){ .gs-mask{align-items:center} .gs-box{border-radius:20px} }
+  .gs-box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 18px calc(56px + env(safe-area-inset-bottom));max-height:86vh;max-height:84dvh;overflow:auto;text-align:left;box-sizing:border-box}   /* 下面多留空間 */
+  @media(min-width:600px){ .gs-mask{align-items:center} .gs-box{border-radius:20px;padding-bottom:24px} }
   .gs-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
   .gs-h{font-family:"Noto Serif TC",serif;font-size:18px;font-weight:600;color:var(--brush)}
   .gs-x{font:inherit;font-size:24px;line-height:1;color:var(--soft);background:none;border:0;cursor:pointer;padding:0 2px}
@@ -490,6 +495,9 @@
     <div class="irow"><span class="il">信箱</span><span class="iv" id="mc-f-mail"></span></div>
     <div class="irow"><span class="il">手機</span><input class="iv" id="mc-f-phone" placeholder="—" inputmode="tel"></div>
     <div class="irow"><span class="il">地區</span><span class="iv mc-area2" id="mc-f-area-box"></span><input type="hidden" id="mc-f-area"></div>
+    <a class="irow link mc-test" href="quiz.html" data-test="心靈導航測驗"><span class="il">心靈導航</span><span class="iv mc-tv"><small>還沒測</small><span class="chev">›</span></span></a>
+    <a class="irow link mc-test" href="chakra.html" data-test="七大脈輪測驗"><span class="il">七大脈輪</span><span class="iv mc-tv"><small>還沒測</small><span class="chev">›</span></span></a>
+    <a class="irow link mc-test" href="numerology.html" data-test="生命靈數"><span class="il">生命靈數</span><span class="iv mc-tv"><small>還沒測</small><span class="chev">›</span></span></a>
   </div>
   <div class="msaved" id="mc-saved"></div>
   <div class="sec-lab">帳號</div>
@@ -609,7 +617,8 @@
 <script src="supabase-config.js"></script>
 <script src="area.js?v=20261119"></script>
 <script src="cal-ui.js?v=20261119"></script>
-<script src="slot-ui.js?v=20261125"></script>
+<script src="slot-ui.js?v=20261126"></script>
+<script src="add-cal.js?v=20261126"></script>
 <script src="course-ui.js?v=20261125"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -716,7 +725,18 @@ async function saveOnboard(){
   }catch(e){ msg.textContent='儲存失敗：'+(e.message||'請稍後再試'); b.disabled=false; b.textContent='完成，開始探索'; }
 }
 // 會員自助：讀自己的資料＋訂單（走 my_account RPC；LINE 無 Supabase session 會靜默略過）
+// 基本資料裡的測驗結果（SQL：my_test_results，只讀得到自己的）
+async function loadMyTests(){
+  try{
+    var r=await db.rpc('my_test_results'); if(r.error || !r.data) return;
+    var d=r.data||{};
+    document.querySelectorAll('.mc-test').forEach(function(a){ var x=d[a.getAttribute('data-test')], v=a.querySelector('.mc-tv'); if(!v) return;
+      v.innerHTML=(x && x.result)?'<b>'+escA(x.result)+'</b><span class="chev">›</span>':'<small>還沒測</small><span class="chev">›</span>';
+      a.setAttribute('aria-label',a.querySelector('.il').textContent+'：'+((x&&x.result)?x.result+'，點了可以再測一次':'還沒測，點了去測')); });
+  }catch(e){}
+}
 async function loadMyAccount(){
+  loadMyTests();
   try{
     var r=await db.rpc('my_account');
     if(r.error || !r.data) return;
@@ -911,9 +931,10 @@ function openGOrder(i){
       '<input class="gv-in" id="gv-link" maxlength="300" value="'+escA(o.video_link||GLOC.link||'')+'" placeholder="https://meet.google.com/… 或 https://zoom.us/j/…">'+
       '<div class="gv-row"><button type="button" class="gv-btn" id="gv-send">'+(o.video_sent_at?'重新傳一次':'傳連結給客人')+'</button><span id="gv-msg" style="font-size:12px;color:var(--soft)">會寄到客人信箱＋網站小鈴鐺</span></div></div>';
   }
+  if(window.RWAddCal && o.status==='已預約' && !o.past && o.appointment_at) h+=RWAddCal.html({when:o.appointment_at, svc:sp.plan, title:'彩之語｜'+(o.customer_name||'客人')+' '+(sp.plan||''), place:sp.place||'', ref:o.order_ref||'', note:'客人：'+(o.customer_name||'')+(o.customer_contact?'（'+o.customer_contact+'）':''), link:'account.html'});   // 加入手機行事曆
   if(can) h+='<div style="margin-top:14px;text-align:center"><button type="button" class="gs-noshow" id="gs-noshow">客戶沒來？標記未出席</button></div>';
   if(o.customer_contact||o.customer_name) h+='<div style="text-align:center"><button type="button" class="gs-link" id="gs-cust">看這位客戶的所有紀錄 ›</button></div>';
-  $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on');
+  $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on'); if(window.RWAddCal) RWAddCal.bind($('#gs-box'));
   $('#gs-x').onclick=gsClose;
   var vb=$('#gv-send'); if(vb) vb.onclick=async function(){
     var lk=($('#gv-link').value||'').trim(), msg=$('#gv-msg');

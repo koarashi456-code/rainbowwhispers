@@ -52,8 +52,8 @@
   .oc-btn{font:inherit;font-size:13px;color:var(--brush);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
   .rs-mask{position:fixed;inset:0;background:rgba(60,45,30,.35);display:none;align-items:flex-end;justify-content:center;z-index:200}   /* 要蓋過手機底部分頁列（90） */
   .rs-mask.on{display:flex}
-  .rs-box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px 18px 26px;max-height:86vh;overflow:auto}
-  @media(min-width:600px){ .rs-mask{align-items:center} .rs-box{border-radius:20px} }
+  .rs-box{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px 18px calc(56px + env(safe-area-inset-bottom));max-height:86vh;max-height:84dvh;overflow:auto;box-sizing:border-box}   /* 下面多留空間：有的手機下面有工具列或橫條 */
+  @media(min-width:600px){ .rs-mask{align-items:center} .rs-box{border-radius:20px;padding-bottom:24px} }
   .rs-h{font-family:"Noto Serif TC",serif;font-size:18px;color:var(--brush);font-weight:600;margin-bottom:4px}
   .rs-sub{font-size:12.5px;color:var(--soft);margin-bottom:12px;line-height:1.6}
   .rs-lab{font-size:12.5px;color:var(--soft);margin:12px 0 7px}
@@ -200,7 +200,8 @@
 </div></div>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="booking-access.js?v=20261125"></script>
+<script src="add-cal.js?v=20261126"></script>
+<script src="booking-access.js?v=20261126"></script>
 <script src="cal-ui.js?v=20261119"></script>
 <script>
 var db = supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -264,18 +265,22 @@ function openDetail(i){
       +(o.order_ref?kv('訂單編號',esc(o.order_ref)):'')+kv('下單日',fmtDay(o.created_at));
   }
   if(hasAccess(o)) h+='<div id="od-acc"><div class="rs-sub" style="margin-top:12px">讀取地址／視訊連結中…</div></div>';
+  var calO=(!isBuy(o) && !isShop(o) && o.status==='已預約' && o.appointment_at && !started(o))?{when:o.appointment_at, svc:sp.plan, title:'彩之語｜'+(o.guide_name||'引路人')+' '+(sp.plan||''), place:sp.place||'', ref:o.order_ref||'', note:'引路人：'+(o.guide_name||'')}:null;
+  if(calO && window.RWAddCal) h+='<div id="od-cal">'+RWAddCal.html(calO)+'</div>';   // 加入手機行事曆
   if(canEdit(o)||canCancel(o)){
     h+='<div class="od-acts">'+(canEdit(o)?'<button type="button" id="od-rs">修改訂單（改期）</button>':'')
       +(canCancel(o)?(started(o)?'<button type="button" class="cx" disabled>服務已開始，無法取消</button>':'<button type="button" class="cx" id="od-cx">取消預約</button>'):'')+'</div>';
   }
   h+='<a class="od-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">有問題？聯絡官方 LINE</a>';
   $('#od-box').innerHTML=h; $('#od-box').scrollTop=0;
+  if(window.RWAddCal) RWAddCal.bind($('#od-box'));
   $('#od-mask').classList.add('on');
   $('#od-x').onclick=odClose;
   var rb=$('#od-rs'); if(rb) rb.onclick=function(){ odClose(); openReschedule(o.order_ref); };
   var cb=$('#od-cx'); if(cb) cb.onclick=function(){ odClose(); openCancel(o.order_ref); };
   if(hasAccess(o) && window.RWAccess){ (async function(){ var ref=o.order_ref; if(!(ref in ACC)) ACC[ref]=await RWAccess.load(db,ref); var el=$('#od-acc'); if(!el || OD_I!==i) return;
-    var html=RWAccess.html(ACC[ref]); el.innerHTML=html||'<div class="rs-sub" style="margin-top:12px">服務地址或視訊連結會用 Email 或官方 LINE 通知你。</div>'; RWAccess.bind(el); })(); }
+    var html=RWAccess.html(ACC[ref]); el.innerHTML=html||'<div class="rs-sub" style="margin-top:12px">服務地址或視訊連結會用 Email 或官方 LINE 通知你。</div>'; RWAccess.bind(el);
+    var a=ACC[ref], cb=$('#od-cal'); if(cb && calO && a && (a.address||a.video_link)){ calO.place=a.address||('線上視訊 '+a.video_link); cb.innerHTML=RWAddCal.html(calO); RWAddCal.bind(cb); } })(); }   // 行事曆的地點換成完整地址
 }
 // 還沒到的「已預約」訂單可以改期（實際能不能改由資料庫再確認：限一次、時段要開放）
 function isShop(o){ return /^商品：/.test(String(o.service||'')); }
