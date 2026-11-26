@@ -282,7 +282,7 @@ window.addEventListener('load',function(){
 window.rwChat=function(opt){
   if(window.RWChat) return window.RWChat.open(opt);
   if(window._rwChatLoading) return; window._rwChatLoading=true;
-  var s=document.createElement('script'); s.src='chat.js?v=20261126';
+  var s=document.createElement('script'); s.src='chat.js?v=20261126b';
   s.onload=function(){ window._rwChatLoading=false; if(window.RWChat) window.RWChat.open(opt); };
   s.onerror=function(){ window._rwChatLoading=false; };
   document.head.appendChild(s);

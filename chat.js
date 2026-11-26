@@ -28,6 +28,7 @@
     '.ch-back{font:inherit;font-size:15px;font-weight:500;color:#6B4A33;background:none;border:0;min-height:44px;padding:0 6px;cursor:pointer}'+
     '.ch-t{flex:1;min-width:0;font-family:"Noto Serif TC",serif;font-size:17px;font-weight:600;color:#6B4A33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
     '.ch-t small{display:block;font-family:"Noto Sans TC",sans-serif;font-size:11.5px;font-weight:400;color:#8C7963}'+
+    'a.ch-t{display:block;text-decoration:none;padding:4px 0;border-radius:8px;-webkit-tap-highlight-color:transparent}a.ch-t:active{opacity:.6}a.ch-t:hover small{text-decoration:underline}'+
     '.ch-x{flex:none;width:44px;height:44px;border:0;background:none;font-size:24px;line-height:1;color:#8C7963;border-radius:50%;cursor:pointer}'+
     '.ch-body{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}'+
     '.ch-list{background:#fff;margin:12px;border:1px solid #EFE3CE;border-radius:14px;overflow:hidden}'+
@@ -64,7 +65,11 @@
   function close(){ stop(); if(mask) mask.hidden=true; document.body.style.overflow=''; document.removeEventListener('keydown',onKey);
     if(/^#g?chat/.test(location.hash) && history.replaceState) history.replaceState(null,'',location.pathname+location.search);
     if(window.rwChatBadge) window.rwChatBadge(); }
-  function head(title,sub,back){ return '<div class="ch-h">'+(back?'<button type="button" class="ch-back" data-ch-back>‹ 返回</button>':'<span style="width:6px"></span>')+'<div class="ch-t">'+esc(title)+(sub?'<small>'+esc(sub)+'</small>':'')+'</div><button type="button" class="ch-x" data-ch-x aria-label="關閉">×</button></div>'; }
+  // link：有的話名字可以點（會員看引路人 → 引路人介紹頁）
+  function head(title,sub,back,link){ var t=esc(title)+(sub?'<small>'+esc(sub)+'</small>':'');
+    return '<div class="ch-h">'+(back?'<button type="button" class="ch-back" data-ch-back>‹ 返回</button>':'<span style="width:6px"></span>')+
+      (link?'<a class="ch-t" href="'+esc(link)+'" data-ch-prof>'+t+'</a>':'<div class="ch-t">'+t+'</div>')+
+      '<button type="button" class="ch-x" data-ch-x aria-label="關閉">×</button></div>'; }
   function avatar(x){ var nm=S.role==='guide'?(x.name||'會員'):(x.guide_name||'引路人'), ini=Array.from(String(nm).trim()||'?')[0];
     var img=S.role==='guide'||!window.SUPA?'':'<img alt="" loading="lazy" src="'+esc(window.SUPA.url+'/storage/v1/object/public/guide-photos/'+encodeURIComponent(x.guide_id)+'.jpg')+'" onerror="this.remove()">';
     return '<span class="ch-av"><span>'+esc(ini)+img+'</span></span>'; }
@@ -92,7 +97,8 @@
   // 跟一個人的對話
   function thread(id,name,direct){
     stop(); S.view='thread'; S.id=id; S.name=name||''; S.n=-1; S.direct=!!direct;
-    box.innerHTML=head(S.name||(S.role==='guide'?'會員':'引路人'),S.role==='guide'?'客人':'引路人',!direct)+
+    var prof=S.role==='member'?'guide.html?id='+encodeURIComponent(id):'';   // 會員：點引路人名字看他的介紹
+    box.innerHTML=head(S.name||(S.role==='guide'?'會員':'引路人'),S.role==='guide'?'客人':'引路人・看介紹 ›',!direct,prof)+
       '<div class="ch-body"><div class="ch-empty">載入中…</div></div><div class="ch-err" data-ch-err></div>'+
       '<form class="ch-in" data-ch-form><textarea rows="1" maxlength="1000" placeholder="輸入訊息…" aria-label="輸入訊息" data-ch-text></textarea><button type="submit" class="ch-send" data-ch-send disabled>傳送</button></form>';
     var ta=box.querySelector('[data-ch-text]'), sb=box.querySelector('[data-ch-send]'), er=box.querySelector('[data-ch-err]');
@@ -116,6 +122,7 @@
       box=document.createElement('div'); box.className='ch-box'; mask.appendChild(box); document.body.appendChild(mask);
       mask.addEventListener('click',function(e){ if(e.target===mask || e.target.closest('[data-ch-x]')){ close(); return; }
         if(e.target.closest('[data-ch-back]')){ list(); return; }
+        var pf=e.target.closest('[data-ch-prof]'); if(pf){ close(); var u=new URL(pf.href,location.href); if(u.pathname===location.pathname && u.search===location.search){ e.preventDefault(); window.scrollTo(0,0); } return; }   // 已經在這位的介紹頁：關掉私訊就好
         var r=e.target.closest('[data-ch-open]'); if(r) thread(r.getAttribute('data-ch-open'),r.getAttribute('data-ch-name')); }); }
     mask.hidden=false; document.body.style.overflow='hidden'; document.addEventListener('keydown',onKey);
     if(opt.id){ thread(opt.id,opt.name||'',false); if(!opt.name){ rpc(api().threads).then(function(L){ (L||[]).forEach(function(x){ var id=S.role==='guide'?x.member_uid:x.guide_id; if(id===S.id && S.view==='thread'){ S.name=S.role==='guide'?x.name:x.guide_name; var t=box.querySelector('.ch-t'); if(t) t.firstChild.nodeValue=S.name; } }); }).catch(function(){}); } }
