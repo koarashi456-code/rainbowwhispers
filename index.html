@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261125c">
+<link rel="stylesheet" href="style.css?v=20261126">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta property="og:type" content="website">
@@ -137,7 +137,7 @@
       <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
     </div>
   </div></nav>
-  <script src="nav.js?v=20261125g"></script>
+  <script src="nav.js?v=20261126b"></script>
 
   <label class="hn-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="hn-q" type="search" placeholder="搜尋引路人、服務（塔羅、彩虹卡…）" aria-label="搜尋引路人或服務"></label>
 
@@ -193,9 +193,6 @@
   // LINE 提示條：按 × 就不再出現
   if(ls('rw_hn_promo')==='x') $('#hn-promo').remove();
   var px=$('#hn-promo-x'); if(px) px.onclick=function(){ ls('rw_hn_promo','x'); $('#hn-promo').remove(); };
-  // 共用標題列的 🔍：在首頁就直接跳到搜尋框（從別頁按會帶 #search 過來）
-  window.rwOnSearch=function(){ var q=$('#hn-q'); q.scrollIntoView({block:'center',behavior:'smooth'}); setTimeout(function(){ q.focus(); },300); };
-  if(location.hash==='#search') setTimeout(window.rwOnSearch,400);
 
   // 分類：測驗直接去測驗頁；服務類別篩選下面的引路人
   var CI={s:'<path d="M12 4.5c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7Z"/>',c:'<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 9h6M9 13h6"/>',m:'<path d="M18 14.5A7 7 0 1 1 9.5 6a5.5 5.5 0 0 0 8.5 8.5Z"/>',d:'<path d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 0 0 10 0C17 9.5 15 7 12 3Z"/>',n:'<path d="M9 6h6M12 6v12M8 18h8"/>',o:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/>',v:'<rect x="3.5" y="6.5" width="12" height="11" rx="2"/><path d="m15.5 10.5 5-3v9l-5-3"/>',g:'<path d="M5 9h14l-1.2 10H6.2z"/><path d="M9 9a3 3 0 0 1 6 0"/>'};

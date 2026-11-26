@@ -90,13 +90,20 @@ function editor(el,api){
   function cnt(v){ return Object.keys(S.tp[v]||{}).length; }
   function nPicked(){ return multi()?S.all.reduce(function(a,x){ return a+cnt(x.v); },0):Object.keys(S.times).length; }
   el.innerHTML='<div class="rs-empty">載入中…</div>';
+  function acts(){
+    var n=nPicked(), go=el.querySelector('[data-rs-add]'); if(go){ go.disabled=!n; go.textContent=n?'新增 '+n+' 個時段':'點上面的時間'; }
+    if(multi()){ el.querySelectorAll('[data-rs-tab]').forEach(function(b){ var v=b.getAttribute('data-rs-tab'), k=cnt(v), sp=b.querySelector('.c'); if(k){ if(!sp){ sp=document.createElement('span'); sp.className='c'; b.appendChild(sp); } sp.textContent=k; } else if(sp) sp.remove(); }); }
+    var sum=multi()?S.all.filter(function(x){ return cnt(x.v); }).map(function(x){ return short(x.v)+' '+cnt(x.v)+' 個'; }).join('・'):'';
+    var m=el.querySelector('[data-rs-msg]'); if(m){ m.textContent=sum?'這次：'+sum:''; m.style.color=''; }
+  }
   function msg(t,c){ var m=el.querySelector('[data-rs-msg]');
     if(!m){ var d=el.querySelector('.rs-day'); if(!d) return; m=document.createElement('div'); m.className='rs-msg'; m.setAttribute('data-rs-msg',''); m.style.marginTop='10px'; d.appendChild(m); }
     m.textContent=t; m.style.color=c||'var(--soft)'; if(c==='#4F8E6E') setTimeout(function(){ if(m.textContent===t) m.textContent=''; },2200); }
   function byDay(){ var o={}; S.rows.forEach(function(s){ var p=wpart(s.slot_at); if(!p) return; var k=dayKey(p); (o[k]=o[k]||[]).push({id:s.id, t:p2(p.h)+':'+p2(p.mi), taken:!!s.taken, places:s.places||null}); });
     Object.keys(o).forEach(function(k){ o[k].sort(function(a,b){ return a.t<b.t?-1:1; }); }); return o; }
   // 一個月曆就好：點日子 → 下面看這天開了哪些時段、可以刪；要加就按「＋ 加時段」
-  function draw(){
+  function draw(){ var sy=window.pageYOffset; drawNow(); if(Math.abs(window.pageYOffset-sy)>1) window.scrollTo(0,sy); }
+  function drawNow(){
     var B=byDay(), tk0=today();
     if(!S.date || S.date<tk0) S.date=tk0;
     var tkAll=S.rows.filter(function(s){ return s.taken; }).length, nowK=tk0+'T'+p2(new Date().getHours())+':'+p2(new Date().getMinutes());
@@ -148,10 +155,10 @@ function editor(el,api){
     var op=el.querySelector('[data-rs-open]'); if(op) op.onclick=function(){ S.adding=true; draw(); };
     var cl=el.querySelector('[data-rs-close]'); if(cl) cl.onclick=function(){ S.adding=false; S.times={}; S.tp={}; draw(); };
     el.querySelectorAll('[data-rs-tab]').forEach(function(b){ b.onclick=function(){ S.tab=b.getAttribute('data-rs-tab'); draw(); }; });
-    el.querySelectorAll('[data-rs-t]').forEach(function(c){ c.onclick=function(){ var v=c.getAttribute('data-rs-t');
-      if(multi()){ var m=S.tp[S.tab]=S.tp[S.tab]||{}; if(m[v]) delete m[v]; else m[v]=true; }
-      else { if(S.times[v]) delete S.times[v]; else S.times[v]=true; }
-      draw(); }; });
+    el.querySelectorAll('[data-rs-t]').forEach(function(c){ c.onclick=function(){ var v=c.getAttribute('data-rs-t'), on;
+      if(multi()){ var m=S.tp[S.tab]=S.tp[S.tab]||{}; if(m[v]) delete m[v]; else m[v]=true; on=!!m[v]; }
+      else { if(S.times[v]) delete S.times[v]; else S.times[v]=true; on=!!S.times[v]; }
+      c.classList.toggle('on',on); c.setAttribute('aria-pressed',on); acts(); }; });   // 只改這一格，畫面不會跳
     el.querySelectorAll('[data-rs-rm]').forEach(function(x){ x.onclick=async function(){
       if(!confirm('刪除這個開放時段？')) return;
       try{ await api.del(x.getAttribute('data-rs-rm')); await reload(); if(api.changed) api.changed(); }catch(e){ alert('刪除失敗：'+((e&&e.message)||'')); } }; });

@@ -137,22 +137,21 @@ button,a,label,select,input{-webkit-tap-highlight-color:transparent}
 .rw-nav.v2 .rw-links{order:3}
 .rw-nav.v2 .rw-links a[href="account.html"]{display:none}
 .rw-nsp{order:4;flex:1}
-.rw-sbtn{order:5;flex:none;width:40px;height:40px;border:0;background:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--brush);cursor:pointer;padding:0}
-.rw-sbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 .rw-nav.v2 .rw-bell-wrap{order:6;margin-left:0}
+.rw-nav.v2 .rw-chat-wrap{order:7;margin-left:0}   /* 💬 私訊：小鈴鐺右邊（手機是最右上角） */
 .rw-nav.v2 .rw-bell{width:40px;height:40px;border:0;background:none}
 .rw-nav.v2 .rw-bell svg{width:21px;height:21px}
-.rw-mbtn{order:7;flex:none;font-size:13px;font-weight:600;color:var(--brush);background:#FFFDF8;border:1px solid #E2D4BE;border-radius:10px;min-height:40px;display:inline-flex;align-items:center;padding:0 12px;text-decoration:none;white-space:nowrap}
+.rw-mbtn{order:8;flex:none;font-size:13px;font-weight:600;color:var(--brush);background:#FFFDF8;border:1px solid #E2D4BE;border-radius:10px;min-height:40px;display:inline-flex;align-items:center;padding:0 12px;text-decoration:none;white-space:nowrap}
 .rw-nav.v2 .rw-burger-cb{display:none!important}
 /* 電腦版：右邊三條線，點開是選單（首頁、測驗、引路人・商品、方案、加 LINE） */
 @media (min-width:769px){
-  .rw-nav.v2 .rw-burger{display:flex!important;order:8;width:44px;height:44px;margin-left:2px;border-radius:10px}
+  .rw-nav.v2 .rw-burger{display:flex!important;order:9;width:44px;height:44px;margin-left:2px;border-radius:10px}
   .rw-nav.v2 .rw-burger:hover{background:var(--tint)}
   .rw-nav.v2 .rw-links{display:none;position:absolute;top:calc(100% + 6px);right:12px;width:240px;margin:0;flex-direction:column;align-items:stretch;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 36px -16px rgba(120,90,60,.45);padding:8px;z-index:60}
   .rw-nav.v2 .rw-burger-cb:checked ~ .rw-links{display:flex}
   .rw-nav.v2 .rw-links a{padding:12px 14px;border-radius:10px;font-size:15px;text-align:left}
   .rw-nav.v2 .rw-links a.rw-nav-line{text-align:center;margin-top:4px}
 }
-@media (max-width:768px){ .rw-nav.v2 .rw-links,.rw-nav.v2 .rw-burger{display:none!important} .rw-nav.rw-nav-mhide{display:none} }
+@media (max-width:768px){ .rw-nav.v2 .rw-links,.rw-nav.v2 .rw-burger,.rw-nav.v2 .rw-mbtn{display:none!important} .rw-nav.rw-nav-mhide{display:none} }   /* 手機：「會員」在底部分頁列最右邊 */
 @media (min-width:769px){ .rw-nav.v2 .rw-nav-in{max-width:856px;margin:0 auto;padding:10px 28px} }   /* 電腦：標題列內容最寬 800px、置中（跟首頁內容對齊） */   /* 手機：用底部分頁列；會員中心上面不放標題列 */
 @media (max-width:360px){ .rw-nav.v2 .rw-nav-in{padding-left:12px;gap:2px} .rw-area select{max-width:88px} .rw-mbtn{padding:0 9px} }

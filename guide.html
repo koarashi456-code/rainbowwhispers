@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261125c">
+<link rel="stylesheet" href="style.css?v=20261126">
 <style>
   .wrap{max-width:560px;margin:0 auto;padding:26px 18px 60px}
   .testbar{max-width:560px;margin:12px auto 0;padding:8px 18px}
@@ -122,7 +122,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js?v=20261125g"></script>
+<script src="nav.js?v=20261126b"></script>
 
 <div class="testbar"><span>測試版本 · 匯款為測試流程，請勿真的匯款</span></div>
 
@@ -209,7 +209,8 @@
 
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="booking-access.js?v=20261125"></script>
+<script src="add-cal.js?v=20261126"></script>
+<script src="booking-access.js?v=20261126"></script>
 <script src="cal-ui.js?v=20261119"></script>
 <script>
 var db=supabase.createClient(window.SUPA.url, window.SUPA.key);
@@ -531,6 +532,7 @@ $('#do-submit').onclick=async function(){
       $('#done-ref').textContent='訂單編號 '+pref;
       var pda=$('#done-access'); if(pda){ pda.innerHTML=window.RWAccess?RWAccess.html(pacc):''; if(window.RWAccess) RWAccess.bind(pda); }
       if(pda && !pda.innerHTML){ pda.innerHTML='<p class="muted" style="font-size:13.5px;line-height:1.7;margin-top:12px">服務地址或視訊連結會用 Email 寄給你，也可以在「我的訂單」查看。</p>'; }
+      if(pda && window.RWAddCal && when){ pda.insertAdjacentHTML('beforeend',RWAddCal.html({when:when, svc:plan.label, title:'彩之語｜'+(guide.name||'引路人')+' '+(plan.label||''), place:(pacc&&pacc.address)||placeTxt||'', ref:pref, note:'引路人：'+(guide.name||'')})); RWAddCal.bind(pda); }
       $('#done-summary').innerHTML=$('#pay-summary').innerHTML+'<div class="cpok" style="margin-top:8px"><span>課程剩 '+plan.own.remaining+' 堂，可在「會員中心 → 我的課程」查看</span></div>';
       $('#book-pay').style.display='none'; $('#book-done').style.display='block'; $('#book-done').scrollIntoView({behavior:'smooth',block:'start'});
       return;
@@ -555,6 +557,7 @@ $('#do-submit').onclick=async function(){
     $('#done-ref').textContent='訂單編號 '+ref;
     var da=$('#done-access'); if(da){ da.innerHTML=window.RWAccess?RWAccess.html(acc):''; if(window.RWAccess) RWAccess.bind(da); }
     if(da && !da.innerHTML){ da.innerHTML='<p class="muted" style="font-size:13.5px;line-height:1.7;margin-top:12px">服務地址或視訊連結會用 Email 寄給你，也可以在「我的訂單」查看。</p>'; }
+    if(da && window.RWAddCal && when){ da.insertAdjacentHTML('beforeend',RWAddCal.html({when:when, svc:svcFull, title:'彩之語｜'+(guide.name||'引路人')+' '+(planTxt||''), place:(acc&&acc.address)||placeTxt||'', ref:ref, note:'引路人：'+(guide.name||'')})); RWAddCal.bind(da); }   // 加入手機行事曆
     $('#done-summary').innerHTML=$('#pay-summary').innerHTML+(cpWarn?'<div class="cperr" style="margin-top:8px">'+esc(cpWarn)+'，這筆先以原價計算，請聯絡官方 LINE 協助。</div>':'')+(plan&&plan.pkg?(pkWarn?'<div class="cperr" style="margin-top:8px">'+esc(pkWarn)+'，請聯絡官方 LINE 協助。</div>':'<div class="cpok" style="margin-top:8px"><span>課程已開通，共 '+plan.pkg.sessions+' 堂，可在「會員中心 → 我的課程」查看</span></div>'):'');
     $('#book-pay').style.display='none';
     $('#book-done').style.display='block';

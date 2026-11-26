@@ -12,7 +12,8 @@ var CSS='.rwa-box{margin:14px 0 4px;text-align:left;background:#FBF6EC;border:1.
   '.rwa-s{font-size:12.5px;color:var(--soft);margin-top:6px;line-height:1.7}'+
   '.rwa-btns{display:flex;gap:8px;margin-top:12px}'+
   '.rwa-btns a,.rwa-btns button{flex:1;display:block;text-align:center;font:inherit;font-size:13.5px;border-radius:999px;padding:9px 0;border:1.5px solid var(--line);background:#fff;color:var(--brush);text-decoration:none;cursor:pointer}'+
-  '.rwa-btns .go{background:#4285F4;border-color:#4285F4;color:#fff}';
+  '.rwa-btns .go{background:#6B4A33;border-color:#6B4A33;color:#fff}'+
+  '.rwa-map{display:block;color:var(--ink);text-decoration:underline;text-decoration-color:#E2CDB0;text-underline-offset:4px}';
 function css(){ if(document.getElementById('rwa-css')) return; var s=document.createElement('style'); s.id='rwa-css'; s.textContent=CSS; document.head.appendChild(s); }
 function appName(a){ return /zoom/i.test(a||'')?'Zoom':'Google Meet'; }
 // 附近交通（SQL：my_booking_access 的 transit）→「🚇 三重站 走路 5 分鐘」
@@ -25,10 +26,10 @@ function html(acc){
   var h='';
   if(acc.offline && acc.paid){
     if(acc.address){
-      var map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(acc.address);
-      h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-a">'+esc(acc.address)+'</div>'+
+      var map=window.RWAddCal?RWAddCal.mapUrl(acc.address):'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(acc.address);   // iPhone 開 Apple 地圖、其他開 Google 地圖
+      h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><a class="rwa-a rwa-map" href="'+esc(map)+'" target="_blank" rel="noopener">'+esc(acc.address)+'</a>'+
         '<div class="rwa-s">'+(trText(acc.transit)?esc(trText(acc.transit))+(acc.transit.tip?'（'+esc(acc.transit.tip)+'）':'')+'<br>':'')+(acc.checkin_note?esc(acc.checkin_note)+'<br>':'')+'請在預約時間前 10 分鐘抵達。</div>'+
-        '<div class="rwa-btns"><a class="go" href="'+esc(map)+'" target="_blank" rel="noopener">在 Google 地圖開啟</a><button type="button" data-rwa-copy="'+esc(acc.address)+'">複製地址</button></div></div>';
+        '<div class="rwa-btns"><a class="go" href="'+esc(map)+'" target="_blank" rel="noopener">開地圖導航</a><button type="button" data-rwa-copy="'+esc(acc.address)+'">複製地址</button></div></div>';
     } else if(!acc.online){
       h+='<div class="rwa-box"><div class="rwa-h">'+PIN+'服務地址'+(acc.area?'（'+esc(acc.area)+'）':'')+'</div><div class="rwa-s">引路人的地址還在整理中，我們會用 Email 或官方 LINE 通知你。</div></div>';
     }
