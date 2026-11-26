@@ -278,3 +278,45 @@ window.addEventListener('load',function(){
     refresh(); setInterval(refresh,60000);
   }catch(e){}
 });
+
+// 私訊（會員 ↔ 預約過的引路人）：右上角 💬 在小鈴鐺旁邊，有新訊息顯示紅點；點了打開對話（用到才載 chat.js）
+// 網址 #chat、#chat=<引路人 id>（會員）、#gchat（引路人）也會打開
+window.rwChat=function(opt){
+  if(window.RWChat) return window.RWChat.open(opt);
+  if(window._rwChatLoading) return; window._rwChatLoading=true;
+  var s=document.createElement('script'); s.src='chat.js?v=20261126';
+  s.onload=function(){ window._rwChatLoading=false; if(window.RWChat) window.RWChat.open(opt); };
+  s.onerror=function(){ window._rwChatLoading=false; };
+  document.head.appendChild(s);
+};
+(function(){ function go(){ var h=location.hash, m;
+    if(h==='#gchat') window.rwChat({role:'guide'});
+    else if((m=/^#chat(?:=([0-9a-zA-Z-]+))?$/.exec(h))) window.rwChat({role:'member', id:m[1]||''}); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+  window.addEventListener('hashchange',go); })();
+window.addEventListener('load',function(){
+  try{
+    var tk=window.rwMemberToken&&window.rwMemberToken(); if(!tk) return;
+    var CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5a7.5 7.5 0 0 1-11 6.6L4 20l1-4.2A7.5 7.5 0 1 1 20 12.5Z"/><path d="M8.8 12.5h.01M12 12.5h.01M15.2 12.5h.01"/></svg>';
+    var css=document.createElement('style'); css.textContent='.rw-chat-wrap{margin-left:auto}.rw-chat-wrap+.rw-bell-wrap{margin-left:4px}.rw-chatb svg{width:19px;height:19px}';
+    document.head.appendChild(css);
+    var navIn=document.querySelector('.rw-nav-in');
+    if(navIn && !document.getElementById('rw-chatb')){
+      var w=document.createElement('div'); w.className='rw-chat-wrap';
+      w.innerHTML='<button type="button" class="rw-bell rw-chatb" id="rw-chatb" aria-label="私訊">'+CHAT_SVG+'<b id="rw-chat-n"></b></button>';
+      var bell=navIn.querySelector('.rw-bell-wrap'), cb=navIn.querySelector('.rw-burger-cb');
+      navIn.insertBefore(w, bell||cb||navIn.querySelector('.rw-links'));
+      document.getElementById('rw-chatb').onclick=function(e){ e.stopPropagation(); window.rwChat({role:'member'}); };
+    }
+    // 沒有標題列的頁面（手機的會員中心）：放在頁面自己準備的位置
+    document.querySelectorAll('[data-rw-chat-slot]').forEach(function(sl){ if(sl.querySelector('button')) return;
+      sl.innerHTML='<button type="button" class="rw-bell rw-chatb" aria-label="私訊">'+CHAT_SVG+'<b class="rw-chat-n2"></b></button>';
+      sl.querySelector('button').onclick=function(){ window.rwChat({role:'member'}); }; });
+    // 還沒看的私訊數
+    window.rwChatBadge=function(){ rwWithSupa(function(){
+      fetch(window.SUPA.url+'/rest/v1/rpc/my_chat_unread',{method:'POST',headers:{apikey:window.SUPA.key,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:'{}'})
+        .then(function(r){ return r.ok?r.json():0; }).then(function(n){ n=Number(n)||0;
+          document.querySelectorAll('#rw-chat-n,.rw-chat-n2').forEach(function(b){ b.textContent=n>99?'99+':n; b.classList.toggle('on',n>0); }); }).catch(function(){}); }); };
+    window.rwChatBadge(); setInterval(window.rwChatBadge,60000);
+  }catch(e){}
+});

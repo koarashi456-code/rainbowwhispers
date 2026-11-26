@@ -43,6 +43,11 @@
   .mc-top{background:linear-gradient(160deg,#F6E7CF,#F3DCEA 60%,#E7E0F4);padding:18px 22px 56px;border-radius:0 0 26px 26px}
   .mc-top-row{display:flex;align-items:center;justify-content:space-between}
   .mc-title{font-family:"Noto Serif TC",serif;font-size:21px;color:var(--brush);font-weight:700}
+  .mc-top-acts{display:flex;align-items:center;gap:8px}
+  .mc-top-acts .rw-bell{width:34px;height:34px;border:0;background:rgba(255,255,255,.6)}
+  .mc-top-acts .rw-bell svg{width:17px;height:17px}
+  @media(min-width:769px){ [data-rw-chat-slot]{display:none} }   /* 電腦：標題列已經有私訊鍵 */
+  .gmenu .gm-n{flex:none;min-width:20px;height:20px;border-radius:999px;background:#D4694E;color:#fff;font-size:11.5px;line-height:20px;text-align:center;padding:0 6px;box-sizing:border-box}
   .mc-gear{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.6);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .seg{display:flex;background:rgba(255,255,255,.55);border-radius:999px;padding:4px;margin:14px auto 0;width:220px}
   .seg button{flex:1;font:inherit;font-size:14px;color:var(--soft);background:none;border:none;border-radius:999px;padding:8px 0;cursor:pointer}
@@ -263,6 +268,14 @@
   .gv-opt{display:flex;gap:8px;align-items:flex-start;background:#fff;border:1.5px solid #EFE3CE;border-radius:12px;padding:8px 11px;margin-top:6px;cursor:pointer;text-align:left}
   .gv-opt.on{border-color:#C9A7DE;background:#FBF7FE}.gv-opt input{margin-top:5px}.gv-opt b{font-size:13.5px;color:var(--brush)}.gv-opt small{display:block;font-size:12px;color:var(--soft);line-height:1.6}
   .cal-st.vwait{background:#FBE7CC;color:#A5643A}.cal-st.vsent{background:#E3EEF6;color:#4F7392}
+  /* 出席確認 */
+  .gatt{margin-top:14px;background:#FBF6EC;border:1px solid #EFE3CE;border-radius:14px;padding:12px 14px;text-align:center}
+  .gatt b{display:block;font-size:15px;color:var(--brush)}.gatt span{display:block;font-size:12px;color:var(--soft);margin-top:2px}
+  .gatt-btns{display:flex;gap:8px;margin-top:10px}
+  .gatt-btns button{flex:1;font:inherit;font-size:14.5px;font-weight:600;min-height:46px;border-radius:999px;cursor:pointer}
+  .gatt-ok{background:#6B4A33;color:#FFFDF8;border:0}.gatt-no{background:#fff;color:#B4566E;border:1.5px solid #F0CFD8}
+  .gatt-btns button:active{opacity:.7}
+  .gatt-ban{display:block;width:100%;text-align:left;font:inherit;cursor:pointer}
   .gvban{background:#FFF4E2;border:1.5px solid #F2D3A2;border-radius:12px;padding:8px 12px;font-size:13px;color:#A5643A;margin:4px 0 10px;text-align:left}
   .gvbox{background:#F1F6FB;border:1.5px solid #CFE0EE;border-radius:12px;padding:10px 12px;margin-top:12px;text-align:left}
   .gvbox b{font-size:14px;color:var(--brush)}.gvbox .s{font-size:12px;color:var(--soft);margin-top:2px}
@@ -416,7 +429,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js?v=20261125h"></script>
+<script src="nav.js?v=20261126"></script>
 
 <div id="loading" class="acc"><p class="sub" style="margin-top:20px">載入中…</p></div>
 
@@ -463,7 +476,7 @@
   <div class="mc-top">
     <div class="mc-top-row">
       <div class="mc-title">會員中心</div>
-      <button class="mc-gear" id="mc-gear" title="設定"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A6A44" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
+      <span class="mc-top-acts"><span data-rw-chat-slot></span><button class="mc-gear" id="mc-gear" title="設定"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A6A44" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button></span>
     </div>
     <div class="seg" id="mseg" style="display:none"><button id="seg-m" class="on" type="button">會員</button><button id="seg-g" type="button">引路人</button></div>
   </div>
@@ -851,7 +864,7 @@ var GMENU=[
   {t:'我的行程',sub:'看哪天有預約、還有哪些時段開放',ic:'📅',bg:'#FBE7CC'},
   {t:'我的開放時間',sub:'排客人可以預約的時段',ic:'🕒',bg:'#E4F2E7'},
   {t:'我的方案',sub:'服務方案與價格（送官方審核）',ic:'🏷️',bg:'#DCEAF2'},
-  {t:'交易紀錄',sub:'每筆預約明細、標記未出席',ic:'🧾',bg:'#F4EAD4'},
+  {t:'交易紀錄',sub:'每筆預約明細、確認客人有沒有來',ic:'🧾',bg:'#F4EAD4'},
   {t:'客戶管理',sub:'預約過你的客戶',ic:'👥',bg:'#E7DBF4'},
   {t:'報表',sub:'營收與付款方式統計',ic:'📊',bg:'#F6DDE3'}
 ];
@@ -873,7 +886,15 @@ function setupGuideMenu(){
   }).join('');
   var first=gp.querySelector('.gpage'); gp.insertBefore(menu,first);
   menu.querySelectorAll('[data-go]').forEach(function(b){ b.onclick=function(){ openGuidePage(b.getAttribute('data-go')); }; });
+  // 私訊：客人傳來的訊息（不是一頁，點了跳出對話框）
+  var cm=document.createElement('button'); cm.type='button'; cm.id='gm-chat';
+  cm.innerHTML='<span class="gm-ic" style="background:#E3EEF6">💬</span><span class="gm-t">私訊<small>客人傳來的訊息，在這裡回覆</small></span><span class="gm-n" id="gm-chat-n"></span><span class="gm-go">›</span>';
+  cm.onclick=function(){ if(window.rwChat) rwChat({role:'guide'}); };
+  var cu=menu.querySelector('[data-go="客戶管理"]'); menu.insertBefore(cm, cu||null);
+  gChatBadge();
 }
+// 引路人：還沒看的私訊數（SQL：guide_chat_unread）
+async function gChatBadge(){ var n=0; try{ var r=await db.rpc('guide_chat_unread'); if(!r.error) n=Number(r.data)||0; }catch(e){} var b=document.getElementById('gm-chat-n'); if(b){ b.textContent=n>99?'99+':(n||''); b.style.display=n?'':'none'; } }
 function showGuideMenu(){
   var gp=document.getElementById('guide-portal'); if(!gp) return;
   gp.querySelectorAll('.gpage').forEach(function(p){ p.style.display='none'; });
@@ -898,6 +919,8 @@ function gStc(st){ return st==='已完成'?'done':st==='未出席'?'noshow':(st=
 function gSplit(sv){ sv=String(sv||''); var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
 function gKey(o){ var p=wpart(o.appointment_at); if(p) return new Date(p.y,p.mo-1,p.d,p.h,p.mi); return gBuyAt(o)||new Date(0); }
 function gUpcoming(o){ return o.status==='已預約' && !o.past && !!o.appointment_at; }
+// 時間過了、還沒按「有來／沒來」的預約（按了客人才會收到「服務已完成」或「未出席」通知）
+function gNeedAttend(o){ return o.status==='已預約' && !!o.past && !!o.appointment_at && !gIsBuy(o); }
 // 線上視訊：這筆是不是線上、需不需要傳連結（SQL：my_guide_video_status、guide_send_video）
 function gOnline(o){ return o && (o.location==='線上' || /｜線上視訊/.test(String(o.service||''))); }
 function gNeedLink(o){ return gOnline(o) && o.status==='已預約' && !o.past && !o.video_sent_at && GLOC.mode!=='fixed'; }
@@ -909,7 +932,7 @@ function gRow(o){
   var search=[o.customer_name,o.service,o.status,o.order_ref,o.customer_contact,o.method,o.appointment_at?fmtDT(o.appointment_at):''].join(' ').toLowerCase();
   // 像筆記本一樣一筆一行：日期 時間｜客人｜方案｜金額｜狀態（點一下看明細）
   var tm=buy?'購買':(p?String(p.h).padStart(2,'0')+':'+String(p.mi).padStart(2,'0'):'');
-  var st=(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at)?'<span class="cal-st vsent">已傳連結</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>';
+  var st=(gOnline(o)&&o.status==='已預約'&&!o.past&&o.video_sent_at)?'<span class="cal-st vsent">已傳連結</span>':gNeedLink(o)?'<span class="cal-st vwait">待傳連結</span>':gNeedAttend(o)?'<span class="cal-st vwait">待確認出席</span>':'<span class="cal-st '+gStc(o.status)+'">'+escA(o.status||'')+'</span>';
   return '<button type="button" class="orow nb-row'+(dim?' dim':'')+'" data-gi="'+i+'" data-search="'+escA(search)+'" aria-label="'+escA(d+' '+tm+' '+(o.customer_name||'客戶')+' '+sp.plan+' '+money(o.amount)+' '+(o.status||''))+'">'
     +'<span class="nb-d"><b>'+d+'</b>'+tm+'</span><span class="nb-n">'+escA(o.customer_name||'客戶')+'</span>'
     +'<span class="nb-s">'+escA(String(sp.plan||'').replace(/（[^）]*）$/,''))+(sp.place?'｜'+escA(sp.place.replace(/（實體）$/,'')):'')+'</span><span class="nb-a">'+money(o.amount)+'</span>'+st+'</button>';
@@ -932,7 +955,10 @@ function openGOrder(i){
       '<div class="gv-row"><button type="button" class="gv-btn" id="gv-send">'+(o.video_sent_at?'重新傳一次':'傳連結給客人')+'</button><span id="gv-msg" style="font-size:12px;color:var(--soft)">會寄到客人信箱＋網站小鈴鐺</span></div></div>';
   }
   if(window.RWAddCal && o.status==='已預約' && !o.past && o.appointment_at) h+=RWAddCal.html({when:o.appointment_at, svc:sp.plan, title:'彩之語｜'+(o.customer_name||'客人')+' '+(sp.plan||''), place:sp.place||'', ref:o.order_ref||'', note:'客人：'+(o.customer_name||'')+(o.customer_contact?'（'+o.customer_contact+'）':''), link:'account.html'});   // 加入手機行事曆
-  if(can) h+='<div style="margin-top:14px;text-align:center"><button type="button" class="gs-noshow" id="gs-noshow">客戶沒來？標記未出席</button></div>';
+  // 出席確認：時間到了才按得到；按了客人才會收到「服務已完成」或「未出席」的通知
+  if(gNeedAttend(o)) h+='<div class="gatt"><b>這次客人有來嗎？</b><span>按了客人才會收到通知</span><div class="gatt-btns"><button type="button" class="gatt-ok" id="gs-done">✓ 有來（完成）</button><button type="button" class="gatt-no" id="gs-noshow">沒來（未出席）</button></div></div>';
+  else if(o.past && o.status==='已完成') h+='<div style="margin-top:14px;text-align:center"><button type="button" class="gs-noshow" id="gs-noshow">按錯了？改成未出席</button></div>';
+  else if(o.past && o.status==='未出席') h+='<div style="margin-top:14px;text-align:center"><button type="button" class="gs-link" id="gs-done">按錯了？改成已完成</button></div>';
   if(o.customer_contact||o.customer_name) h+='<div style="text-align:center"><button type="button" class="gs-link" id="gs-cust">看這位客戶的所有紀錄 ›</button></div>';
   $('#gs-box').innerHTML=h; $('#gs-box').scrollTop=0; $('#gs-mask').classList.add('on'); if(window.RWAddCal) RWAddCal.bind($('#gs-box'));
   $('#gs-x').onclick=gsClose;
@@ -947,11 +973,16 @@ function openGOrder(i){
       vb.textContent='重新傳一次'; vb.disabled=false; loadGuideOrders();
     }catch(e){ vb.disabled=false; msg.style.color='#C0506A'; msg.textContent='傳送失敗：'+(e.message||''); }
   };
+  var db2=$('#gs-done'); if(db2) db2.onclick=async function(){
+    db2.disabled=true; var t0=db2.textContent; db2.textContent='處理中…';
+    try{ var x=await db.rpc('guide_mark_done',{p_id:o.id}); if(x.error) throw new Error(/could not find the function/i.test(x.error.message||'')?'請先請官方更新系統（SQL）':x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); gsClose(); loadGuideOrders(); loadSchedule(); }
+    catch(e){ alert('標記失敗：'+(e.message||'')); db2.disabled=false; db2.textContent=t0; }
+  };
   var nb=$('#gs-noshow'); if(nb) nb.onclick=async function(){
     if(!confirm('確定把這筆標記為「客戶未出席」？\n依退費條款，未出席不退費；會員在「我的訂單」會看到這個狀態。')) return;
-    nb.disabled=true; nb.textContent='處理中…';
+    var nbT=nb.textContent; nb.disabled=true; nb.textContent='處理中…';
     try{ var x=await db.rpc('guide_mark_noshow',{p_id:o.id}); if(x.error) throw new Error(x.error.message); if(x.data===false) throw new Error('這筆目前不能標記（可能還沒到預約時間或已被修改）'); gsClose(); loadGuideOrders(); loadSchedule(); }
-    catch(e){ alert('標記失敗：'+(e.message||'')); nb.disabled=false; nb.textContent='客戶沒來？標記未出席'; }
+    catch(e){ alert('標記失敗：'+(e.message||'')); nb.disabled=false; nb.textContent=nbT; }
   };
   var cb=$('#gs-cust'); if(cb) cb.onclick=function(){ gsClose(); openGuideCustomer(o.customer_contact, o.customer_name); };
 }
@@ -1005,10 +1036,13 @@ async function loadGuideOrders(){
   var past=GORD.filter(function(o){ return !gUpcoming(o); }).sort(function(a,b){ return gKey(b)-gKey(a); });
   var h='', soon=up.filter(function(o){ var ms=gKey(o)-Date.now(); return gNeedLink(o) && ms>-3600e3 && ms<=24*3600e3; });
   if(soon.length) h+='<div class="gvban">🎥 24 小時內有 '+soon.length+' 筆線上預約還沒傳視訊連結，點那筆就能傳</div>';
+  var need=past.filter(gNeedAttend);
+  if(need.length) h+='<button type="button" class="gvban gatt-ban" id="gatt-ban">✅ 有 '+need.length+' 筆預約等你確認客人有沒有來，點這裡開始</button>';
   if(up.length) h+='<div class="olist-h">即將到來</div><div class="olist nb-list">'+up.map(gRow).join('')+'</div>';
   if(past.length) h+='<div class="olist-h">過去的預約・購買</div><div class="olist nb-list">'+past.map(gRow).join('')+'</div>';
   bx.innerHTML=h;
   bx.querySelectorAll('[data-gi]').forEach(function(b){ b.onclick=function(){ openGOrder(+b.getAttribute('data-gi')); }; });
+  var ab=$('#gatt-ban'); if(ab) ab.onclick=function(){ var o=need[need.length-1]; if(o) openGOrder(GORD.indexOf(o)); };   // 從最早那筆開始
 }
 // 客戶管理（新版）：每位客人的預約明細＋引路人自己的備註；需 SQL my_guide_customers / set_my_customer_note，沒有時維持舊列表
 // 列表只顯示摘要，點進去看明細；「‹ 回列表」返回

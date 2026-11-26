@@ -145,7 +145,7 @@
     <a class="rw-nav-line" href="https://lin.ee/t0NBjud0" target="_blank" rel="noopener">加 LINE</a>
   </div>
 </div></nav>
-<script src="nav.js?v=20261125h"></script>
+<script src="nav.js?v=20261126"></script>
 
 <div id="ord-loading" class="oloading">載入你的訂單中…</div>
 
@@ -230,7 +230,7 @@ var WDN=['日','一','二','三','四','五','六'];
 function splitSvc(o){ var sv=String(o.service||''); if(isShop(o)) return {plan:sv.replace(/^商品：/,''),place:''};
   var m=/^(.*)｜(線上視訊|實體|[^｜]+（實體）)$/.exec(sv); return m?{plan:m[1],place:m[2]}:{plan:sv,place:''}; }
 function isBuy(o){ return /^課程購買：/.test(String(o.service||'')); }
-function stText(o){ return isShop(o)&&o.status==='已預約'?'待出貨':o.status; }
+function stText(o){ return isShop(o)&&o.status==='已預約'?'待出貨':(o.status==='已預約'&&o.appointment_at&&started(o))?'等引路人確認':o.status; }   // 時間過了：等引路人確認有沒有出席
 function isUpcoming(o){ return o.status==='已預約' && (isShop(o) || cmpKey(o) > new Date()); }
 function orderRow(o){
   var i=ALL_ORDERS.indexOf(o), sp=splitSvc(o), d, sub;
